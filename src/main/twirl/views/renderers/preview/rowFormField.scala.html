@@ -1,0 +1,13 @@
+@(field: forms.RowFormField, answers: Map[String, String])
+
+@field.rowform.map { f=>
+
+@if( f.isEnabled) {
+    <div class="form-group ">
+        <label for="@f.name">@f.label </label>
+
+     @answers.get(f.name)
+
+    </div>
+}
+}

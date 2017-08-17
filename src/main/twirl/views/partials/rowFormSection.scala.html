@@ -1,0 +1,112 @@
+@(field: forms.SimpleField,
+questions: Map[String, Question],
+answers: Map[String, String],
+errs: Seq[forms.validation.FieldError],
+hints: Seq[forms.validation.FieldHint]
+)
+
+@import helpers._
+@import eu.timepit.refined.auto._
+
+@errors = @{
+errs.filter(p => p.path == field.name || p.path.startsWith(s"${field.name}."))
+}
+
+@errorClass = @{
+if(errors.nonEmpty) "error" else ""
+}
+
+@errorClassFor(f: forms.Field) = @{
+if(errs.exists(_.path == f.name)) "error" else ""
+}
+
+@errorsFor(f: forms.Field) = @{
+errs.filter(_.path == f.name)
+}
+
+@errorBlock(f: forms.Field) = @{
+if(errorsFor(f).nonEmpty) {
+<span class="error-message">{errorsFor(f).head.err}</span>
+}
+}
+
+@mandatoryClass(isMandatory: Boolean) = @{
+if(isMandatory) { <span class="mandatory-field">*</span> }
+}
+
+
+<table class="rowfield" border="0"> <tr>
+
+@field.rowform.map { rows=>
+
+    <div class="@errorClassFor(field)">
+        @errorBlock(field)
+
+            @rows.map { f=>
+                @if( f.isEnabled) {
+
+
+                @f.fieldType match {
+
+                    case "text" => {
+
+                   <td> @f.label <input type="text" size="@f.size" id="@f.name" title="@f.name" class="form-control" name="@f.name"
+                                      value='@answers.get(f.name)'></td>
+                    }
+                    case "checkbox" => {
+                    <div class="multiple-choice">
+                        <input id="@f.name" name="@f.name" type="checkbox" title="@f.name" value="waste-farm-agricultural">
+                        <label for="@f.name">@f.label </label>
+                    </div>
+                    }
+                    case "textArea" => {
+                    <label for="@f.name">@f.label </label>
+                    <textarea id="@f.name" class="form-control generic textarea-resize" title="@f.name"
+                              name="@f.name">@answers.get(f.name)</textarea>
+                    }
+                    case "date" => {
+                    <td> @f.label
+                    <div class='date-selector'>
+                        <div>
+                            <label for="@(f.name).day">Day</label>
+                            <input type="text" title="Day" id="@(f.name).day" name="@(f.name).day"
+                                   value='@answers.get(s"${f.name}.day")' class="form-control" maxlength="2"
+                                   pattern="[0-9]*">
+                        </div>
+                        <div>
+                            <label for="@(f.name).month">Month</label>
+                            <input type="text" title="Month" id="@(f.name).month" name="@(f.name).month"
+                                   value='@answers.get(s"${f.name}.month")' class="form-control" maxlength="2"
+                                   pattern="[0-9]*">
+                        </div>
+                        <div>
+                            <label for="@(f.name).year">Year</label>
+                            <input type="text" title="4 digit year" id="@(f.name).year" name="@(f.name).year"
+                                   value='@answers.get(s"${f.name}.year")' class="form-control year" maxlength="4"
+                                   pattern="[0-9]*">
+                        </div>
+                    </div>
+                    </td>
+                    }
+                    case "fileupload" => {
+                    <label for="@f.name">@f.label </label>
+                    <label class="file-upload">
+                        <input type="file" class="file-upload-field" name="file"/>
+                        Choose file
+                    </label>
+                    <input type="text" id="fileupload" class="form-control fileupload-text-field" title="title"
+                           name="@f.name">
+                    }
+                } <!-- if( f.fieldType match  ends -->
+                </td>
+                } <!-- if( f.isEnabled) ends -->
+
+            } <!-- rows.map ends -->
+
+
+
+
+    </div>
+}
+
+     </tr></table>

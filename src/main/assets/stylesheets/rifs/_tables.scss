@@ -1,0 +1,158 @@
+table.simpleform {
+  margin-bottom: 2em;
+
+  td {
+    font-size: 19px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    border-bottom: 0px;
+  }
+}
+
+table.rowfield {
+  margin-bottom: 0em;
+
+  td {
+    font-size: 19px;
+    font-weight: bold;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    padding-left: 15px;
+    border-top: 2px solid #bfc1c3;
+    border-bottom: 2px solid #bfc1c3;
+    border-left: 2px solid #bfc1c3;
+    border-right: 2px solid #bfc1c3;
+  }
+
+  tbody {
+    border-bottom: 2px solid #bfc1c3;
+  }
+  tfoot {
+    border-bottom: 2px solid $black !important;
+    border-top: 2px solid $black !important;
+  }
+
+}
+
+table.tableformfield {
+  margin-bottom: 0em;
+
+  td {
+    font-size: 19px;
+    padding-left: 15px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    border-top: 2px solid #bfc1c3;
+    border-bottom: 2px solid #bfc1c3;
+    border-left: 2px solid #bfc1c3;
+    border-right: 2px solid #bfc1c3;
+
+  }
+
+  tbody {
+    border-bottom: 2px solid #bfc1c3;
+  }
+  tfoot {
+    border-bottom: 2px solid $black !important;
+    border-top: 2px solid $black !important;
+  }
+
+}
+
+
+table.spacious {
+
+  margin-bottom: 2em;
+
+  th {
+     border-bottom: solid 2px $black;
+  }
+
+  td {
+    padding-bottom: 15px;
+    padding-top: 15px;
+  }
+
+  tfoot > tr > td {
+    border-bottom: 2px solid $black;
+    border-top: 2px solid $black;
+  }
+
+}
+
+.table-style-heading-small {
+  // Small bold heading with a line underneath (See: showOpportunities.scala.html)
+  @extend .heading-small;
+  margin-bottom: 0;
+}
+
+.rifs-costs-table {
+  margin-bottom: 2em;
+
+  td {
+    border-bottom: 0;
+    padding-bottom: 15px;
+    padding-top: 15px;
+  }
+
+  .line td {
+    border-bottom: 1px solid $black;
+  }
+
+  thead {
+    border-bottom: 2px solid $black;
+  }
+
+  tfoot {
+    border-bottom: 2px solid $black;
+    border-top: 2px solid $black;
+  }
+}
+
+.footer-two-light td {
+  border-bottom: 1px solid $black !important;
+}
+
+@media screen and (max-width: 560px) {
+  .mobile-one-column {
+    table,
+    thead,
+    tbody,
+    th,
+    td,
+    tr {
+      display: block;
+    }
+
+    // Visually hide table headers, but leave them in for accessibility
+    thead tr {
+      left: -9999px;
+      position: absolute;
+      top: -9999px;
+    }
+
+    td {
+      // Behave like a row
+      padding-left: 37%;
+      position: relative;
+    }
+
+    td:before {
+      // This is the label
+      content: ' 'attr(data-label)' ';
+      font-weight: bold;
+      left: 0;
+      padding-right: 2em;
+      position: absolute;
+      top: 15px;
+      white-space: nowrap;
+      width: 33.33%;
+    }
+
+    tr:not(:last-of-type) {
+      border-bottom: 2px solid $black;
+    }
+
+  }
+
+}

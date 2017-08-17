@@ -1,0 +1,10 @@
+@(files: Seq[forms.FileUploadItem])
+
+<div>
+
+    @files.map{ file=>
+    <p>@file.supportingDocuments</p>
+    }
+
+
+</div>

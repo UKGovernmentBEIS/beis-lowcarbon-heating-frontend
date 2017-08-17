@@ -1,0 +1,13 @@
+@(field: forms.CompanyInfoField, answers: Map[String, String])
+
+<div>
+    <h3>@field.label</h3>
+    @answers.getOrElse("companyInfo.companyname", "Not Available").split("\n\n").filterNot(_ == "").map { p => <p class="text preview-text">@p</p> }
+</div>
+
+<div>
+    <h3>@field.label</h3>
+    @answers.getOrElse("companyInfo.companynumber", "Not Available").split("\n\n").filterNot(_ == "").map { p => <p class="text preview-text">@p</p> }
+</div>
+
+
