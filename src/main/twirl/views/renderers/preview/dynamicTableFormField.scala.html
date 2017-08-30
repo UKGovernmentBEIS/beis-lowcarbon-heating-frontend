@@ -1,0 +1,33 @@
+@(
+dform:forms.DynamicTableFormField,
+tableItems: Seq[forms.TableItem]
+)
+@import helpers._
+
+
+<table class="dynamictdpreview">
+
+    <thead>
+    <tr>
+        @dform.dynamictableform.map{tablefields=>
+
+        @tablefields.fields.map{ tablefield=>
+        <th >@tablefield.label </th>
+        }
+        }
+    </tr>
+    </thead>
+
+    <tbody>
+    @tableItems.map { tableItem =>
+    <tr>
+        @tableItem.tableRowData.map{ rowdata=>
+        <td>
+            @rowdata
+        </td>
+        }
+    </tr>
+    }
+    </tbody>
+
+</table>

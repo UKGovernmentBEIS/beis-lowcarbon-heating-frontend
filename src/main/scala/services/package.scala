@@ -80,6 +80,7 @@ package object services
   implicit val appDetailReads = Json.reads[ApplicationDetail]
   implicit val appSecDetailReads = Json.reads[ApplicationSectionDetail]
   implicit val messageReads = Json.reads[Message]
+  implicit val userReads = Json.reads[User]
 
   implicit val civReads = Json.reads[CostItemValues]
   implicit val ciReads = Json.reads[CostItem]

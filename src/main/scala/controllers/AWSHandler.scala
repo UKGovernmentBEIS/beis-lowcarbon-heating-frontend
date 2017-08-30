@@ -77,6 +77,7 @@ class AWSHandler @Inject()(
         /* File Upload */
         val fileUploadItem:FileUploadItem = FileUploadItem(filename)
         /** Save file metadata in Database and Physical file in AWS S3  **/
+
         applications.saveFileItem(id, sectionNumber, JsObject(Seq("item" -> Json.toJson(fileUploadItem)))).flatMap {
           case itemnumber => {
             /** AWS S3 call to store files on AWS S3 **/

@@ -20,13 +20,13 @@ package controllers
 import javax.inject.Inject
 
 import config.Config
-import forms.FileUploadItem
+import forms.{FileUploadItem, TableItem}
 import forms.validation.CostItem
 import models._
-import play.api.libs.json._
+import play.api.libs.json.{JsObject, _}
 import play.api.mvc.Result
 import play.api.mvc.Results._
-import services.{ApplicationFormOps, ApplicationOps, OpportunityOps, BusinessProcessOps}
+import services.{ApplicationFormOps, ApplicationOps, BusinessProcessOps, OpportunityOps}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,6 +37,9 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
   import ApplicationData._
   import FieldCheckHelpers._
 
+  implicit val tableItemF = Json.format[TableItem]
+
+
   def doSave(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
     app.formSection.sectionType match {
       case SectionTypeForm | SimpleTypeForm | RowForm | TableForm => {
@@ -45,17 +48,19 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
       }.map(_ => redirectToOverview(app.id))
       case SectionTypeCostList => Future.successful(redirectToOverview(app.id))
       case SectionTypeFileList => Future.successful(redirectToOverview(app.id))
+      case DynamicTableForm => Future.successful(redirectToOverview(app.id))
     }
   }
 
   def doComplete(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
     val answers = app.formSection.sectionType match {
-      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm => fieldValues
+      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm  => fieldValues
       // Instead of using the values that were passed in from the form we'll use the values that
       // have already been saved against the item list, since these were created by the add-item
       // form.
       case SectionTypeCostList => app.section.map(_.answers).getOrElse(JsObject(Seq()))
       case SectionTypeFileList => app.section.map(_.answers).getOrElse(JsObject(Seq()))
+      case DynamicTableForm => app.section.map(_.answers).getOrElse(JsObject(Seq()))
     }
 
     applications.completeSection(app.id, app.sectionNumber, answers).map {
@@ -65,16 +70,37 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
   }
 
   def doSaveItem(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
+
     JsonHelpers.allFieldsEmpty(fieldValues) match {
       case true => applications.deleteSection(app.id, app.sectionNumber).map(_ => redirectToOverview(app.id))
-      case false => applications.saveItem(app.id, app.sectionNumber, fieldValues).flatMap {
+      //  applications.saveFileItem(id, sectionNumber, JsObject(Seq("item" -> Json.toJson(fileUploadItem)))).flatMap {
+
+          case false => applications.saveItem(app.id, app.sectionNumber, fieldValues).flatMap {
         case Nil => Future.successful(redirectToOverview(app.id))
         case errs => Future.successful(redisplaySectionForm(app, fieldValues, errs))
       }
     }
   }
 
+  def doSaveDynamicTDItem(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
+    val tddata = fieldValues.fields.head._2.toString().replaceAll("^\"|\"$\"[\"]", "")
+    val tdatatmp  = tddata.substring(1, tddata.length-1)
+    val t = tdatatmp.replaceAll("\"", "").split(",").toSeq
+
+    val tableItem:TableItem = TableItem(t)
+
+    JsonHelpers.allFieldsEmpty(fieldValues) match {
+      case true => applications.deleteSection(app.id, app.sectionNumber).map(_ => redirectToOverview(app.id))
+       case false =>
+       applications.saveItem(app.id, app.sectionNumber, JsObject(Seq("item" -> Json.toJson(tableItem))) ).flatMap {
+         case Nil => Future.successful(redirectToSectionForm(app.id, app.sectionNumber))
+         case errs => Future.successful(redisplaySectionForm(app, fieldValues, errs))
+      }
+    }
+  }
+
   def doSaveFileItem(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
+
     JsonHelpers.allFieldsEmpty(fieldValues) match {
       case true => applications.deleteSection(app.id, app.sectionNumber).map(_ => redirectToOverview(app.id))
       case false => applications.saveFileItem(app.id, app.sectionNumber, fieldValues).flatMap {
@@ -154,7 +180,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
 
   def doSaveSimple(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
     app.formSection.sectionType match {
-      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm => {
+      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm | DynamicTableForm => {
         if (JsonHelpers.allFieldsEmpty(fieldValues)) applications.deleteSection(app.id, app.sectionNumber)
         else applications.saveSection(app.id, app.sectionNumber, fieldValues)
       }.map(_ => redirectToSimpleFormOverview(app.id))
@@ -165,7 +191,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
 
   def doCompleteSimple(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
     val answers = app.formSection.sectionType match {
-      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm => fieldValues
+      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm | DynamicTableForm => fieldValues
       // Instead of using the values that were passed in from the form we'll use the values that
       // have already been saved against the item list, since these were created by the add-item
       // form.
@@ -201,7 +227,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
 
   def doPreviewSimple(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
     app.formSection.sectionType match {
-      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm =>
+      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm | DynamicTableForm =>
         val errs = check(fieldValues, previewChecksFor(app.formSection))
         if (errs.isEmpty) applications.saveSection(app.id, app.sectionNumber, fieldValues).map(_ => redirectToPreview(app.id, app.sectionNumber))
         else Future.successful(redisplaySimpleSectionForm(app, fieldValues, errs))
@@ -224,7 +250,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
     val hints = hinting(answers, checks)
 
     app.formSection.sectionType match {
-      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm => Ok(views.html.sectionSimpleForm(app, answers, errs, hints))
+      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm | DynamicTableForm => Ok(views.html.sectionSimpleForm(app, answers, errs, hints))
       /*case SectionTypeCostList =>
         answers \ "items" match {
           case JsDefined(JsArray(is)) if is.nonEmpty =>
@@ -255,7 +281,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
 
   def completeAndPreview(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
     val answers = app.formSection.sectionType match {
-      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm => fieldValues
+      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm | DynamicTableForm => fieldValues
       // Instead of using the values that were passed in from the form we'll use the values that
       // have already been saved against the item list, since these were created by the add-item
       // form.
@@ -318,7 +344,15 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
         val fileUploadItems = itemValues.flatMap(_.validate[FileUploadItem].asOpt)
         Ok(views.html.sectionFileList(app, fileUploadItems, answers, errs, hints))
       }
+      case DynamicTableForm => {
+        val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
+        val tableItems = itemValues.flatMap(_.validate[TableItem].asOpt)
 
+        val dform = app.formSection.fields.map{f=>
+            f.asInstanceOf[forms.DynamicTableFormField]
+        }
+        Ok(views.html.sectionDynamicTDList(app, dform.head, tableItems, answers, errs, hints))
+      }
     }
   }
 

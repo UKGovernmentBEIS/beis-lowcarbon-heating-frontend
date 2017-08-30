@@ -59,6 +59,7 @@ object ApplicationFormSectionType {
       case SimpleTypeForm.name => Some(SimpleTypeForm)
       case RowForm.name => Some(RowForm)
       case TableForm.name => Some(TableForm)
+      case DynamicTableForm.name => Some(DynamicTableForm)
       case _ => None
     }
 
@@ -95,4 +96,8 @@ case object RowForm extends ApplicationFormSectionType {
 
 case object TableForm extends ApplicationFormSectionType {
   override val name: String = "tableform"
+}
+
+case object DynamicTableForm extends ApplicationFormSectionType {
+  override val name: String = "dynamictableform"
 }

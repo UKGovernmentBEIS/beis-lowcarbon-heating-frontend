@@ -38,13 +38,15 @@ object FieldReads {
   implicit val rowFormFieldReads = Json.reads[RowFormField]
   implicit val tableRowReads = Json.reads[TableRow]
   implicit val tableFieldReads = Json.reads[TableField]
+  implicit val fileUploadItemReads = Json.reads[FileUploadItem]
   implicit val simpleFieldReads = Json.reads[SimpleField]
   implicit val simpleFormFieldReads = Json.reads[SimpleFormField]
   implicit val tableFormFieldReads = Json.reads[TableFormField]
+  implicit val dynamictableFormFieldReads = Json.reads[DynamicTableFormField]
 
   implicit object fieldReads extends Reads[Field] {
     override def reads(json: JsValue): JsResult[Field] = {
-      System.out.println("FieldType--------------------------" + json)
+      //System.out.println("FieldType--------------------------" + json)
       json.validate[FieldType].flatMap { o =>
         o.`type` match {
           case "text" => json.validate[TextField]
@@ -59,6 +61,7 @@ object FieldReads {
           case "simpleform" => json.validate[SimpleFormField]
           case "rowform" => json.validate[RowFormField]
           case "tableform" => json.validate[TableFormField]
+          case "dynamictableform" => json.validate[DynamicTableFormField]
           case t => JsError(s"unknown field type $t")
         }
       }

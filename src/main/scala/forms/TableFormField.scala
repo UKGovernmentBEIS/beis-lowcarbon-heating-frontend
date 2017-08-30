@@ -20,28 +20,17 @@ package forms
 import controllers.{FieldCheck, FieldChecks, JsonHelpers}
 import forms.validation._
 import models._
+import play.api.Logger
 import play.api.libs.json._
+import services.RestService.{JsonParseException, RestFailure}
 
 case class TableFormField(name: String, tableform : Seq[TableField]) extends Field {
   implicit val tableFormReads = Json.reads[SimpleFormValues]
-  //println("===contactitems==="+ contactitems)
-  //  val telephoneField = sicknessform.filter(s => (s.name == "sicknessAbsence.telephone")).head
-  //  val emailField = sicknessform.filter(s => (s.name == "sicknessAbsence.email")).head
-  //  val webField = sicknessform.filter(s => (s.name == "sicknessAbsence.web")).head
-  //  val twitterField = sicknessform.filter(s => (s.name == "sicknessAbsence.twitter")).head
-
-  //  println("===telephoneField==="+ telephoneField)
-
-
-  //override def check: FieldCheck = FieldChecks.fromValidator(ContactValidator)
-  //override def check: FieldCheck = FieldChecks.fromValidator(new ContactValidator(Seq(telephoneField, emailField, webField, twitterField)))
-  //override def check: FieldCheck = FieldChecks.noCheck
+  implicit val tableRowDataReads = Json.reads[TableRowData]
+  implicit val tableFormDataReads = Json.reads[TableFormData]
 
   override def check: FieldCheck = {
-    //println("== ContactField case true "+name + " ======= " +  contactitems)
-
-    //FieldChecks.fromValidator(new SimpleFormValidator(Seq(telephoneField, emailField, webField, twitterField)))
-    FieldChecks.fromValidator(SimpleFormValidator)
+     FieldChecks.fromValidator(SimpleFormValidator)
   }
 
   override def previewCheck: FieldCheck = FieldChecks.mandatoryCheck
@@ -51,6 +40,14 @@ case class TableFormField(name: String, tableform : Seq[TableField]) extends Fie
   }
 
   override def renderFormInput(questions: Map[String, Question], answers: JsObject, errs: Seq[FieldError], hints: Seq[FieldHint]) = {
+    answers.validate[TableFormData] match {
+      case JsSuccess(dynamicTableFormFieldAnsers, _) =>
+        Logger.debug("Validated in renderFormInput:-" + dynamicTableFormFieldAnsers.rowsData.toString())
+        //System.out.println("Validated in renderFormInput:-" + dynamicTableFormFieldAnsers.rowsData.toString())
+        // views.html.renderers.tableFormField(this, questions, dynamicTableFormFieldAnsers, errs, hints)
+      case JsError(errs) =>
+        Logger.debug("Errors in renderFormInput:-" + errs)
+    }
 
     views.html.renderers.tableFormField(this, questions, JsonHelpers.flatten(answers), errs, hints)
   }

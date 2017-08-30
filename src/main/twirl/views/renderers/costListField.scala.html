@@ -15,6 +15,9 @@
 
 @errorBlock("")
 
+@app.formSection.fields.map{a=>
+=========@a.name
+}
 <table class="spacious">
     <thead>
         <tr>
@@ -27,17 +30,18 @@
     <tfoot>
         <tr>
             <td class="bold-small">Total requested &pound;</td>
+
             <td class="currency bold-small">@items.map(_.cost).sum.setScale(2, BigDecimal.RoundingMode.HALF_UP)</td>
             <td>&nbsp;</td>
         </tr>
         <tr class="footer-two-light">
             <td colspan="3">
                 <a href="@controllers.routes.CostController.addItem(app.id, app.formSection.sectionNumber)">
-                    Add item</a>
+                    Add item
+                </a>
             </td>
         </tr>
     </tfoot>
-
 
     <tbody>
     @items.sortBy(_.itemNumber).map { item =>
@@ -51,7 +55,8 @@
             <td class="align-right">
             @item.itemNumber.map { num =>
                 <a href="@controllers.routes.CostController.deleteItem(app.id, app.formSection.sectionNumber, num)">
-                    Delete</a>
+                    Delete
+                </a>
             }</td>
         </tr>
     }

@@ -18,14 +18,14 @@
 package forms
 
 import controllers.{FieldCheck, FieldChecks, JsonHelpers}
-import forms.validation.{ContactValidator, _}
+import forms.validation._
 import models._
 import play.api.libs.json._
 
-case class SimpleFormField(name: String, simpleform : Seq[SimpleField]) extends Field {
-  implicit val simpleFormReads = Json.reads[SimpleFormValues]
-
-
+case class DynamicTableFormField(label: Option[String], name: String, dynamictableform : Seq[TableField]) extends Field {
+  implicit val dynamicTableFormReads = Json.reads[SimpleFormValues]
+  implicit val tableRowDataReads = Json.reads[TableRowData]
+  implicit val tableItemReads = Json.reads[TableItem]
   //println("===contactitems==="+ contactitems)
   //  val telephoneField = sicknessform.filter(s => (s.name == "sicknessAbsence.telephone")).head
   //  val emailField = sicknessform.filter(s => (s.name == "sicknessAbsence.email")).head
@@ -40,31 +40,31 @@ case class SimpleFormField(name: String, simpleform : Seq[SimpleField]) extends 
   //override def check: FieldCheck = FieldChecks.noCheck
 
   override def check: FieldCheck = {
-    //println("============== "+name + " ======= " +  simpleform.toString())
+    //println("== ContactField case true "+name + " ======= " +  contactitems)
 
-    simpleform.map{ d=>
-      println("============== "+d.label + "--" + d.isMandatory)
-
-
-    }
     //FieldChecks.fromValidator(new SimpleFormValidator(Seq(telephoneField, emailField, webField, twitterField)))
     FieldChecks.fromValidator(SimpleFormValidator)
   }
 
   override def previewCheck: FieldCheck = FieldChecks.mandatoryCheck
 
-  override def renderPreview(questions: Map[String, Question], answers: JsObject) = {
-    views.html.renderers.preview.simpleFormField(this, JsonHelpers.flatten(answers))
-  }
 
   override def renderFormInput(questions: Map[String, Question], answers: JsObject, errs: Seq[FieldError], hints: Seq[FieldHint]) = {
 
-
-//    val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
-//    val fileUploadItems = itemValues.flatMap(_.validate[FileUploadItem].asOpt)
-//    views.html.renderers.preview.fileUpload(fileUploadItems)
-
-
-    views.html.renderers.simpleFormField(this, questions, JsonHelpers.flatten(answers), errs, hints)
+    val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
+    val tableItems = itemValues.flatMap(_.validate[TableItem].asOpt)
+    views.html.renderers.dynamicTableformField(this, questions, tableItems, errs, hints)
   }
+
+  override def renderPreview(questions: Map[String, Question], answers: JsObject) = {
+    val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
+    val tableItems = itemValues.flatMap(_.validate[TableItem].asOpt)
+    views.html.renderers.preview.dynamicTableFormField(this, tableItems)
+  }
+
+  //  override def renderFormInput(questions: Map[String, Question], answers: JsObject, errs: Seq[FieldError], hints: Seq[FieldHint]) = {
+  //
+  //    views.html.renderers.dynamicTableFormField(this, questions, JsonHelpers.flatten(answers), errs, hints)
+  //  }
 }
+case class TableItem(tableRowData: Seq[String], itemNumber: Option[Int] = None)

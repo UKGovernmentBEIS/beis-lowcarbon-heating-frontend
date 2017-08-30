@@ -1,11 +1,12 @@
 @(apps: Seq[Application],
 os: Seq[Opportunity],
-ms: Seq[Message]
+ms: Seq[Message],
+userid: String
 )
 
 @import org.joda.time.format.DateTimeFormat
 
-@main("Opportunity list - BEIS", displayUserName=Some("Experienced Eric")) {
+@main("Opportunity list - BEIS", displayUserName=Some(userid)) {
 
 
 <div>

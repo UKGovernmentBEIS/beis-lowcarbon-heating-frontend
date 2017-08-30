@@ -141,7 +141,7 @@ class ApplicationService @Inject()(val ws: WSClient)(implicit val ec: ExecutionC
   def checksFor(formSection: ApplicationFormSection): Map[String, FieldCheck] =
 
   formSection.sectionType match {
-      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm =>
+      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm | DynamicTableForm =>
         formSection.fields.map(f =>
           println("== ApplicationService  2a========="+ f) //companyInfo  ----- sicknessAbsence
         )
@@ -163,9 +163,8 @@ class ApplicationService @Inject()(val ws: WSClient)(implicit val ec: ExecutionC
       case JsDefined(JsNumber(itemNumber)) => {
         put(urls.item(id, sectionNumber, itemNumber.toInt), item).map(_ => List())
       }
-      case _ => {
+      case _ =>
         post(urls.items(id, sectionNumber), item).map(_ => List())
-      }
     }
   }
 
@@ -226,8 +225,8 @@ class ApplicationService @Inject()(val ws: WSClient)(implicit val ec: ExecutionC
   override def submit(id: ApplicationId): Future[Option[SubmittedApplicationRef]] =
     postWithResult[SubmittedApplicationRef, String](urls.submit(id), "")
 
-  override def submitSimpleForm(id: ApplicationId): Future[Option[SubmittedApplicationRef]] =
-    postWithResult[SubmittedApplicationRef, String](urls.submitSimpleForm(id), "")
+    override def submitSimpleForm(id: ApplicationId): Future[Option[SubmittedApplicationRef]] =
+      postWithResult[SubmittedApplicationRef, String](urls.submitSimpleForm(id), "")
 
 
 

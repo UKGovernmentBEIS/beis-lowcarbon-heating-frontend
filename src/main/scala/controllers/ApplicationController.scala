@@ -37,6 +37,7 @@ import play.api.mvc._
 import services.{AWSOps, ApplicationFormOps, ApplicationOps, OpportunityOps}
 import play.api.mvc.{Action, Controller, MultipartFormData, Result}
 
+import scala.collection.immutable.ListMap
 import scala.concurrent.{ExecutionContext, Future}
 
 class ApplicationController @Inject()(
@@ -78,7 +79,34 @@ class ApplicationController @Inject()(
   }
 
   def show(id: ApplicationId) = AppDetailAction(id) { request =>
-    Ok(views.html.showApplicationForm(request.appDetail, List.empty))
+
+    var mapsecs:Map[String, Seq[ApplicationFormSection]]
+        = makeGroupSections(request.appDetail.applicationForm.sections)
+
+    Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty))
+  }
+
+  def makeGroupSections( sections: Seq[ApplicationFormSection]) : Map[String, Seq[ApplicationFormSection]] = {
+
+    var secs : Seq[ApplicationFormSection] = Seq()
+    var mapsecs:ListMap[String, Seq[ApplicationFormSection]] = ListMap()
+
+    sections.sortBy(_.sectionNumber).map { a =>
+        secs = Seq()
+
+        sections.sortBy(_.sectionNumber).map { s =>
+          if (a.title.split("-")(0) == s.title.split("-")(0))
+            secs = secs :+ s
+      }
+
+      if (a.title.indexOf("-") != -1)
+        mapsecs  = mapsecs + (a.title.split("-")(0)-> secs)
+      else
+        mapsecs  = mapsecs + (a.title -> secs)
+        //mapsecs  = mapsecs + (a.title.split("-")(0)-> Seq())
+    }
+
+    mapsecs
   }
 
    def simpleAppshow(id: ApplicationId) = AppDetailAction(id) { request =>
@@ -106,6 +134,34 @@ class ApplicationController @Inject()(
 
   def addFileItem(applicationId: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(applicationId, sectionNumber) { implicit request =>
     awsHandler.showFileItemForm(request.appSection, JsObject(List.empty), List.empty)
+  }
+
+
+  def addDynamicTDItem(applicationId: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(applicationId, sectionNumber) { implicit request =>
+    showDynamicTDItemForm(request.appSection, JsObject(List.empty), List.empty)
+  }
+
+  def showDynamicTDItemForm(app: ApplicationSectionDetail, doc: JsObject, errs: FieldErrors, itemNumber: Option[Int] = None): Result = {
+    import ApplicationData._
+    import FieldCheckHelpers._
+    val checks = itemChecksFor(app.sectionNumber)
+    val hints = hinting(doc, checks)
+    val answers = app.section.map { s => s.answers }.getOrElse(JsObject(List.empty))
+    Ok(views.html.dynamicTDForm(app, answers, errs, hints))
+  }
+
+  def deleteTDItem(applicationId: ApplicationId, sectionNumber: AppSectionNumber, itemNumber: Int) = Action.async {
+      applications.deleteItem(applicationId, sectionNumber, itemNumber).flatMap { _ =>
+        // Check if we deleted the last item in the list and, if so, delete the section so
+        // it will go back to the Not Started state.
+        applications.getSection(applicationId, sectionNumber).flatMap {
+          case Some(s) if (s.answers \ "items").validate[JsArray].asOpt.getOrElse(JsArray(List.empty)).value.isEmpty =>
+            applications.deleteSection(applicationId, sectionNumber).map { _ =>
+              redirectToSectionForm(applicationId, sectionNumber)
+            }
+          case _ => Future.successful(redirectToSectionForm(applicationId, sectionNumber))
+        }
+      }
   }
 
   def deleteFileItem(applicationId: ApplicationId, sectionNumber: AppSectionNumber, itemNumber: Int, ext: String) = Action.async {
@@ -160,6 +216,7 @@ class ApplicationController @Inject()(
         actionHandler.renderSectionForm(request.appSection, noErrors, hints)
 
       case Some(s) =>
+
         if (s.isComplete) actionHandler.redirectToPreview(id, sectionNumber)
         else {
           val hints = hinting(s.answers, checksFor(request.appSection.formSection))
@@ -208,6 +265,7 @@ class ApplicationController @Inject()(
           }
         }
         case SaveItem => actionHandler.doSaveItem(request.appSection, request.body.values)
+        case SaveDynamicTDItem => actionHandler.doSaveDynamicTDItem(request.appSection, request.body.values)
         case Preview => actionHandler.doPreview(request.appSection, request.body.values)
         case completeAndPreview => actionHandler.completeAndPreview(request.appSection, request.body.values)
       }
@@ -231,7 +289,10 @@ class ApplicationController @Inject()(
           Ok(views.html.submitApplicationForm(e.applicationRef, emailto, appsubmittime))
         case None => NotFound
       }
-    } else Future.successful(Ok(views.html.showApplicationForm(request.appDetail, sectionErrors)))
+    } else {
+        var mapsecs:Map[String, Seq[ApplicationFormSection]]  = makeGroupSections(request.appDetail.applicationForm.sections.sortBy(_.sectionNumber))
+        Future.successful(Ok(views.html.showApplicationForm(request.appDetail, mapsecs, sectionErrors)))
+    }
   }
 
   def checkSection(appFormSection: ApplicationFormSection, appSection: ApplicationSection): Option[SectionError] = {

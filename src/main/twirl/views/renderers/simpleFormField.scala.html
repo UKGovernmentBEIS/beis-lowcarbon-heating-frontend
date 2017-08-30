@@ -56,11 +56,20 @@ if(a.getOrElse("") == b) "selected" else ""
                    }
                    case "text" => {
                              <label for="@f.name">@f.label @mandatoryClass(f.isMandatory)</label>
-                             <input type="text"  id="@f.name" class="form-control text-field" title="@f.name" name="@f.name"
-                                    value='@answers.get(f.name)' size="@f.size">
+                             <input type="text"  id="@f.name" class="form-control dynamictd-text-field" title="@f.name" name="@f.name"
+                                    value='@answers.get(f.name)' size="@f.size" width="@f.size">
                    }
                    case "textarea" => {
+
                              <label for="@f.name">@f.label @mandatoryClass(f.isMandatory)</label>
+                             @if(f.helptext.nonEmpty){
+                             <details>
+                                 <summary role="button"><span class="summary">Help with this section</span></summary>
+                                 <div class="panel panel-border-narrow">@for(line <- splitLines(f.helptext.getOrElse("NA"))) {
+                                     <p>@line</p>
+                                 }</div>
+                             </details>
+                                 }
                              <textarea id="@f.name" class="form-control generic textarea-resize" title="@f.name"
                                     name="@f.name">@answers.get(f.name)</textarea>
                    }
@@ -82,7 +91,8 @@ if(a.getOrElse("") == b) "selected" else ""
                              </div>
                    }
                    case "fileupload" => {
-                             <label class="file-upload">
+                <label for="@f.name">@f.label @mandatoryClass(f.isMandatory)</label>
+                <label class="file-upload">
                              <input type="file" class="file-upload-field" name="file"/>
                              Choose file
                              </label>

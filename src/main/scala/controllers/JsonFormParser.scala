@@ -55,8 +55,6 @@ object JsonForm {
     val dp = params.dataParts
     val fs = params.files
     val jsonFormValues = formToJson(dp.filterKeys(k => !k.startsWith("_")))
-    println("222===================="+ dp.keySet.toString())
-    println("333===================="+ dp.values.toString())
 
     val button: Option[ButtonAction] = decodeButton(dp.keySet)
     button.map(b => JsonFormSubmit(

@@ -15,13 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package models
+package services
 
-/**
-  * Created by venkatamutyala on 18/03/2017.
-  */
-case class User(id: Long, name: String, password: String, email: String , role: Option[String] = None)
-case class UserId(id: String)
-case class AdminUser(name: String, password: String, id: String, role: String)
-case class PortfolioUser(name: String, password: String, role: String)
+import com.google.inject.ImplementedBy
+import models._
+import play.api.libs.json.JsObject
+
+import scala.concurrent.Future
+
+@ImplementedBy(classOf[UserService])
+trait UserOps {
+  def login(doc: JsObject): Future[Option[User]]
+  def register(doc: JsObject): Future[Option[String]]
+}
+
+
+
 

@@ -14,6 +14,9 @@ GET         /assets/*file                                             controller
 GET         /                                                         controllers.StartPageController.startPage
 GET         /login                                                    controllers.UserController.loginForm
 POST        /login                                                    controllers.UserController.loginFormSubmit
+GET        /logout                                                   controllers.UserController.logOut
+GET         /register                                                 controllers.UserController.registrationForm
+POST        /register                                                 controllers.UserController.registrationSubmit
 
 
 GET         /opportunities                                            controllers.OpportunityController.showOpportunities
@@ -45,6 +48,8 @@ GET         /application/:id/section/:num/item/:itemNum/delete        controller
 GET         /application/:id/section/:num/item/:itemNum/edit          controllers.CostController.editItem(id:ApplicationId, num: AppSectionNumber, itemNum: Int)
 #POST        /application/upload/uploadFile/:id                       controllers.ApplicationController.uploadFile(id: ApplicationId)
 GET         /application/:id/section/:num/add-file-item               controllers.ApplicationController.addFileItem(id:ApplicationId, num: AppSectionNumber)
+GET         /application/:id/section/:num/add-dynamictd-item          controllers.ApplicationController.addDynamicTDItem(id:ApplicationId, num: AppSectionNumber)
+GET         /application/:id/section/:num/item/:itemNum/delete-td     controllers.ApplicationController.deleteTDItem(id:ApplicationId, num: AppSectionNumber, itemNum: Int)
 #POST        /application/:id/section/:num/file-item                  controllers.ApplicationController.createFileItem(id:ApplicationId, num: AppSectionNumber)
 GET         /application/:id/section/:num/item/:item/ext/:ext/filedelete   controllers.ApplicationController.deleteFileItem(id:ApplicationId, num: AppSectionNumber, item: Int, ext: String)
 GET         /application/:id/section/:num/downloadfile/:key           controllers.ApplicationController.downloadFileDirect(id:ApplicationId, num: AppSectionNumber, key: ResourceKey)

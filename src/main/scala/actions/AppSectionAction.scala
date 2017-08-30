@@ -33,9 +33,12 @@ class AppSectionAction @Inject()(applications: ApplicationOps)(implicit ec: Exec
   def apply(id: ApplicationId, sectionNum: AppSectionNumber): ActionBuilder[AppSectionRequest] =
 
     new ActionBuilder[AppSectionRequest] {
-        override def invokeBlock[A](request: Request[A], next: (AppSectionRequest[A]) => Future[Result]): Future[Result] = {
-          applications.sectionDetail(id, sectionNum).flatMap {
-          case Some(app) => next(AppSectionRequest(app, request))
+
+      override def invokeBlock[A](request: Request[A], next: (AppSectionRequest[A]) => Future[Result]): Future[Result] = {
+        applications.sectionDetail(id, sectionNum).flatMap {
+          case Some(app) =>
+            next(AppSectionRequest(app, request))
+
           case None => Future.successful(NotFound(s"No application section with id ${id.id} and section number $sectionNum exists"))
         }
       }

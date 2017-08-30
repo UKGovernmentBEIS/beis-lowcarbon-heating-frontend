@@ -1,0 +1,67 @@
+@(
+    app: ApplicationSectionDetail,
+    dform:forms.DynamicTableFormField,
+    questions: Map[String, Question],
+    tableItems: Seq[forms.TableItem],
+    answers: play.api.libs.json.JsObject,
+    errs: Seq[forms.validation.FieldError],
+    hints: Seq[forms.validation.FieldHint])
+
+@import helpers._
+
+@errs.map { e =>
+<span class="error-message" role="alert">@e.err</span>
+}
+
+<label>@dform.label</label>
+<table class="dynamictd">
+
+    <thead>
+    <tr>
+    @dform.dynamictableform.map{tablefields=>
+
+            @tablefields.fields.map{ tablefield=>
+                <th >@tablefield.label </th>
+            }
+            <th >&nbsp; </th>
+    }
+    </tr>
+    </thead>
+
+    <tbody>
+        @tableItems.map { tableItem =>
+            <tr>
+                    @tableItem.tableRowData.map{ rowdata=>
+                <td>
+                    @rowdata
+                </td>
+                }
+
+                <input type="hidden" id="fileupload" title="title" name="supportingDocuments" value="@tableItem">
+                <td>
+                @tableItem.itemNumber.map { num =>
+                    <a href="@controllers.routes.ApplicationController.deleteTDItem(app.id, app.formSection.sectionNumber, num)">
+                        <img src="@routes.Assets.at("images/minus_icon1.png")" width="22" height="22" alt="" style="visibility: visible">
+                    </a>
+                }
+                </td>
+            </tr>
+        }
+            <tr class="footer-two-light">
+
+
+                <td colspan="@dform.dynamictableform.head.fields.size">
+                    Please add extra rows for @app.formSection.title
+                </td>
+                <td>
+                    <a href="@controllers.routes.ApplicationController.addDynamicTDItem(app.id, app.formSection.sectionNumber)">
+                        <img src="@routes.Assets.at("images/plus_icon.png")" width="22" height="22" alt="" style="visibility: visible">
+                    </a>
+                </td>
+            </tr>
+    </tbody>
+
+</table>
+
+
+

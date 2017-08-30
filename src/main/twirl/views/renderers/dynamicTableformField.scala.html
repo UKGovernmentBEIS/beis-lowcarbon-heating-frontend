@@ -1,0 +1,33 @@
+
+@(field: forms.DynamicTableFormField,
+            questions: Map[String, Question],
+            tableItems: Seq[forms.TableItem],
+            errs: Seq[forms.validation.FieldError],
+            hints: Seq[forms.validation.FieldHint])
+
+@import helpers._
+
+@errors = @{
+    errs.filter(p => p.path == field.name || p.path.startsWith(s"${field.name}."))
+}
+
+@errorClass = @{if(errors.nonEmpty) "error" else ""}
+@invalidTrueFalse = @{if(errors.nonEmpty) "true" else "false"}
+
+<table>
+
+    @field.dynamictableform.map { row=>
+
+        @if( row.isEnabled) {
+
+            @row.fields.map { f=>
+                <tr>
+                    <td> @f.label </td>
+                    <td><input type="text" id="dynamictd" class="form-control fileupload-text-field" title="title" name="tableRowData"></td>
+                </tr>
+            }
+        }
+    }
+
+</table>
+

@@ -54,6 +54,11 @@ case object FileDelete extends ButtonAction {
   override val name: String = "_fileDelete_button"
 }
 
+case object SaveDynamicTDItem extends ButtonAction {
+  override val name: String = "_save_dynamic_td_item_button"
+}
+
+
 object ButtonAction {
   def unapply(s: String): Option[ButtonAction] = {
     s match {
@@ -64,6 +69,7 @@ object ButtonAction {
       case completeAndPreview.name => Some(completeAndPreview)
       case FileUpload.name => Some(FileUpload)
       case FileDelete.name => Some(FileDelete)
+      case SaveDynamicTDItem.name => Some(SaveDynamicTDItem)
       case Skip.name => Some(Skip)
       case _ => None
     }

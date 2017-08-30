@@ -23,17 +23,20 @@ import forms.validation._
 import models.Question
 import play.api.libs.json.JsObject
 import play.api.libs.json.Json
-case class SimpleField(label: Option[String], name: String, isEnabled: Boolean, isMandatory: Boolean, isNumeric: Boolean,
-                       size : Option[Int] = None,  maxWords: Int, fieldType: String, rowform : Option[Seq[RowField]] = None,
-                       tableform : Option[Seq[TableField]] = None, defaultvalue: Option[String]) extends Field {
+case class SimpleField(label: Option[String], name: String, helptext: Option[String]= None, isEnabled: Boolean, isMandatory: Boolean,
+                       isNumeric: Boolean, size : Option[Int] = None,  maxWords: Int, fieldType: String,
+                       rowform : Option[Seq[RowField]] = None, tableform : Option[Seq[TableField]] = None,
+                       filelist: Option[Seq[FileUploadItem]] = None, defaultvalue: Option[String]) extends Field {
+
   val validator = MandatoryValidator(label).andThen(CharacterCountValidator(maxWords))
 
-  implicit val rowFieldReads = Json.format[RowField]
-  implicit val tablerowFieldReads = Json.format[TableRow]
-  implicit val tableFieldReads = Json.format[TableField]
-  implicit val simpleFieldReads = Json.format[SimpleField]
-  implicit val textFieldReads = Json.format[TextField]
-  implicit val textAreaFieldReads = Json.format[TextAreaField]
+  implicit val rowFieldFormat = Json.format[RowField]
+  implicit val tablerowFieldFormat = Json.format[TableRow]
+  implicit val tableFieldFormat = Json.format[TableField]
+  implicit val textFieldFormat = Json.format[TextField]
+  implicit val textAreaFieldFormat = Json.format[TextAreaField]
+  implicit val fileUploadItemFormat = Json.format[FileUploadItem]
+  implicit val simpleFieldFormat = Json.format[SimpleField]
 
 
   override val check: FieldCheck = isMandatory match {
