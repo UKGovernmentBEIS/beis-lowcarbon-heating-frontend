@@ -87,8 +87,9 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
               val contactOptString = contactOptJsValue.flatMap {j=> j.asOpt[String]}
               IntValidator(a.label).validate(s"$nameWithPath", contactOptString.getOrElse("0")).map(v => (a, ""))
             case false =>
-              NonMandatoryValidator(None).validate(s"$nameWithPath", None ).map(v => (a,""))
-        }
+              val contactOptString = contactOptJsValue.flatMap {j=> j.asOpt[String]}
+              createValidator(nameWithoutPath).validate(s"$nameWithPath", contactOptString ).map(v => (a,v))
+          }
         case "date" => {
           val datevalues = contactOptJsValue.flatMap { j => j.asOpt[DateValues] }.getOrElse(DateValues(None, None, None))
           DateFieldValidator(a.label, true).validate(s"$nameWithPath", datevalues).map(v => (a, ""))
