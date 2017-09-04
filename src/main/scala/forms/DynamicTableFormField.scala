@@ -26,25 +26,13 @@ case class DynamicTableFormField(label: Option[String], name: String, dynamictab
   implicit val dynamicTableFormReads = Json.reads[SimpleFormValues]
   implicit val tableRowDataReads = Json.reads[TableRowData]
   implicit val tableItemReads = Json.reads[TableItem]
-  //println("===contactitems==="+ contactitems)
-  //  val telephoneField = sicknessform.filter(s => (s.name == "sicknessAbsence.telephone")).head
-  //  val emailField = sicknessform.filter(s => (s.name == "sicknessAbsence.email")).head
-  //  val webField = sicknessform.filter(s => (s.name == "sicknessAbsence.web")).head
-  //  val twitterField = sicknessform.filter(s => (s.name == "sicknessAbsence.twitter")).head
-
-  //  println("===telephoneField==="+ telephoneField)
-
 
   //override def check: FieldCheck = FieldChecks.fromValidator(ContactValidator)
   //override def check: FieldCheck = FieldChecks.fromValidator(new ContactValidator(Seq(telephoneField, emailField, webField, twitterField)))
   //override def check: FieldCheck = FieldChecks.noCheck
 
-  override def check: FieldCheck = {
-    //println("== ContactField case true "+name + " ======= " +  contactitems)
 
-    //FieldChecks.fromValidator(new SimpleFormValidator(Seq(telephoneField, emailField, webField, twitterField)))
-    FieldChecks.fromValidator(SimpleFormValidator)
-  }
+  override def check: FieldCheck = FieldChecks.noCheck
 
   override def previewCheck: FieldCheck = FieldChecks.mandatoryCheck
 
@@ -62,9 +50,5 @@ case class DynamicTableFormField(label: Option[String], name: String, dynamictab
     views.html.renderers.preview.dynamicTableFormField(this, tableItems)
   }
 
-  //  override def renderFormInput(questions: Map[String, Question], answers: JsObject, errs: Seq[FieldError], hints: Seq[FieldHint]) = {
-  //
-  //    views.html.renderers.dynamicTableFormField(this, questions, JsonHelpers.flatten(answers), errs, hints)
-  //  }
 }
 case class TableItem(tableRowData: Seq[String], itemNumber: Option[Int] = None)

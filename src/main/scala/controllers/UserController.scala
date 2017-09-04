@@ -74,9 +74,19 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     })
   )
 
-  def checkNotNull(username: String, password: String) =
-     (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password))
+  val forgotpasswordform:Form[ForgotPasswordForm] = Form(
+    mapping(
+      "email" -> text
+    ) (ForgotPasswordForm.apply)(ForgotPasswordForm.unapply) verifying ("Invalid email", result => result match {
+      case forgotpasswordform => checkEmailNotNull(forgotpasswordform.email.replaceAll("\\s+", ""))
+    })
+  )
 
+  def checkNotNull(username: String, password: String) =
+    (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password))
+
+  def checkEmailNotNull(email: String) =
+    (!StringUtils.isEmpty(email))
 
   def checkPassword(password: String) = {
       (password.length > 8 )
@@ -87,24 +97,15 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   }
 
   def loginFormSubmit = Action.async(JsonForm.parser)  { implicit request =>
-
         //TODO:- Here the Roles come into place and Users belong to Group or Role
     val username = (request.body.values \ "name").validate[String].getOrElse("NA")
-
         users.login(Json.toJson(request.body.values).as[JsObject]).flatMap{
                     case Some(msg) =>
                       Future.successful(Redirect(routes.DashBoardController.applicantDashBoard()).withSession(Security.username -> username))
-
                     case None =>
                       Future.successful(Ok(views.html.loginForm("Login is incorrect. Please add correct details", loginform)))
-                  }
+        }
   }
-
-  def forgotpasswordSubmit = Action.async(JsonForm.parser)  { implicit request =>
-    ???
-  }
-
-
 
   def basicAuth(pswd: String) = {
     new String(Base64.getEncoder.encode((pswd).getBytes))
@@ -113,29 +114,52 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   def registrationSubmit =  Action.async(JsonForm.parser)  { implicit request =>
 
     val jsObj = Json.toJson(request.body.values).as[JsObject] + ("id" -> Json.toJson(0))
-
       users.register(jsObj).flatMap{
       case Some(msg) => {
-
         /** TODO *************
           * need to get the exception TYPE from backend for the exceptions and show them
           * or need to get the error number to select the error text from any resource bundle or properties
           */
-
-        if(msg.indexOf("duplicate key value violates unique constraint") != -1) {
+        val dbUniqueKeyError = "duplicate key value violates unique constraint"
+        if(msg.indexOf(dbUniqueKeyError) != -1) {
           val username = (request.body.values \ "name").validate[String].getOrElse("NA")
           val errorMsg = s"'$username' already exists. Please choose other name"
           Future.successful(Ok(views.html.registrationForm(errorMsg, registrationform)))
         }
         else
-         // Future.successful(Redirect(routes.DashBoardController.applicantDashBoard()).withSession(Security.username -> ""))
           Future.successful(Ok(views.html.loginForm("", loginform)))
-
       }
       case None =>
         Future.successful(Ok(views.html.loginForm("Login is incorrect. Please add correct details", loginform)))
     }
   }
+
+//  def forgotPasswordConfirm = Action{
+//    Ok(views.html.forgotPasswordConfirm(""))
+//  }
+
+  def forgotPasswordSubmit = Action.async(JsonForm.parser)  { implicit request =>
+    val email = (request.body.values \ "email").validate[String].getOrElse("NA")
+    users.forgotpassword(Json.toJson(request.body.values).as[JsObject]).flatMap{
+      case Some(msg) => {
+        /** TODO *************
+          * need to get the exception TYPE from backend for the exceptions and show them
+          * or need to get the error number to select the error text from any resource bundle or properties
+          */
+        val dbError = "empty.head"
+        if (msg.indexOf(dbError) != -1) {
+          val username = (request.body.values \ "name").validate[String].getOrElse("NA")
+          val errorMsg = "Details not found. Please add correct details"
+          Future.successful(Ok(views.html.forgotPasswordForm(errorMsg, forgotpasswordform)))
+        }
+        else
+          Future.successful(Ok(views.html.forgotPasswordConfirm(email)))
+      }
+      case None =>
+        Future.successful(Ok(views.html.forgotPasswordForm("Details are incorrect. Please add correct details", forgotpasswordform)))
+    }
+  }
+
 
 
   def logOut = Action{
@@ -146,6 +170,14 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     Ok(views.html.registrationForm("", registrationform))
   }
 
+  def forgotPasswordForm = Action{
+    Ok(views.html.forgotPasswordForm("", forgotpasswordform))
+  }
+
+//  def forgotPasswordConfirm = Action{
+//    Ok(views.html.forgotPasswordForm("")
+//  }
+
 
   def start(pid:Int, processEngine: ProcessEngineWrapper){
     processEngine.engine.getRuntimeService().startProcessInstanceByKey("logging-test")
@@ -155,3 +187,4 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
 
 case class LoginForm(name: String, password: String)
 case class RegistrationForm(name: String, password: String, email: String)
+case class ForgotPasswordForm(email: String)

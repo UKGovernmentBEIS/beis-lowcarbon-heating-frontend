@@ -125,14 +125,20 @@ class ApplicationService @Inject()(val ws: WSClient)(implicit val ec: ExecutionC
     post(urls.section(id, sectionNumber), doc)
 
   override def completeSection(id: ApplicationId, sectionNumber: AppSectionNumber, doc: JsObject): Future[FieldErrors] = {
+    println("== completeSection start ========")
     sectionDetail(id, sectionNumber).flatMap {
-      case Some(app) =>
+      case Some(app) => {
+        println("== 2224446666 1 ========="+ app.formSection + "===="+ checksFor(app.formSection) + "====" )
+        println("== 2224446666 doc========="+ doc + "====" )
+        println("== 2224446666 2 ========="+ FieldCheckHelpers.check(doc, checksFor(app.formSection)) + "====" )
 
         FieldCheckHelpers.check(doc, checksFor(app.formSection)) match {
-              case Nil => post(urls.complete(id, sectionNumber), doc).map(_ => List())
-              case errs =>
-                  Future.successful(errs)
+          case Nil => post(urls.complete(id, sectionNumber), doc).map(_ => List())
+          case errs =>
+            Future.successful(errs)
         }
+
+      }
       // TODO: Need better error handling here
       case None => Future.successful(List(FieldError("", s"tried to save a non-existent section number $sectionNumber in application ${id.id}")))
     }
@@ -143,7 +149,7 @@ class ApplicationService @Inject()(val ws: WSClient)(implicit val ec: ExecutionC
   formSection.sectionType match {
       case SectionTypeForm | SimpleTypeForm | RowForm | TableForm | DynamicTableForm =>
         formSection.fields.map(f =>
-          println("== ApplicationService  2a========="+ f) //companyInfo  ----- sicknessAbsence
+          println("== ApplicationService  2a========="+   f.name + "-----"+  f.check) //companyInfo  ----- sicknessAbsence
         )
         formSection.fields.map(f =>
           f.name -> f.check).toMap

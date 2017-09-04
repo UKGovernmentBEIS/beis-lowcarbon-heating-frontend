@@ -51,19 +51,19 @@ object FieldChecks {
   }
 
   def mandatoryText(wordLimit: Int, displayName: Option[String] = None) = new OptionalFieldCheck[String] {
-    override val validator: FieldValidator[Option[String], String] = MandatoryValidator(displayName).andThen(WordCountValidator(wordLimit))
+    override val validator: FieldValidator[Option[String], String] = MandatoryValidator(displayName).andThen(WordCountValidator(None, wordLimit))
   }
 
   def intFieldCheck(min: Int, max: Int, displayName: Option[String] = None) = new OptionalFieldCheck[Int] {
-    override val validator: FieldValidator[Option[String], Int] = MandatoryValidator(displayName).andThen(IntValidator(min, max))
+    override val validator: FieldValidator[Option[String], Int] = MandatoryValidator(displayName).andThen(IntValidator(None, min, max))
   }
 
-  def fromValidator[T: Reads](v: FieldValidator[T, _]): FieldCheck = new FieldCheck {
+  def   fromValidator[T: Reads](v: FieldValidator[T, _]): FieldCheck = new FieldCheck {
     override def toString: String = s"check from validator $v"
 
     override def apply(path: String, jv: JsValue) = {
       jv.validate[T].map { x =>
-         v.validate(path, x).fold(_.toList, _ => List())
+      v.validate(path, x).fold(_.toList, _ => List())
       } match {
         case JsSuccess(msgs, _) => msgs
         case JsError(errs) =>

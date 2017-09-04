@@ -27,7 +27,7 @@ object ParseInt {
   def unapply(s: String): Option[Int] = Try(s.toInt).toOption
 }
 
-case class IntValidator(minValue: Int = Int.MinValue, maxValue: Int = Int.MaxValue) extends FieldValidator[String, Int] {
+case class IntValidator(label: Option[String] = None, minValue: Int = Int.MinValue, maxValue: Int = Int.MaxValue) extends FieldValidator[String, Int] {
   override def normalise(s: String): String = s.trim()
 
   override def doValidation(path: String, s: Normalised[String]): ValidatedNel[FieldError, Int] = {
@@ -35,7 +35,7 @@ case class IntValidator(minValue: Int = Int.MinValue, maxValue: Int = Int.MaxVal
       case ParseInt(i) if i < minValue => FieldError(path, s"Minimum value is $minValue").invalidNel
       case ParseInt(i) if i > maxValue => FieldError(path, s"Maximum value is $maxValue").invalidNel
       case ParseInt(i) => i.validNel
-      case _ => FieldError(path, "Must be a whole number").invalidNel
+      case _ => FieldError(path, s"'${label.getOrElse("Field")}' must be a whole number").invalidNel
     }
   }
 }

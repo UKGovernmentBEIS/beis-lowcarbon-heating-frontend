@@ -27,13 +27,16 @@ import org.joda.time.LocalDate
 import scala.util.Try
 
 case class DMY(day: Int, month: Int, year: Int)
+//
+//object DateFieldValidator {
+//  val mustProvideAValidDateMsg = "Must provide a valid date"
+//  val mustBeTodayOrLaterMsg = "Must be today or later"
+//}
 
-object DateFieldValidator {
-  val mustProvideAValidDateMsg = "Must provide a valid date"
-  val mustBeTodayOrLaterMsg = "Must be today or later"
-}
+case class DateFieldValidator(label: Option[String] = None, allowPast: Boolean) extends FieldValidator[DateValues, LocalDate] {
 
-case class DateFieldValidator(allowPast: Boolean) extends FieldValidator[DateValues, LocalDate] {
+    val mustProvideAValidDateMsg = "Must provide a valid date"
+    val mustBeTodayOrLaterMsg = "Must be today or later"
 
   import DateFieldValidator._
 
@@ -52,19 +55,20 @@ case class DateFieldValidator(allowPast: Boolean) extends FieldValidator[DateVal
       mandatoryInt(s"$path.year", vs.year, "year")).tupled
       .map { case (d, m, y) =>
         DMY(d, m, normaliseYear(y))
-      }.leftMap(_ => NonEmptyList.of(FieldError(s"$path", mustProvideAValidDateMsg)))
+      }.leftMap(_ => NonEmptyList.of(FieldError(s"$path", s"'${label.getOrElse("Field")}' mustProvideAValidDateMsg")))
   }
 
   def validateDate(path: String, dmy: DMY): ValidatedNel[FieldError, LocalDate] =
     Try(new LocalDate(dmy.year, dmy.month, dmy.day)).toOption match {
       case Some(ld) => ld.valid
-      case None => FieldError(path, mustProvideAValidDateMsg).invalidNel
+      case None => FieldError(path, s"'${label.getOrElse("Field")}' $mustProvideAValidDateMsg").invalidNel
     }
 
   def validatePastDate(path: String, ld: LocalDate): ValidatedNel[FieldError, LocalDate] =
-    if (!allowPast && ld.isBefore(LocalDate.now())) FieldError(path, mustBeTodayOrLaterMsg).invalidNel
+    if (!allowPast && ld.isBefore(LocalDate.now())) FieldError(path, s"'${label.getOrElse("Field")}' mustBeTodayOrLaterMsg").invalidNel
     else ld.valid
 
   override def doValidation(path: String, vs: Normalised[DateValues]): ValidatedNel[FieldError, LocalDate] =
-    validateDMY(path, vs).andThen(validateDate(path, _)).andThen(validatePastDate(path, _))
+     validateDMY(path, vs).andThen(validateDate(path, _)).andThen(validatePastDate(path, _))
+
 }

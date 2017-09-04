@@ -14,10 +14,12 @@ GET         /assets/*file                                             controller
 GET         /                                                         controllers.StartPageController.startPage
 GET         /login                                                    controllers.UserController.loginForm
 POST        /login                                                    controllers.UserController.loginFormSubmit
-GET        /logout                                                   controllers.UserController.logOut
+GET         /logout                                                   controllers.UserController.logOut
 GET         /register                                                 controllers.UserController.registrationForm
 POST        /register                                                 controllers.UserController.registrationSubmit
-
+GET         /forgotpassword                                           controllers.UserController.forgotPasswordForm
+POST        /forgotpassword                                           controllers.UserController.forgotPasswordSubmit
+#GET         /forgotpasswordconfirm                                    controllers.UserController.forgotPasswordConfirm
 
 GET         /opportunities                                            controllers.OpportunityController.showOpportunities
 

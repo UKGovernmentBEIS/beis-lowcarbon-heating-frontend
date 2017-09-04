@@ -21,12 +21,12 @@ import cats.data.ValidatedNel
 import cats.syntax.validated._
 import forms.validation.FieldValidator.Normalised
 
-case class MandatoryValidator(displayName: Option[String] = None) extends FieldValidator[Option[String], String] {
+case class MandatoryValidator(label: Option[String] = None, displayName: Option[String] = None) extends FieldValidator[Option[String], String] {
   override def normalise(os: Option[String]): Option[String] = os.map(_.trim())
 
   override def doValidation(path: String, so: Normalised[Option[String]]): ValidatedNel[FieldError, String] = {
     println("==MandatoryValidator doValidation======"+ path)
-    println("==MandatoryValidator doValidation======"+ so)
+    println("==MandatoryValidator doValidation======"+ so) //always coming the telephone one
     val fieldName = displayName.map(n => s"'$n'").getOrElse("Field")
 
     println("==MandatoryValidator doValidation======displayName:-"+ displayName)
@@ -34,7 +34,7 @@ case class MandatoryValidator(displayName: Option[String] = None) extends FieldV
 
     denormal(so) match {
       //case None | Some("") => FieldError(path, s"$fieldName cannot be empty").invalidNel
-      case Some("") => FieldError(path, s"$fieldName cannot be empty").invalidNel
+      case Some("") => FieldError(path, s"'${label.getOrElse("Field")}' cannot be empty").invalidNel
       case Some(n) => n.validNel
       case None => "".validNel
     }

@@ -23,5 +23,46 @@ import forms.validation._
 import models.Question
 import play.api.libs.json.{JsObject, Json}
 
-case class TableField(name: String, isEnabled: Boolean, fields: Seq[TableRow])
 case class TableRow(label: Option[String], name: String, isEnabled: Boolean, fieldType: String)
+
+case class TableField(label: Option[String], name: String, helptext: Option[String]= None, isEnabled: Option[Boolean]=None,
+                      isMandatory: Option[Boolean]= None, isNumeric: Option[Boolean]= None, size : Option[Int] = None,
+                      fieldType: Option[String]=None, fields: Seq[TableRow])  extends Field {
+
+  val validator = MandatoryValidator(Option(name))
+
+  implicit val rowFieldFormat = Json.format[RowField]
+  implicit val tablerowFieldFormat = Json.format[TableRow]
+  implicit val tableFieldFormat = Json.format[TableField]
+  implicit val textFieldFormat = Json.format[TextField]
+  implicit val textAreaFieldFormat = Json.format[TextAreaField]
+  implicit val fileUploadItemFormat = Json.format[FileUploadItem]
+  implicit val simpleFieldFormat = Json.format[SimpleField]
+
+
+  override val check: FieldCheck = isMandatory.getOrElse(false) match {
+    case true => FieldChecks.fromValidator(validator)
+    case false => FieldChecks.noCheck
+  }
+
+  override val previewCheck: FieldCheck = FieldChecks.mandatoryCheck
+
+  override def renderFormInput(questions: Map[String, Question], answers: JsObject, errs: Seq[FieldError], hints: Seq[FieldHint]) =
+
+    fieldType.getOrElse("text") match {
+      case "text" =>
+        views.html.renderers.textField(Json.toJson(this).validate[TextField].get, questions, JsonHelpers.flatten(answers), errs, hints)
+
+      case "textArea" =>
+        views.html.renderers.textAreaField(Json.toJson(this).validate[TextAreaField].get, questions, JsonHelpers.flatten(answers), errs, hints)
+    }
+
+  override def renderPreview(questions: Map[String, Question], answers: JsObject) =
+    fieldType.getOrElse("text") match {
+      case "text" =>
+        views.html.renderers.preview.textField(Json.toJson(this).validate[TextField].get, JsonHelpers.flatten(answers))
+      case "textArea" =>
+        views.html.renderers.preview.textAreaField(Json.toJson(this).validate[TextAreaField].get, JsonHelpers.flatten(answers))
+    }
+
+}

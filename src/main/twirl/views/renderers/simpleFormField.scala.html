@@ -9,6 +9,8 @@ hints: Seq[forms.validation.FieldHint]
 @import helpers._
 
 @import eu.timepit.refined.auto._
+@import scala.Any; var result:Any=null
+
 
 @errors = @{
 errs.filter(p => p.path == field.name || p.path.startsWith(s"${field.name}."))
@@ -33,48 +35,84 @@ if(errorsFor(f).nonEmpty) {
 }
 
 @mandatoryClass(isMandatory: Boolean) = @{
-if(isMandatory) { <span class="mandatory-field">*</span> }
+if(isMandatory){ <span class="mandatory-field">*</span> }
 }
 
 @dropdowncheck(a:Option[String], b:String) = @{
 if(a.getOrElse("") == b) "selected" else ""
 }
 
+@numberClass(a:forms.SimpleField) = @{
+if(a.isNumeric.getOrElse(false)) "number" else ""
+}
+
 <table class="simpleform" border="0">
+    <div class='form-group @errorClass'>
+        @errors.map { e =>
+        <span class="error-message" role="alert">@e.err</span>
+        }
+        @questions.get(field.name).map { q => <label for="@field.name" class="question">@q.text</label> }
+
+        <div class="inline right-align hint-text" id="@(field.name)_hint_text">
+            @for(hint <- hints.find(_.path == field.name)) {
+            <span class="js__hint" data-for="@field.name" data-rule="@hint.matchingJsType" data-ruleconfig="@hint.matchingJsConfig">@hint.hint</span>
+            }
+        </div>
 
 @field.simpleform.map { f=>
 
     @if( f.isEnabled) {
             <tr><td>
-              <!--  <label for="@f.name">@f.label @mandatoryClass(f.isMandatory)</label> -->
-                @errorBlock(f)
 
-                   @f.fieldType match {
+                @f.fieldType match {
 
                    case "String" => {
-                             <label for="@f.name">@f.label</label>
+                        <label for="@f.name">@f.label</label>
                    }
                    case "text" => {
-                             <label for="@f.name">@f.label @mandatoryClass(f.isMandatory)</label>
-                             <input type="text"  id="@f.name" class="form-control dynamictd-text-field" title="@f.name" name="@f.name"
-                                    value='@answers.get(f.name)' size="@f.size" width="@f.size">
+                        <div class='form-group @errorClassFor(f)'>
+
+                        <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
+                                     <input type="text"  id="@f.name" class='form-control text-field @numberClass(f)' title="@f.name" name="@f.name"
+                                            value='@answers.get(f.name)' size="@f.size" width="@f.size" @if(f.isNumeric.getOrElse(false)) { pattern="[0-9]*" } required>
+                        </div>
+                   }
+                   case "currency" => {
+                        <div class="column-half no-lr-padding">
+                            <div class="form-group @errorClassFor(f)">
+                                    <label for="@f.name">@f.label</label>
+                                    @errorBlock(f)
+                                    <div class="input-icon">
+                                        <i>£</i>
+                                        <input type="text" id="@f.name" class="form-control text-field currency" title="@f.name" name="@f.name" value='@answers.get(f.name)'>
+                                    </div>
+                            </div>
+                        </div>
                    }
                    case "textarea" => {
+                   <div class='form-group @errorClassFor(f)'>
 
-                             <label for="@f.name">@f.label @mandatoryClass(f.isMandatory)</label>
+                             <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
                              @if(f.helptext.nonEmpty){
-                             <details>
-                                 <summary role="button"><span class="summary">Help with this section</span></summary>
-                                 <div class="panel panel-border-narrow">@for(line <- splitLines(f.helptext.getOrElse("NA"))) {
-                                     <p>@line</p>
-                                 }</div>
-                             </details>
-                                 }
-                             <textarea id="@f.name" class="form-control generic textarea-resize" title="@f.name"
-                                    name="@f.name">@answers.get(f.name)</textarea>
+                                <details>
+                                    <summary role="button"><span class="summary">Help with this section</span></summary>
+                                    <div class="panel panel-border-narrow">@for(line <- splitLines(f.helptext.getOrElse("NA"))) {
+                                        <p>@line</p>
+                                        }</div>
+                                </details>
+                             }
+                             <div class="form-group ">
+                                <label for="@f.name"></label>
+                                <textarea id="@f.name" class="form-control textarea-resize" title="@f.name" name="@f.name">@answers.get(f.name)</textarea>
+                                <div class="inline right-align hint-text" id="fundsReceived_hint_text">
+                                    <span class="js__hint" data-for="@f.name" data-rule="WordCount" data-ruleconfig="{&quot;maxWords&quot;: @f.maxWords}">Maximum words @f.maxWords.</span>
+                                </div>
+                             </div>
+                   </div>
                    }
                    case "date" => {
-                             <label for="@f.name">@f.label @mandatoryClass(f.isMandatory)</label>
+                   <div class='form-group @errorClassFor(f)'>
+                             <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
                              <div class='date-selector'>
                                 <div>
                                     <label for="@(f.name).day">Day</label>
@@ -89,10 +127,11 @@ if(a.getOrElse("") == b) "selected" else ""
                                     <input type="text" title="4 digit year" id="@(f.name).year" name="@(f.name).year" value='@answers.get(s"${f.name}.year")' class="form-control year" maxlength="4" pattern="[0-9]*">
                                 </div>
                              </div>
+                   </div>
                    }
                    case "fileupload" => {
-                <label for="@f.name">@f.label @mandatoryClass(f.isMandatory)</label>
-                <label class="file-upload">
+                             <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
+                             <label class="file-upload">
                              <input type="file" class="file-upload-field" name="file"/>
                              Choose file
                              </label>
@@ -115,7 +154,7 @@ if(a.getOrElse("") == b) "selected" else ""
                              @addressSection(f, questions, answers, errs, hints)
                    }
                    case "dropdown" => {
-                             <label for="@f.name">@f.label @mandatoryClass(f.isMandatory)</label>
+                             <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
                              <select class="form-control dropdown" id="@f.name" name="@f.name">
 
                                  <option value="Select one">Select one</option>
@@ -130,21 +169,7 @@ if(a.getOrElse("") == b) "selected" else ""
             </td></tr>
     }
 }
+    </div>
 
 </table>
 
-<div class='form-group @errorClass'>
-    @errors.map { e =>
-    <span class="error-message" role="alert">@e.err</span>
-    }
-    @questions.get(field.name).map { q => <label for="@field.name" class="question">@q.text</label> }
-
-    <div class="inline right-align hint-text" id="@(field.name)_hint_text">
-        @for(hint <- hints.find(_.path == field.name)) {
-        <span class="js__hint" data-for="@field.name" data-rule="@hint.matchingJsType" data-ruleconfig="@hint.matchingJsConfig">@hint.hint</span>
-        }
-    </div>
-
-
-
-    </div>

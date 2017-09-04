@@ -25,30 +25,12 @@ import play.api.libs.json._
 case class SimpleFormField(name: String, simpleform : Seq[SimpleField]) extends Field {
   implicit val simpleFormReads = Json.reads[SimpleFormValues]
 
-
-  //println("===contactitems==="+ contactitems)
-  //  val telephoneField = sicknessform.filter(s => (s.name == "sicknessAbsence.telephone")).head
-  //  val emailField = sicknessform.filter(s => (s.name == "sicknessAbsence.email")).head
-  //  val webField = sicknessform.filter(s => (s.name == "sicknessAbsence.web")).head
-  //  val twitterField = sicknessform.filter(s => (s.name == "sicknessAbsence.twitter")).head
-
-  //  println("===telephoneField==="+ telephoneField)
-
-
-  //override def check: FieldCheck = FieldChecks.fromValidator(ContactValidator)
-  //override def check: FieldCheck = FieldChecks.fromValidator(new ContactValidator(Seq(telephoneField, emailField, webField, twitterField)))
-  //override def check: FieldCheck = FieldChecks.noCheck
-
   override def check: FieldCheck = {
-    //println("============== "+name + " ======= " +  simpleform.toString())
-
     simpleform.map{ d=>
-      println("============== "+d.label + "--" + d.isMandatory)
-
-
+      println("dddd============== "+d.label + "--" + d.isMandatory)
     }
     //FieldChecks.fromValidator(new SimpleFormValidator(Seq(telephoneField, emailField, webField, twitterField)))
-    FieldChecks.fromValidator(SimpleFormValidator)
+    FieldChecks.fromValidator(new SimpleFormValidator(simpleform))
   }
 
   override def previewCheck: FieldCheck = FieldChecks.mandatoryCheck

@@ -23,12 +23,15 @@ import forms.validation._
 import models.Question
 import play.api.libs.json.JsObject
 import play.api.libs.json.Json
-case class SimpleField(label: Option[String], name: String, helptext: Option[String]= None, isEnabled: Boolean, isMandatory: Boolean,
-                       isNumeric: Boolean, size : Option[Int] = None,  maxWords: Int, fieldType: String,
+case class SimpleField(label: Option[String], name: String, helptext: Option[String]= None, isEnabled: Boolean, isMandatory: Option[Boolean]=None,
+                       isNumeric: Option[Boolean]= None, size : Option[Int] = None,  maxWords: Int, fieldType: String,
                        rowform : Option[Seq[RowField]] = None, tableform : Option[Seq[TableField]] = None,
                        filelist: Option[Seq[FileUploadItem]] = None, defaultvalue: Option[String]) extends Field {
 
-  val validator = MandatoryValidator(label).andThen(CharacterCountValidator(maxWords))
+  val validator = MandatoryValidator(Option(name)).andThen(CharacterCountValidator(None, maxWords))
+  val validatorTextArea = MandatoryValidator(Option(name)).andThen(WordCountValidator(None, maxWords))
+  val validatorDate = DateFieldValidator(None, true)
+
 
   implicit val rowFieldFormat = Json.format[RowField]
   implicit val tablerowFieldFormat = Json.format[TableRow]
@@ -38,9 +41,27 @@ case class SimpleField(label: Option[String], name: String, helptext: Option[Str
   implicit val fileUploadItemFormat = Json.format[FileUploadItem]
   implicit val simpleFieldFormat = Json.format[SimpleField]
 
+  override val check: FieldCheck = isMandatory.getOrElse(false) match {
+    case true => {
+      fieldType match {
+        case "text" =>{
+          FieldChecks.noCheck
+            /*isNumeric.getOrElse(false) match {
+              case true => FieldChecks.fromValidator(validatorTextArea)
+              case false => FieldChecks.fromValidator(validatorTextArea)
+            }*/
+        }
+        case "textarea" =>
+          FieldChecks.fromValidator(validatorTextArea)
 
-  override val check: FieldCheck = isMandatory match {
-    case true => FieldChecks.fromValidator(validator)
+        case "date" =>{
+          val allowPast = true;
+          FieldChecks.fromValidator(validatorDate)
+        }
+        case _ =>
+          FieldChecks.fromValidator(validator)
+      }
+    }
     case false => FieldChecks.noCheck
   }
 

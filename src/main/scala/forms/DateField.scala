@@ -27,7 +27,7 @@ case class DateValues(day: Option[String], month: Option[String], year: Option[S
 case class DateField(name: String, allowPast: Boolean) extends Field with DateTimeFormats {
   implicit val dvReads = Json.reads[DateValues]
 
-  override val check: FieldCheck = FieldChecks.fromValidator(DateFieldValidator(allowPast))
+  override val check: FieldCheck = FieldChecks.fromValidator(DateFieldValidator(None, allowPast))
 
   override def renderFormInput(questions: Map[String, Question], answers: JsObject, errs: Seq[FieldError], hints: Seq[FieldHint]) = {
     views.html.renderers.dateField(this, questions, JsonHelpers.flatten(answers), errs)

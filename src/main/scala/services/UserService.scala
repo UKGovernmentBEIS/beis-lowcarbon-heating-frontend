@@ -31,6 +31,7 @@ class UserURLs(baseUrl: String) {
 
   def login : String = s"$baseUrl/user/login"
   def register: String = s"$baseUrl/user/register"
+  def forgotpassword: String = s"$baseUrl/user/forgotpassword"
 }
 
 class UserService @Inject()(val ws: WSClient)(implicit val ec: ExecutionContext)
@@ -44,6 +45,9 @@ class UserService @Inject()(val ws: WSClient)(implicit val ec: ExecutionContext)
 
   override def register(doc: JsObject): Future[Option[String]] =
     postWithResult[String, JsObject](urls.register, doc)
+
+  override def forgotpassword(doc: JsObject): Future[Option[String]] =
+    postWithResult[String, JsObject](urls.forgotpassword, doc)
  }
 
 

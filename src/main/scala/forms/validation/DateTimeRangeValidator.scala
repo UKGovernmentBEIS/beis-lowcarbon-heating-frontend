@@ -53,7 +53,7 @@ case class DateTimeRangeValues(startDate: Option[DateValues], endDate: Option[Da
 case class DateTimeRange(startDate: LocalDate, endDate: Option[LocalDate])
 
 case class DateTimeRangeValidator(allowPast: Boolean, isEndDateMandatory: Boolean) extends FieldValidator[DateTimeRangeValues, DateTimeRange] {
-  val dateValidator = DateFieldValidator(allowPast)
+  val dateValidator = DateFieldValidator(None, allowPast)
 
   val mustProvideValidStartDateMessage = "You must provide a valid start date"
   val mustProvideValidEndDateMessage = "You must provide a valid end date"

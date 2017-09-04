@@ -46,7 +46,6 @@ object FieldReads {
 
   implicit object fieldReads extends Reads[Field] {
     override def reads(json: JsValue): JsResult[Field] = {
-      //System.out.println("FieldType--------------------------" + json)
       json.validate[FieldType].flatMap { o =>
         o.`type` match {
           case "text" => json.validate[TextField]
@@ -62,6 +61,7 @@ object FieldReads {
           case "rowform" => json.validate[RowFormField]
           case "tableform" => json.validate[TableFormField]
           case "dynamictableform" => json.validate[DynamicTableFormField]
+          case "currency" => json.validate[TextField]
           case t => JsError(s"unknown field type $t")
         }
       }

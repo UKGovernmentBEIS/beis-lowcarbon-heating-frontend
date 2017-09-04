@@ -29,8 +29,8 @@ case class DateWithDays(date: LocalDate, days: Int)
 
 case class DateWithDaysValidator(allowPast: Boolean, minValue: Int, maxValue: Int) extends FieldValidator[DateWithDaysValues, DateWithDays] {
 
-  val dateValidator = DateFieldValidator(allowPast)
-  val daysValidator = IntValidator(minValue, maxValue)
+  val dateValidator = DateFieldValidator(None, allowPast)
+  val daysValidator = IntValidator(None, minValue, maxValue)
 
   override def doValidation(path: String, vs: Normalised[DateWithDaysValues]): ValidatedNel[FieldError, DateWithDays] = {
     val dv: DateValues = vs.date.getOrElse(DateValues(None, None, None))

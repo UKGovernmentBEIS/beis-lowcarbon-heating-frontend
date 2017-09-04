@@ -30,7 +30,8 @@ case class TableFormField(name: String, tableform : Seq[TableField]) extends Fie
   implicit val tableFormDataReads = Json.reads[TableFormData]
 
   override def check: FieldCheck = {
-     FieldChecks.fromValidator(SimpleFormValidator)
+    ???
+     //FieldChecks.fromValidator(SimpleFormValidator)
   }
 
   override def previewCheck: FieldCheck = FieldChecks.mandatoryCheck

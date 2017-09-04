@@ -17,85 +17,95 @@
 
 package forms.validation
 
-import cats.data.ValidatedNel
+import cats.data.{NonEmptyList, Validated, ValidatedNel}
 import cats.syntax.cartesian._
-import cats.syntax.validated._
+import cats.syntax.traverse._
+import cats.instances.list._
 import config.Config
-import forms.TextField
+import forms.{SimpleField, TextField}
 import forms.validation.FieldValidator.Normalised
-
+import play.api.libs.json.{JsObject, Json}
+import forms.DateValues
 case class SimpleFormValues(employeename: Option[String]=None, department: Option[String], natureofillness: Option[String],
                              managername: Option[String], manageremail: Option[String])
 case class SimpleForm(employeename: String, department: String, natureofillness: String,
                             managername: String, manageremail: String)
 
 
-case object SimpleFormValidator extends FieldValidator[SimpleFormValues, SimpleForm] {
-
-
- // val companynamelength = Config.config.fieldvalidation.email
-  val s = Seq("a1","a2","a3","a4")
-  val t = Seq(2,3,4,5)
-  s.map(f=>
-
-    println(">>>>>>>"+ f))
-
-
-
-  ()
-
-  val employeenameValidator = MandatoryValidator(Some("employeename")).andThen(CharacterCountValidator(20))
-  val departmentValidator = MandatoryValidator(Some("department")).andThen(CharacterCountValidator(20)) //not  used
-  val natureofillnessValidator = MandatoryValidator(Some("natureofillness")).andThen(CharacterCountValidator(20)) //not  used
-
-  val managernameValidator = MandatoryValidator(Some("managername")).andThen(CharacterCountValidator(20))
-  val manageremailValidator = MandatoryValidator(Some("manageremail")).andThen(CharacterCountValidator(200)) //not  used
-
-  override def doValidation(path: String, simpleFormValues: Normalised[SimpleFormValues]): ValidatedNel[FieldError, SimpleForm] = {
-    val employeenameValidatorV = employeenameValidator.validate(s"$path.employeename", simpleFormValues.employeename)
-    val departmentValidatorV = departmentValidator.validate(s"$path.department", simpleFormValues.department)
-    val natureofillnessValidatorV = natureofillnessValidator.validate(s"$path.natureofillness", simpleFormValues.natureofillness)
-    val managernameV = managernameValidator.validate(s"$path.managername", simpleFormValues.managername)
-    val manageremailV = manageremailValidator.validate(s"$path.manageremail", simpleFormValues.manageremail)
-
-    (employeenameValidatorV |@| departmentValidatorV |@| natureofillnessValidatorV |@|  managernameV |@| manageremailV).map(SimpleForm(_,_,_,_,_))
-  }
+object SimpleFormValidator  {
+  def apply(textfields : Seq[SimpleField]) = new SimpleFormValidator(textfields)
 }
 
+class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[JsObject, List[(SimpleField, String)]]{
 
-/*class SimpleFormValidator(textfields : Seq[TextField]) extends FieldValidator[ContactValues, Contact]{
+  implicit val dvReads = Json.reads[DateValues]
 
-  override def doValidation(path: String, contactValues: Normalised[ContactValues]): ValidatedNel[FieldError, Contact] = {
-    println("== SimpleFormValidator doValidation textfields=======:-"+ textfields)
-    println("== SimpleFormValidator doValidation contactValues=======:-"+ contactValues)
+  def validator(l:Option[String]= None, n:String, m:Int) = MandatoryValidator(l, Option(n)).andThen(CharacterCountValidator(l, m))
+  def validatorTextArea(l:Option[String]= None, n:String, m:Int) = MandatoryValidator(l, Option(n)).andThen(WordCountValidator(l, m))
+  def validatorDate(b:Boolean) = DateFieldValidator(None, b)
+  def validatorCurrency(l:Option[String]= None): CurrencyValidator = CurrencyValidator(l)//CurrencyValidator.anyValue
+  def validatorTextInt(l:Option[String]= None, n:String) = IntValidator(l)
+
+  override def doValidation(path: String, contactValues: Normalised[JsObject]): ValidatedNel[FieldError, List[(SimpleField, String)]] = {
 
     def createValidator(f : String) = {
-      val textfield = textfields.filter(t => t.name == s"$path.$f")
-      textfield.head.isMandatory match {
-        case true => {
-          println("=============== SimpleFormValidator createValidator 000=======:-"+ f)
-          println("=============== SimpleFormValidator createValidator 000=======:-"+ f)
 
-          MandatoryValidator(Some(f)).andThen(CharacterCountValidator(textfield.head.maxWords))
+      val textfield = textfields.filter(t => t.name == s"$path.$f")
+      val fld = textfield.head
+
+      fld.isMandatory.getOrElse(false) match {
+        case true => {
+          fld.fieldType match {
+//            case "text" =>
+//              fld.isNumeric.getOrElse(false) match {
+//                case true =>
+//                  validatorTextInt(fld.label, fld.name)
+//                //case false =>
+//                //  validatorTextInt(fld.label, fld.name, fld.maxWords)
+//              }
+            case "textarea" =>
+              validatorTextArea(fld.label, fld.name, fld.maxWords)
+            case "currency" =>
+              validatorTextArea(fld.label, fld.name, fld.maxWords)
+            case _ =>
+              validator(fld.label, fld.name, fld.maxWords)
+          }
         }
         case false => NonMandatoryValidator(None)
       }
     }
 
-    val telephoneValidator = {
-      println("== SimpleFormValidator in telephoneValidator=======")
-      createValidator("telephone").validate(s"$path.telephone", contactValues.telephone)
-    }
-    val emailValidator = {
-      println("== SimpleFormValidator in emailValidator=======")
-      createValidator("email").validate(s"$path.email", contactValues.email)
-    }
-    val webValidator = createValidator("web").validate(s"$path.web", contactValues.web)
-    val twitterValidator = createValidator("twitter").validate(s"$path.twitter", contactValues.twitter)
+    val validChecks: ValidatedNel[FieldError, List[(SimpleField, String)]] = textfields.toList.traverseU { a =>
+      val nameWithPath = a.name
+      val nameWithoutPath = a.name.split("\\.").last
+      val contactOptJsValue = contactValues.value.get(nameWithoutPath)
 
-    println("== SimpleFormValidator in before telephoneValidator |@| emailValidator =======:-")
+      a.fieldType match {
+        case "text" =>
+          a.isNumeric.getOrElse(false) match {
+            case true =>
+              val contactOptString = contactOptJsValue.flatMap {j=> j.asOpt[String]}
+              IntValidator(a.label).validate(s"$nameWithPath", contactOptString.getOrElse("0")).map(v => (a, ""))
+            case false =>
+              NonMandatoryValidator(None).validate(s"$nameWithPath", None ).map(v => (a,""))
+        }
+        case "date" => {
+          val datevalues = contactOptJsValue.flatMap { j => j.asOpt[DateValues] }.getOrElse(DateValues(None, None, None))
+          DateFieldValidator(a.label, true).validate(s"$nameWithPath", datevalues).map(v => (a, ""))
+        }
+        case "currency" => {
+          val contactOptString = contactOptJsValue.flatMap {j=> j.asOpt[String]}
+          val datevalues = contactOptJsValue.flatMap { j => j.asOpt[DateValues] }.getOrElse(DateValues(None, None, None))
+          validatorCurrency(a.label).validate(s"$nameWithPath", contactOptString).map(v => (a, ""))
+        }
+        case _ =>{
+          val contactOptString = contactOptJsValue.flatMap {j=> j.asOpt[String]}
+          createValidator(nameWithoutPath).validate(s"$nameWithPath", contactOptString ).map(v => (a,v))
+        }
+      }
+    }
 
-    (telephoneValidator |@| emailValidator |@| webValidator |@| twitterValidator).map(Contact.apply(_, _, _, _))
+    validChecks
   }
 
-}*/
+}

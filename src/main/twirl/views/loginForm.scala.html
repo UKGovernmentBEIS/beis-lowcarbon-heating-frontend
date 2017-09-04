@@ -23,7 +23,7 @@ if(errors.nonEmpty) "error" else ""
 
             <table>
                    <tr>
-                       <td width="10%"> Name </td>
+                       <td width="10%"> User Name </td>
                        <td width="80%"> <input type="text" id="name" class="form-control login-text-field " title="name" name="name"  aria-label="User Name" aria-invalid="false"> </td>
                    </tr>
                    <tr>
@@ -35,7 +35,8 @@ if(errors.nonEmpty) "error" else ""
                            <input type="submit" name="@Save.name" class="button button--start" value="Login">
                        </div>
                        </td>
-                       <td>New User <a href="/register">Register</a>
+                       <td>New User <a href="/register">Register</a>,
+                            <a href="/forgotpassword">Forgot password</a>
                        </td>
                    </tr>
                </table>

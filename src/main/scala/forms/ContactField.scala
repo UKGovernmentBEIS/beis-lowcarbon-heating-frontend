@@ -31,7 +31,8 @@ case class ContactField(name: String, contactitems : Seq[TextField]) extends Fie
 
   override def previewCheck: FieldCheck = FieldChecks.mandatoryCheck
   //override def check: FieldCheck = FieldChecks.fromValidator(ContactValidator)
-  override def check: FieldCheck = FieldChecks.fromValidator(new ContactValidator(Seq(telephoneField, emailField, webField, twitterField)))
+  override def check: FieldCheck =
+     FieldChecks.fromValidator(new ContactValidator(contactitems))
 
   override def renderPreview(questions: Map[String, Question], answers: JsObject) =
     views.html.renderers.preview.contactField(this, JsonHelpers.flatten(answers))

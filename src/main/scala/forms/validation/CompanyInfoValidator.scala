@@ -29,8 +29,8 @@ case class CompanyInfo(companyname: String, companynumber: Option[String] = None
 
 case object CompanyInfoValidator extends FieldValidator[CompanyInfoValues, CompanyInfo] {
   val companynamelength = Config.config.fieldvalidation.email
-  val companynameValidator = MandatoryValidator(Some("companyname")).andThen(CharacterCountValidator(companynamelength))
-  val companynumberValidator = MandatoryValidator(Some("companynumber")).andThen(CharacterCountValidator(200)) //not  used
+  val companynameValidator = MandatoryValidator(Some("companyname")).andThen(CharacterCountValidator(None, companynamelength))
+  val companynumberValidator = MandatoryValidator(Some("companynumber")).andThen(CharacterCountValidator(None, 200)) //not  used
 
   override def doValidation(path: String, companyInfoValues: Normalised[CompanyInfoValues]): ValidatedNel[FieldError, CompanyInfo] = {
     val companynameV = companynameValidator.validate(s"$path.companyname", companyInfoValues.companyname)

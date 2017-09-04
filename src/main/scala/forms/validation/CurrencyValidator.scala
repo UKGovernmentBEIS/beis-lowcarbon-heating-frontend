@@ -24,15 +24,16 @@ import forms.validation.FieldValidator.Normalised
 import scala.util.Try
 
 object CurrencyValidator {
-  def apply() = new CurrencyValidator(None)
+  def apply() = new CurrencyValidator(None, None)
+  def apply(label:Option[String] = None) = new CurrencyValidator(label, None)
 
-  def apply(minValue: BigDecimal) = new CurrencyValidator(Some(minValue))
+  def apply(minValue: BigDecimal) = new CurrencyValidator(None, Some(minValue))
 
   final val greaterThanZero = apply(BigDecimal(0.0))
   final val anyValue = apply()
 }
 
-  class CurrencyValidator(minValue: Option[BigDecimal]) extends FieldValidator[Option[String], BigDecimal] {
+  class CurrencyValidator(label: Option[String] = None, minValue: Option[BigDecimal]) extends FieldValidator[Option[String], BigDecimal] {
   override def normalise(os: Option[String]): Option[String] = os.map(_.trim().replaceAll(",", ""))
 
   override def doValidation(path: String, value: Normalised[Option[String]]): ValidatedNel[FieldError, BigDecimal] = {
@@ -41,7 +42,7 @@ object CurrencyValidator {
         case Some(min) if bd <= min => FieldError(path, s"The value must be greater than $min").invalidNel
         case _ => bd.validNel
       }
-      case None => FieldError(path, "Must be a valid currency value").invalidNel
+      case None => FieldError(path, s"'${label.getOrElse("Field")}' must be a valid currency value").invalidNel
     }
   }
 }

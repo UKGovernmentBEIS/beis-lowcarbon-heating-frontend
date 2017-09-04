@@ -62,7 +62,6 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
       case SectionTypeFileList => app.section.map(_.answers).getOrElse(JsObject(Seq()))
       case DynamicTableForm => app.section.map(_.answers).getOrElse(JsObject(Seq()))
     }
-
     applications.completeSection(app.id, app.sectionNumber, answers).map {
       case Nil => redirectToOverview(app.id)
       case errs => redisplaySectionForm(app, answers, errs)
@@ -82,6 +81,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
     }
   }
 
+
   def doSaveDynamicTDItem(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
     val tddata = fieldValues.fields.head._2.toString().replaceAll("^\"|\"$\"[\"]", "")
     val tdatatmp  = tddata.substring(1, tddata.length-1)
@@ -98,6 +98,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
       }
     }
   }
+
 
   def doSaveFileItem(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
 

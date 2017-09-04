@@ -35,7 +35,9 @@ case class RowFormField(name: String, fieldType: String, rowform : Seq[RowField]
     //println("== ContactField case true "+name + " ======= " +  contactitems)
 
     //FieldChecks.fromValidator(new SimpleFormValidator(Seq(telephoneField, emailField, webField, twitterField)))
-    FieldChecks.fromValidator(SimpleFormValidator)
+
+    //FieldChecks.fromValidator(SimpleFormValidator)
+    ???
   }
 
   override def previewCheck: FieldCheck = FieldChecks.mandatoryCheck

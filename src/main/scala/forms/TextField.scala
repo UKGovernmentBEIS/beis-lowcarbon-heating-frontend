@@ -24,7 +24,7 @@ import play.api.libs.json.JsObject
 import controllers.manage._
 
 case class TextField(label: Option[String], name: String, isEnabled: Boolean, isMandatory: Boolean,  isNumeric: Boolean, maxWords: Int) extends Field {
-  val validator = MandatoryValidator(label).andThen(CharacterCountValidator(maxWords))
+  val validator = MandatoryValidator(label).andThen(CharacterCountValidator(None, maxWords))
 
   override val check: FieldCheck = isMandatory match {
     case true => FieldChecks.fromValidator(validator)

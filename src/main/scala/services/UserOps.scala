@@ -27,7 +27,7 @@ import scala.concurrent.Future
 trait UserOps {
   def login(doc: JsObject): Future[Option[User]]
   def register(doc: JsObject): Future[Option[String]]
-}
+  def forgotpassword(doc: JsObject): Future[Option[String]]}
 
 
 

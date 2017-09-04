@@ -219,8 +219,8 @@ class ApplicationController @Inject()(
 
         if (s.isComplete) actionHandler.redirectToPreview(id, sectionNumber)
         else {
-          val hints = hinting(s.answers, checksFor(request.appSection.formSection))
-          actionHandler.renderSectionForm(request.appSection, noErrors, hints)
+           val hints = hinting(s.answers, checksFor(request.appSection.formSection))
+           actionHandler.renderSectionForm(request.appSection, noErrors, hints)
         }
     }
   }
@@ -234,12 +234,6 @@ class ApplicationController @Inject()(
       case Some(s) =>
         val hints = hinting(s.answers, checksFor(request.appSection.formSection))
         actionHandler.renderSectionSimpleForm(request.appSection, noErrors, hints)
-
-        /*if (s.isComplete) actionHandler.redirectToPreview(id, sectionNumber)
-        else {
-          val hints = hinting(s.answers, checksFor(request.appSection.formSection))
-          actionHandler.renderSectionSimpleForm(request.appSection, noErrors, hints)
-        }*/
     }
   }
 

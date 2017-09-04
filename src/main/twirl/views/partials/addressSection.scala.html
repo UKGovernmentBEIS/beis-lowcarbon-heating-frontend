@@ -79,7 +79,7 @@ if(isMandatory) { <span class="mandatory-field">*</span> }
     }
 
     <label for="@field.name">@field.label</label>
-    <p>Please enter any text to search your address: @mandatoryClass(field.isMandatory)
+    <p>Please enter any text to search your address: @mandatoryClass(field.isMandatory.getOrElse(false))
         <input type="text" id="address" class="form-control address-text-field " title="address" name="address" value="" aria-label="what is your company Address? " aria-invalid="false" autocomplete="on">
     </p>
 

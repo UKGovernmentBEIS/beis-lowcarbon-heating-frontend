@@ -31,9 +31,9 @@ case class CostItem(itemName: String, cost: BigDecimal, justification: String, i
 }
 
 case object CostItemValidator extends FieldValidator[CostItemValues, CostItem] {
-  val itemValidator = MandatoryValidator(Some("item")).andThen(WordCountValidator(20))
+  val itemValidator = MandatoryValidator(Some("item")).andThen(WordCountValidator(None, 20))
   val costValidator = CurrencyValidator.anyValue
-  val justificationValidator = MandatoryValidator(Some("justification")).andThen(WordCountValidator(200))
+  val justificationValidator = MandatoryValidator(Some("justification")).andThen(WordCountValidator(None, 200))
 
   override def doValidation(path: String, costItemValues: Normalised[CostItemValues]): ValidatedNel[FieldError, CostItem] = {
     val itemV = itemValidator.validate(s"$path.itemName", costItemValues.itemName)
