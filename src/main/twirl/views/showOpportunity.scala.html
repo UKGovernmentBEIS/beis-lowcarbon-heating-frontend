@@ -1,4 +1,9 @@
-@(appForm: ApplicationForm, app: Option[Application], opportunity: Opportunity, section: OpportunityDescriptionSection)
+@(appForm: ApplicationForm,
+app: Option[Application],
+opportunity: Opportunity,
+section: OpportunityDescriptionSection,
+userid: String
+)
 
 @import eu.timepit.refined.auto._
 
@@ -34,7 +39,7 @@
 }
 
 @main(s"Opportunity: ${opportunity.title} - BEIS", backLink =
-        Some(BackLink("Return to opportunity list", controllers.routes.OpportunityController.showOpportunities().url)), displayUserName = Some("Experienced Eric")) {
+        Some(BackLink("Return to opportunity list", controllers.routes.OpportunityController.showOpportunities().url)), displayUserName = Some(userid)) {
 
  <div class="grid-row">
         <div class="column-two-thirds">
@@ -73,14 +78,15 @@
                     <div class="column-half definition-list">
                         <dl>
                             <dt class="heading-small">Deadline</dt>
-                            <dd>10 July 2017</dd>
+                            <dd>22 November 2017</dd>
                         </dl>
                     </div>
 
                     <div class="column-half definition-list">
                         <dl>
                             <dt class="heading-small">Value</dt>
-                            <dd>&pound;@("%,.0f".format(opportunity.value.amount)) @opportunity.value.unit</dd>
+                            <dd>Varies based on the type of Application</dd>
+                           <!--  <dd>&pound;@("%,.0f".format(opportunity.value.amount)) @opportunity.value.unit</dd> -->
                         </dl>
                     </div>
                     <div class="column-full rifs-form-buttons">

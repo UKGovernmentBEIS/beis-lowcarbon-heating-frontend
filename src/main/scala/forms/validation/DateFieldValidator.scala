@@ -55,7 +55,7 @@ case class DateFieldValidator(label: Option[String] = None, allowPast: Boolean) 
       mandatoryInt(s"$path.year", vs.year, "year")).tupled
       .map { case (d, m, y) =>
         DMY(d, m, normaliseYear(y))
-      }.leftMap(_ => NonEmptyList.of(FieldError(s"$path", s"'${label.getOrElse("Field")}' mustProvideAValidDateMsg")))
+      }.leftMap(_ => NonEmptyList.of(FieldError(s"$path", s"'${label.getOrElse("Field")}' $mustProvideAValidDateMsg")))
   }
 
   def validateDate(path: String, dmy: DMY): ValidatedNel[FieldError, LocalDate] =

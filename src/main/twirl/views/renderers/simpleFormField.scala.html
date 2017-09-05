@@ -85,7 +85,7 @@ if(a.isNumeric.getOrElse(false)) "bignumber" else ""
                    case "currency" => {
                         <div class="column-half no-lr-padding">
                             <div class="form-group @errorClassFor(f)">
-                                    <label for="@f.name">@f.label</label>
+                                <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
                                     <div class="input-icon">
                                         <i>£</i>
                                         <input type="text" id="@f.name" class="form-control text-field currency" title="@f.name" name="@f.name" value='@answers.get(f.name)'>
@@ -159,6 +159,7 @@ if(a.isNumeric.getOrElse(false)) "bignumber" else ""
                    }
                    case "dropdown" => {
                              <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
+
                              <select class="form-control dropdown" id="@f.name" name="@f.name">
 
                                  <option value="Select one">Select one</option>

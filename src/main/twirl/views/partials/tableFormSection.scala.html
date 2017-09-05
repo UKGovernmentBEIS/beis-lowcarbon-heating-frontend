@@ -30,6 +30,10 @@ if(errorsFor(f).nonEmpty) {
 }
 }
 
+@mandatoryClass(isMandatory: Boolean) = @{
+if(isMandatory){ <span class="mandatory-field">*</span> }
+}
+
 <label>@field.label</label>
 <table class="tableformfield" border="1">
 
@@ -47,8 +51,27 @@ if(errorsFor(f).nonEmpty) {
             <label for="@f.name">@f.label</label>
             }
             case "text" => {
-            <input type="text" id="@f.name" title="@f.name" class="form-control" name="@f.name"
-                   value='@answers.get(f.name)'>
+            <div class="column-half no-lr-padding">
+                <div class="form-group @errorClassFor(field)">
+                    <label for="@f.name">@f.label</label>
+                    @errorBlock(field)
+                    <div class="input-icon">
+                        <input type="text" id="@f.name" class="form-control text-field currency" title="@f.name" name="@f.name" value='@answers.get(f.name)'>
+                    </div>
+                </div>
+            </div>
+            }
+            case "currency" => {
+            <div class="column-half no-lr-padding">
+                <div class="form-group @errorClassFor(field)">
+                    <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
+                    @errorBlock(field)
+                    <div class="input-icon">
+                        <i>£</i>
+                        <input type="text" id="@f.name" class="form-control text-field currency" title="@f.name" name="@f.name" value='@answers.get(f.name)'>
+                    </div>
+                </div>
+            </div>
             }
             case "checkbox" => {
             <div class="multiple-choice">
@@ -57,10 +80,12 @@ if(errorsFor(f).nonEmpty) {
             </div>
             }
             case "textArea" => {
+            <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
             <textarea id="@f.name" class="form-control generic textarea-resize" title="@f.name"
                       name="@f.name">@answers.get(f.name)</textarea>
             }
             case "date" => {
+            <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
             <div class='date-selector'>
                 <div>
                     <label for="@(f.name).day">Day</label>

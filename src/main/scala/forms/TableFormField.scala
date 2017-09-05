@@ -28,10 +28,14 @@ case class TableFormField(name: String, tableform : Seq[TableField]) extends Fie
   implicit val tableFormReads = Json.reads[SimpleFormValues]
   implicit val tableRowDataReads = Json.reads[TableRowData]
   implicit val tableFormDataReads = Json.reads[TableFormData]
+  //implicit val tableObjectReads = Json.format[Option[play.api.libs.json.JsObject]]
 
   override def check: FieldCheck = {
-    ???
-     //FieldChecks.fromValidator(SimpleFormValidator)
+
+      /*val rows = tableform.flatMap(_.fields)
+      FieldChecks.fromValidator(new TableFormValidator(rows))*/
+    //FieldChecks.fromValidator(new TableFormValidator(tableform)
+      FieldChecks.noCheck
   }
 
   override def previewCheck: FieldCheck = FieldChecks.mandatoryCheck

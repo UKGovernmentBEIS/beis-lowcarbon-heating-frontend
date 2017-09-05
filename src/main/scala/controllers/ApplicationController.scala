@@ -79,11 +79,12 @@ class ApplicationController @Inject()(
   }
 
   def show(id: ApplicationId) = AppDetailAction(id) { request =>
+    val userId = request.session.get("username").getOrElse("Unauthorised User")
 
     var mapsecs:Map[String, Seq[ApplicationFormSection]]
         = makeGroupSections(request.appDetail.applicationForm.sections)
 
-    Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty))
+    Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, userId))
   }
 
   def makeGroupSections( sections: Seq[ApplicationFormSection]) : Map[String, Seq[ApplicationFormSection]] = {
@@ -120,8 +121,9 @@ class ApplicationController @Inject()(
   import FieldCheckHelpers._
 
   def editSectionForm(id: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(id, sectionNumber) { request =>
+    val userId = request.session.get("username").getOrElse("Unauthorised User")
     val hints = request.appSection.section.map(s => hinting(s.answers, checksFor(request.appSection.formSection))).getOrElse(List.empty)
-    actionHandler.renderSectionForm(request.appSection, noErrors, hints)
+    actionHandler.renderSectionForm(request.appSection, noErrors, hints, userId)
   }
 
   def resetAndEditSection(id: ApplicationId, sectionNumber: AppSectionNumber) = Action.async { request =>
@@ -210,17 +212,19 @@ class ApplicationController @Inject()(
   }
 
   def showSectionForm(id: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(id, sectionNumber) { request =>
+    val userId = request.session.get("username").getOrElse("Unauthorised User")
     request.appSection.section match {
       case None =>
         val hints = hinting(JsObject(List.empty), checksFor(request.appSection.formSection))
-        actionHandler.renderSectionForm(request.appSection, noErrors, hints)
+        actionHandler.renderSectionForm(request.appSection, noErrors, hints, userId)
 
       case Some(s) =>
 
         if (s.isComplete) actionHandler.redirectToPreview(id, sectionNumber)
         else {
-           val hints = hinting(s.answers, checksFor(request.appSection.formSection))
-           actionHandler.renderSectionForm(request.appSection, noErrors, hints)
+          val hints = hinting(s.answers, checksFor(request.appSection.formSection))
+
+           actionHandler.renderSectionForm(request.appSection, noErrors, hints, userId)
         }
     }
   }
@@ -234,6 +238,12 @@ class ApplicationController @Inject()(
       case Some(s) =>
         val hints = hinting(s.answers, checksFor(request.appSection.formSection))
         actionHandler.renderSectionSimpleForm(request.appSection, noErrors, hints)
+
+        /*if (s.isComplete) actionHandler.redirectToPreview(id, sectionNumber)
+        else {
+          val hints = hinting(s.answers, checksFor(request.appSection.formSection))
+          actionHandler.renderSectionSimpleForm(request.appSection, noErrors, hints)
+        }*/
     }
   }
 
@@ -244,10 +254,10 @@ class ApplicationController @Inject()(
       request.body.action match {
 
         case Complete => {
-          actionHandler.doComplete(request.appSection, request.body.values)
+          actionHandler.doComplete(request.appSection, request.body.values, userId)
       }
         case Save => {
-          actionHandler.doSave(request.appSection, request.body.values)
+          actionHandler.doSave(request.appSection, request.body.values, userId)
         }
         case FileUpload => {
           request.body.mf match {
@@ -258,10 +268,10 @@ class ApplicationController @Inject()(
               Future.successful(redirectToOverview(id))
           }
         }
-        case SaveItem => actionHandler.doSaveItem(request.appSection, request.body.values)
-        case SaveDynamicTDItem => actionHandler.doSaveDynamicTDItem(request.appSection, request.body.values)
-        case Preview => actionHandler.doPreview(request.appSection, request.body.values)
-        case completeAndPreview => actionHandler.completeAndPreview(request.appSection, request.body.values)
+        case SaveItem => actionHandler.doSaveItem(request.appSection, request.body.values, userId)
+        case SaveDynamicTDItem => actionHandler.doSaveDynamicTDItem(request.appSection, request.body.values, userId)
+        case Preview => actionHandler.doPreview(request.appSection, request.body.values, userId)
+        case completeAndPreview => actionHandler.completeAndPreview(request.appSection, request.body.values, userId)
       }
   }
 
@@ -285,7 +295,7 @@ class ApplicationController @Inject()(
       }
     } else {
         var mapsecs:Map[String, Seq[ApplicationFormSection]]  = makeGroupSections(request.appDetail.applicationForm.sections.sortBy(_.sectionNumber))
-        Future.successful(Ok(views.html.showApplicationForm(request.appDetail, mapsecs, sectionErrors)))
+        Future.successful(Ok(views.html.showApplicationForm(request.appDetail, mapsecs, sectionErrors, userId)))
     }
   }
 

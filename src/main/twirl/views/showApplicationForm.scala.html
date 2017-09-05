@@ -4,7 +4,9 @@
 
 @(app: ApplicationDetail,
 mapsecs: Map[String, Seq[ApplicationFormSection]],
-errs: Seq[forms.validation.SectionError])
+errs: Seq[forms.validation.SectionError],
+userid: String
+)
 
 @errorClass = @{if(errs.nonEmpty) "rifs-error-panel" else ""}
 
@@ -12,7 +14,7 @@ errs: Seq[forms.validation.SectionError])
 <a href="@controllers.routes.ApplicationController.editPersonalRef(app.id)">@title</a>
 }
 
-@main(s"Overview - BEIS", backLink=Some(BackLink("Return to my dashboard", controllers.routes.DashBoardController.applicantDashBoard().url)), displayUserName=Some("Experienced Eric")) {
+@main(s"Overview - BEIS", backLink=Some(BackLink("Return to my dashboard", controllers.routes.DashBoardController.applicantDashBoard().url)), displayUserName=Some(userid)) {
 <!-- main content -->
 
 <div class="grid-row">

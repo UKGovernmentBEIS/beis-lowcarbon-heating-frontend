@@ -46,7 +46,7 @@ object FieldCheckHelpers {
 
         fieldValues \ fieldName match {
           case JsDefined(jv) =>
-            (fieldName, jv, check)
+             (fieldName, jv, check)
           case _ =>
             (fieldName, JsNull, check)
         }

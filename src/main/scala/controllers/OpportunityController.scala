@@ -49,7 +49,7 @@ class OpportunityController @Inject()(
     //TODO:- need to merge these 2 Database calls to one
     appForms.byOpportunityId(id).flatMap {
        case Some(appform) => apps.byFormId(appform.id, UserId(userId)).flatMap{
-            case app: Option[Application] => Future.successful(Ok(views.html.showOpportunity(appform, app, request.opportunity, request.section)))
+            case app: Option[Application] => Future.successful(Ok(views.html.showOpportunity(appform, app, request.opportunity, request.section, userId)))
             // None => Future.successful(NotFound)
        }
        case None => Future.successful(NotFound)

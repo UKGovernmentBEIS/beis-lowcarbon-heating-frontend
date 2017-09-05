@@ -22,22 +22,21 @@ import cats.syntax.cartesian._
 import cats.syntax.traverse._
 import cats.instances.list._
 import config.Config
-import controllers.FieldChecks
-import forms.{SimpleField, TextField}
+import forms._
 import forms.validation.FieldValidator.Normalised
 import play.api.libs.json.{JsObject, Json}
-import forms.DateValues
-case class SimpleFormValues(employeename: Option[String]=None, department: Option[String], natureofillness: Option[String],
+
+case class TableFormValues(employeename: Option[String]=None, department: Option[String], natureofillness: Option[String],
                              managername: Option[String], manageremail: Option[String])
-case class SimpleForm(employeename: String, department: String, natureofillness: String,
+case class TableForm(employeename: String, department: String, natureofillness: String,
                             managername: String, manageremail: String)
 
 
-object SimpleFormValidator  {
-  def apply(textfields : Seq[SimpleField]) = new SimpleFormValidator(textfields)
+object TableFormValidator  {
+  def apply(tableRowfields : Seq[TableRow]) = new TableFormValidator(tableRowfields)
 }
 
-class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[JsObject, List[(SimpleField, String)]]{
+class TableFormValidator(tableRowfields : Seq[TableRow]) extends FieldValidator[Option[JsObject], List[(TableRow, String)]]{
 
   implicit val dvReads = Json.reads[DateValues]
 
@@ -47,32 +46,40 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
   def validatorCurrency(l:Option[String]= None): CurrencyValidator = CurrencyValidator(l)//CurrencyValidator.anyValue
   def validatorTextInt(l:Option[String]= None, n:String) = IntValidator(l)
 
-  override def doValidation(path: String, fldValues: Normalised[JsObject]): ValidatedNel[FieldError, List[(SimpleField, String)]] = {
+  override def doValidation(path: String, fldValues: Normalised[Option[JsObject]]): ValidatedNel[FieldError, List[(TableRow, String)]] = {
 
     def createValidator(f : String) = {
 
-      val textfield = textfields.filter(t => t.name == s"$path.$f")
-      val fld = textfield.head
-
-      fld.isMandatory.getOrElse(false) match {
-        case true => {
-          fld.fieldType match {
-            case "textarea" =>
-              validatorTextArea(fld.label, fld.name, fld.maxWords)
-            case "currency" =>
-              validatorTextArea(fld.label, fld.name, fld.maxWords)
-            case _ =>
-              validator(fld.label, fld.name, fld.maxWords)
+      val textfield = tableRowfields.filter(t => t.name == s"$path.$f").headOption
+      textfield.map { fld =>
+        fld.isMandatory.getOrElse(false) match {
+          case true => {
+            fld.fieldType match {
+              //            case "text" =>
+              //              fld.isNumeric.getOrElse(false) match {
+              //                case true =>
+              //                  validatorTextInt(fld.label, fld.name)
+              //                //case false =>
+              //                //  validatorTextInt(fld.label, fld.name, fld.maxWords)
+              //              }
+              //            case "textarea" =>
+              //              validatorTextArea(fld.label, fld.name, fld.maxWords)
+              //            case "currency" =>
+              //              validatorTextArea(fld.label, fld.name, fld.maxWords)
+              case _ =>
+                validator(fld.label, fld.name, fld.maxWords.getOrElse(0))
+            }
           }
+          case false => NonMandatoryValidator(None)
         }
-        case false => NonMandatoryValidator(None)
       }
+      NonMandatoryValidator(None)
     }
 
-    val validChecks: ValidatedNel[FieldError, List[(SimpleField, String)]] = textfields.toList.traverseU { a =>
+    val validChecks: ValidatedNel[FieldError, List[(TableRow, String)]] = tableRowfields.toList.traverseU { a =>
       val nameWithPath = a.name
       val nameWithoutPath = a.name.split("\\.").last
-      val fldOptJsValue = fldValues.value.get(nameWithoutPath)
+      val fldOptJsValue = fldValues.flatMap {_.value.get(nameWithoutPath)}
 
       a.fieldType match {
         case "text" =>
@@ -90,20 +97,8 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
         }
         case "currency" => {
           val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
+          val datevalues = fldOptJsValue.flatMap { j => j.asOpt[DateValues] }.getOrElse(DateValues(None, None, None))
           validatorCurrency(a.label).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
-        }
-        case "tableform" => {
-          System.out.println("===tableform tableform tableform tableform" + path + "===="+ fldValues)
-          val fldJsObject = fldOptJsValue.flatMap { j => j.asOpt[JsObject] }
-
-          a.tableform.getOrElse(Seq()).toList.traverseU { row=>
-            TableFormValidator(row.fields).validate(s"$nameWithPath", fldJsObject).map(v => (a, ""))
-
-        }
-
-          val allFlds = a.tableform.getOrElse(Seq()).map {row=>row.fields}.flatten
-
-          TableFormValidator(allFlds).validate(s"$nameWithPath", fldJsObject).map(v => (a, ""))
         }
         case _ =>{
           val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}

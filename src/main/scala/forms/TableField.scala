@@ -23,11 +23,12 @@ import forms.validation._
 import models.Question
 import play.api.libs.json.{JsObject, Json}
 
-case class TableRow(label: Option[String], name: String, isEnabled: Boolean, fieldType: String)
+case class TableRow(label: Option[String], name: String,  isNumeric: Option[Boolean] = None, maxWords: Option[Int] = None,
+                    isEnabled: Boolean, isMandatory: Option[Boolean]= None, fieldType: String)
 
 case class TableField(label: Option[String], name: String, helptext: Option[String]= None, isEnabled: Option[Boolean]=None,
                       isMandatory: Option[Boolean]= None, isNumeric: Option[Boolean]= None, size : Option[Int] = None,
-                      fieldType: Option[String]=None, fields: Seq[TableRow])  extends Field {
+                      fieldType: Option[String]=None, maxWords: Option[Int]=None, fields: Seq[TableRow])  extends Field {
 
   val validator = MandatoryValidator(Option(name))
 

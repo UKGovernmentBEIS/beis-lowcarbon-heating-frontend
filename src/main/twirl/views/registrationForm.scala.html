@@ -26,20 +26,24 @@ if(errors.nonEmpty) "error" else ""
                        <td width="10%"> User Name </td>
                        <td width="80%"> <input type="text" id="name" class="form-control login-text-field " title="name" name="name"  aria-label="User Name" aria-invalid="false"> </td>
                    </tr>
-                   <tr>
-                       <td> Password </td>
-                       <td> <input type="password" id="password" class="form-control login-text-field " title="password" name="password"  aria-label="password " aria-invalid="false"> </td>
+                    <tr>
+                        <td> Password </td>
+                        <td> <input type="password" id="password" class="form-control login-text-field " title="password" name="password"  aria-label="password " aria-invalid="false"> </td>
+                    </tr>
+                    <tr>
+                        <td> Confirm Password </td>
+                        <td> <input type="password" id="confirmpassword" class="form-control login-text-field " title="confirmpassword" name="confirmpassword"  aria-label="password " aria-invalid="false"> </td>
+                    </tr>
+                    <tr>
+                        <td> Email </td>
+                        <td> <input type="text" id="email" class="form-control login-text-field " title="email" name="email"  aria-label="email" aria-invalid="false"> </td>
                    </tr>
                    <tr>
-                       <td> Email </td>
-                       <td> <input type="text" id="email" class="form-control login-text-field " title="email" name="email"  aria-label="email" aria-invalid="false"> </td>
-                   </tr>
-                   <tr>
-                       <td><div class="rifs-form-buttons">
-                           <input type="submit" name="@Save.name" class="button button--start" value="Register">
-                       </div>
-                       </td>
-                       <td></td>
+                        <td><div class="rifs-form-buttons">
+                            <input type="submit" name="@Save.name" class="button button--start" value="Register">
+                        </div>
+                        </td>
+                        <td></td>
                    </tr>
                </table>
         </div>
