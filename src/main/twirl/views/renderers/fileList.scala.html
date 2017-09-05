@@ -32,6 +32,11 @@ f.substring(f.lastIndexOf("."), f.length)
 @errs.map { e =>
 <span class="error-message" role="alert">@e.err</span>
 }
+
+<!---======@app.formSection.fields.head.asInstanceOf[forms.FileUploadField].downloadfile-->
+
+
+
 <table class="spacious" border="0">
 
     <thead>
@@ -43,6 +48,18 @@ f.substring(f.lastIndexOf("."), f.length)
     <tbody>
         @fileUploadItems.map { fileUploadItem =>
             <tr>
+                <td width="10%">
+                    <!-- <a href="@filename(fileUploadItem.itemNumber.get)"> -->
+                    <a href="">
+                        <img src="@routes.Assets.at("images/" +  filetype(fileUploadItem.supportingDocuments) + "_icon.png")" width="36" height="32" alt="" style="visibility: visible">
+                    </a>
+                </td>
+                <td>@fileUploadItem.supportingDocuments</td>
+                <td>
+                    &nbsp;</td>
+            </tr>
+        <tr>
+
                 <td width="10%">
                    <!-- <a href="@filename(fileUploadItem.itemNumber.get)"> -->
                     <a href="@controllers.routes.ApplicationController.downloadFileDirect(app.id, app.formSection.sectionNumber, ResourceKey(fileUploadItem.itemNumber.get.toString() + fileextension(fileUploadItem.supportingDocuments)) )">

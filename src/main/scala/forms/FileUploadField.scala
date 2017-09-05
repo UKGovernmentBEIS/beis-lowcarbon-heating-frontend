@@ -29,7 +29,8 @@ import cats.syntax.validated._
 import forms.validation.FieldValidator.Normalised
 
 
-case class FileUploadField(label: Option[String], name: String, isEnabled: Boolean, isMandatory: Boolean, maxWords: Int) extends Field {
+case class FileUploadField(label: Option[String], name: String, isEnabled: Boolean, isMandatory: Boolean,
+                           downloadfile: String, helptext:String, maxWords: Int) extends Field {
 
   implicit val fileuploadReads = Json.reads[FileUploadItem]
 
@@ -52,7 +53,7 @@ case class FileUploadField(label: Option[String], name: String, isEnabled: Boole
 
     val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
     val fileUploadItems = itemValues.flatMap(_.validate[FileUploadItem].asOpt)
-    views.html.renderers.fileUpload(this, questions, fileUploadItems, errs, hints)
+    views.html.renderers.fileUpload(this, questions, fileUploadItems, errs, hints )
   }
 }
 
