@@ -11,8 +11,20 @@
     errs.filter(p => p.path == field.name || p.path.startsWith(s"${field.name}."))
 }
 
+@errorClassFor(f: forms.Field) = @{
+if(errs.exists(_.path == f.name)) "error" else ""
+}
+
 @errorClass = @{if(errors.nonEmpty) "error" else ""}
 @invalidTrueFalse = @{if(errors.nonEmpty) "true" else "false"}
+
+@mandatoryClass(isMandatory: Boolean) = @{
+if(isMandatory){ <span class="mandatory-field">*</span> }
+}
+
+@bignumberClass(a:forms.SimpleField) = @{
+if(a.isNumeric.getOrElse(false)) "bignumber" else ""
+}
 
 <table>
 
@@ -21,9 +33,72 @@
         @if( row.isEnabled) {
 
             @row.fields.map { f=>
+          <!--      <tr>
+                    <td>
+                        <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
+                    </td>
+                </tr>
+    <td><input type="text" id="dynamictd" class="form-control fileupload-text-field" title="title" name="tableRowData"></td>
+-->
                 <tr>
-                    <td> @f.label </td>
-                    <td><input type="text" id="dynamictd" class="form-control fileupload-text-field" title="title" name="tableRowData"></td>
+                    <td>
+                        @f.fieldType match {
+                        case "String" => {
+                        <label for="@f.name">@f.label</label>
+                        }
+                        case "text" => {
+                            <div class="form-group">
+                                <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
+                                <input type="text"  id="@f.name" class='form-control text-field ' title="@f.name" name="tableRowData"
+                                       value=" "  @if(f.isNumeric.getOrElse(false)) { pattern="[0-9]*" } required>
+                            </div>
+                        }
+                        case "currency" => {
+                            <div class="form-group">
+                                <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
+                                <div class="input-icon">
+                                    <i>£</i>
+                                    <input type="text" id="@f.name" class="form-control text-field currency" title="@f.name" name="tableRowData" value=" ">
+                                </div>
+                            </div>
+                        }
+                        case "checkbox" => {
+                        <div class="multiple-choice">
+                            <input id="@f.name" name="tableRowData" type="checkbox" title="@f.name">
+                            <label for="@f.name">@f.label</label>
+                        </div>
+                        }
+                        case "textarea" => {
+                        <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
+                        <textarea id="@f.name" class="form-control generic textarea-resize" title="@f.name"
+                                  name="tableRowData"></textarea>
+                        }
+                        case "date" => {
+                        <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
+                        <div class='date-selector'>
+                            <div>
+                                <label for="@(f.name).day">Day</label>
+                                <input type="text" title="Day" id="@(f.name).day" name="@(f.name).day" value="" class="form-control" maxlength="2" pattern="[0-9]*">
+                            </div>
+                            <div>
+                                <label for="@(f.name).month">Month</label>
+                                <input type="text" title="Month" id="@(f.name).month" name="@(f.name).month" value="" class="form-control" maxlength="2" pattern="[0-9]*">
+                            </div>
+                            <div>
+                                <label for="@(f.name).year">Year</label>
+                                <input type="text" title="4 digit year" id="@(f.name).year" name="@(f.name).year" value="" class="form-control year" maxlength="4" pattern="[0-9]*">
+                            </div>
+                        </div>
+                        }
+                        case "fileupload" => {
+                        <label class="file-upload">
+                            <input type="file" class="file-upload-field" name="file"/>
+                            Choose file
+                        </label>
+                        <input type="text" id="fileupload" class="form-control fileupload-text-field" title="title" name="@f.name">
+                        }
+                        }
+                    </td>
                 </tr>
             }
         }

@@ -311,7 +311,7 @@ class ApplicationController @Inject()(
 
   val APP_REF_FIELD_NAME = "application-ref"
   val appRefField = TextField(label = Some(APP_REF_FIELD_NAME), name = APP_REF_FIELD_NAME, isEnabled = true, isMandatory = false, isNumeric = false, maxWords = 200)
-  val appRefQuestion = Map(APP_REF_FIELD_NAME -> Question("My application reference"))
+  val appRefQuestion = Map(APP_REF_FIELD_NAME -> Question("Application Funding Title"))
 
   def editPersonalRef(id: ApplicationId) = AppDetailAction(id) { request =>
     val answers = JsObject(Seq(APP_REF_FIELD_NAME -> Json.toJson(request.appDetail.personalReference.map(_.value).getOrElse(""))))

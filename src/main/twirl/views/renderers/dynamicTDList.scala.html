@@ -31,19 +31,24 @@
     <tbody>
         @tableItems.map { tableItem =>
             <tr>
-                    @tableItem.tableRowData.map{ rowdata=>
+
+
+
+                @tableItem.tableRowData.map { rowdata=>
                 <td>
-                    @rowdata
+                        @rowdata
                 </td>
                 }
 
+
                 <input type="hidden" id="fileupload" title="title" name="supportingDocuments" value="@tableItem">
                 <td>
-                @tableItem.itemNumber.map { num =>
-                    <a href="@controllers.routes.ApplicationController.deleteTDItem(app.id, app.formSection.sectionNumber, num)">
-                        <img src="@routes.Assets.at("images/minus_icon1.png")" width="22" height="22" alt="" style="visibility: visible">
-                    </a>
-                }
+                    @tableItem.itemNumber.map { num =>
+                        <a href="@controllers.routes.ApplicationController.deleteTDItem(app.id, app.formSection.sectionNumber, num)">
+                            <img src="@routes.Assets.at("images/minus_icon1.png")" width="22" height="22" alt="" style="visibility: visible">
+                        </a>
+                    }
+                    &nbsp;
                 </td>
             </tr>
         }
@@ -52,11 +57,13 @@
 
                 <td colspan="@dform.dynamictableform.head.fields.size">
                     Please add extra rows for @app.formSection.title
+                    &nbsp;
                 </td>
                 <td>
                     <a href="@controllers.routes.ApplicationController.addDynamicTDItem(app.id, app.formSection.sectionNumber)">
                         <img src="@routes.Assets.at("images/plus_icon.png")" width="22" height="22" alt="" style="visibility: visible">
                     </a>
+                    &nbsp;
                 </td>
             </tr>
     </tbody>
