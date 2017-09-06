@@ -79,32 +79,41 @@ class TableFormValidator(tableRowfields : Seq[TableRow]) extends FieldValidator[
     val validChecks: ValidatedNel[FieldError, List[(TableRow, String)]] = tableRowfields.toList.traverseU { a =>
       val nameWithPath = a.name
       val nameWithoutPath = a.name.split("\\.").last
-      val fldOptJsValue = fldValues.flatMap {_.value.get(nameWithoutPath)}
-
-      a.fieldType match {
-        case "text" =>
-          a.isNumeric.getOrElse(false) match {
-            case true =>
-              val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
-              IntValidator(a.label).validate(s"$nameWithPath", fldOptString.getOrElse("0")).map(v => (a, ""))
-            case false =>
-              val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
-              createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString ).map(v => (a,v))
-          }
-        case "date" => {
-          val datevalues = fldOptJsValue.flatMap { j => j.asOpt[DateValues] }.getOrElse(DateValues(None, None, None))
-          DateFieldValidator(a.label, true).validate(s"$nameWithPath", datevalues).map(v => (a, ""))
-        }
-        case "currency" => {
-          val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
-          val datevalues = fldOptJsValue.flatMap { j => j.asOpt[DateValues] }.getOrElse(DateValues(None, None, None))
-          validatorCurrency(a.label).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
-        }
-        case _ =>{
-          val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
-          createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString ).map(v => (a,v))
-        }
+      val fldOptJsValue = fldValues.flatMap {
+        _.value.get(nameWithoutPath)
       }
+
+      a.isMandatory.getOrElse(false) match {
+        case true => {
+            a.fieldType match {
+              case "text" =>
+                a.isNumeric.getOrElse(false) match {
+                  case true =>
+                    val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
+                    IntValidator(a.label).validate(s"$nameWithPath", fldOptString.getOrElse("0")).map(v => (a, ""))
+                  case false =>
+                    val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
+                    createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString).map(v => (a, v))
+                }
+              case "date" => {
+                val datevalues = fldOptJsValue.flatMap { j => j.asOpt[DateValues] }.getOrElse(DateValues(None, None, None))
+                DateFieldValidator(a.label, true).validate(s"$nameWithPath", datevalues).map(v => (a, ""))
+              }
+              case "currency" => {
+                val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
+                val datevalues = fldOptJsValue.flatMap { j => j.asOpt[DateValues] }.getOrElse(DateValues(None, None, None))
+                validatorCurrency(a.label).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
+              }
+              case _ => {
+                val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
+                createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString).map(v => (a, v))
+              }
+            }
+        }
+        case false =>
+          NonMandatoryValidator(None).validate("", None).map(v => (a, v))
+    }
+
     }
 
     validChecks

@@ -348,7 +348,8 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
       case SectionTypeFileList => {
         val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
         val fileUploadItems = itemValues.flatMap(_.validate[FileUploadItem].asOpt)
-        Ok(views.html.sectionFileList(app, fileUploadItems, answers, errs, hints, userId))
+
+        Ok(views.html.sectionFileList(app, fileUploadItems, answers, errs, hints, userId, publicDownloadURL))
       }
       case DynamicTableForm => {
         val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
@@ -362,6 +363,13 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
     }
   }
 
+  val publicDownloadURL  ={
+    val amazonRegion = Config.config.aws.region
+    val amazonDomain = Config.config.aws.domain
+    val amazonPublicBucket = Config.config.aws.publicbucket
+    val amazonPublicDownloadUrl = s"https://s3.$amazonRegion.$amazonDomain/$amazonPublicBucket"
+    amazonPublicDownloadUrl
+  }
   def selectSectionSimpleForm(app: ApplicationSectionDetail, answers: JsObject, errs: FieldErrors): Result = {
     val checks = app.formSection.fields.map(f => f.name -> f.check).toMap
     val hints = hinting(answers, checks)

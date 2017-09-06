@@ -1,10 +1,11 @@
-
 @(
     app: ApplicationSectionDetail,
     questions: Map[String, Question],
     fileUploadItems: Seq[forms.FileUploadItem],
     errs: Seq[forms.validation.FieldError],
-    hints: Seq[forms.validation.FieldHint])
+    hints: Seq[forms.validation.FieldHint],
+    amazonpublicpownloadurl: String
+)
 
 @import helpers._
 
@@ -12,6 +13,7 @@
          if(f.endsWith(".pdf")) "pdf"
     else if(f.endsWith(".doc")) "doc"
     else if(f.endsWith(".xls")) "xls"
+    else if(f.endsWith(".xlsx")) "xlsx"
     else if(f.endsWith(".txt")) "txt"
     else if(f.endsWith(".jpg") || f.endsWith(".jpeg") || f.endsWith(".bmp") || f.endsWith(".gif") || f.endsWith(".png")) "image"
     else "any"
@@ -33,9 +35,15 @@ f.substring(f.lastIndexOf("."), f.length)
 <span class="error-message" role="alert">@e.err</span>
 }
 
-<!---======@app.formSection.fields.head.asInstanceOf[forms.FileUploadField].downloadfile-->
+@if(app.formSection.fields.head.asInstanceOf[forms.FileUploadField].helptext.nonEmpty){
 
-
+    @app.formSection.fields.head.asInstanceOf[forms.FileUploadField].helptext
+    <p><a href="@amazonpublicpownloadurl/@app.formSection.fields.head.asInstanceOf[forms.FileUploadField].downloadfile">
+        <img src="@routes.Assets.at("images/" +  filetype(app.formSection.fields.head.asInstanceOf[forms.FileUploadField].downloadfile) + "_icon.png")" width="36" height="32" alt="" style="visibility: visible">
+        @app.formSection.fields.head.asInstanceOf[forms.FileUploadField].downloadfile
+    </a>
+    </p>
+}
 
 <table class="spacious" border="0">
 
@@ -46,23 +54,12 @@ f.substring(f.lastIndexOf("."), f.length)
     </thead>
 
     <tbody>
-        @fileUploadItems.map { fileUploadItem =>
-            <tr>
-                <td width="10%">
-                    <!-- <a href="@filename(fileUploadItem.itemNumber.get)"> -->
-                    <a href="">
-                        <img src="@routes.Assets.at("images/" +  filetype(fileUploadItem.supportingDocuments) + "_icon.png")" width="36" height="32" alt="" style="visibility: visible">
-                    </a>
-                </td>
-                <td>@fileUploadItem.supportingDocuments</td>
-                <td>
-                    &nbsp;</td>
-            </tr>
-        <tr>
 
+        @fileUploadItems.map { fileUploadItem =>
+
+        <tr>
                 <td width="10%">
-                   <!-- <a href="@filename(fileUploadItem.itemNumber.get)"> -->
-                    <a href="@controllers.routes.ApplicationController.downloadFileDirect(app.id, app.formSection.sectionNumber, ResourceKey(fileUploadItem.itemNumber.get.toString() + fileextension(fileUploadItem.supportingDocuments)) )">
+                  <a href="@controllers.routes.ApplicationController.downloadFileDirect(app.id, app.formSection.sectionNumber, ResourceKey(fileUploadItem.itemNumber.get.toString() + fileextension(fileUploadItem.supportingDocuments)) )">
                       <img src="@routes.Assets.at("images/" +  filetype(fileUploadItem.supportingDocuments) + "_icon.png")" width="36" height="32" alt="" style="visibility: visible">
                   </a>
 
@@ -74,7 +71,7 @@ f.substring(f.lastIndexOf("."), f.length)
                     <a href="@controllers.routes.ApplicationController.deleteFileItem(app.id, app.formSection.sectionNumber, num, fileextension(fileUploadItem.supportingDocuments))">
                     Delete</a></td>
                 }
-            </tr>
+        </tr>
         }
         <tr class="footer-two-light">
             <td colspan="3">
