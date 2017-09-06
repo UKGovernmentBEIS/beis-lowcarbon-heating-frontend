@@ -46,6 +46,7 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
   def validatorDate(b:Boolean) = DateFieldValidator(None, b)
   def validatorCurrency(l:Option[String]= None): CurrencyValidator = CurrencyValidator(l)//CurrencyValidator.anyValue
   def validatorTextInt(l:Option[String]= None, n:String) = IntValidator(l)
+  def validatorCheckbox(l:Option[String]= None, n:String) = MandatoryValidator(l,Option(n))
 
   override def doValidation(path: String, fldValues: Normalised[JsObject]): ValidatedNel[FieldError, List[(SimpleField, String)]] = {
 
@@ -59,8 +60,10 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
           fld.fieldType match {
             case "textarea" =>
               validatorTextArea(fld.label, fld.name, fld.maxWords)
-            case "currency" =>
-              validatorTextArea(fld.label, fld.name, fld.maxWords)
+//            case "currency" =>
+//              validatorTextArea(fld.label, fld.name, fld.maxWords)
+            case "checkbox" =>
+              validatorCheckbox(fld.label, fld.name)
             case _ =>
               validator(fld.label, fld.name, fld.maxWords)
           }
@@ -92,17 +95,17 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
           val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
           validatorCurrency(a.label).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
         }
+        case "checkbox" => {
+          val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
+          createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
+        }
         case "tableform" => {
           System.out.println("===tableform tableform tableform tableform" + path + "===="+ fldValues)
           val fldJsObject = fldOptJsValue.flatMap { j => j.asOpt[JsObject] }
-
           a.tableform.getOrElse(Seq()).toList.traverseU { row=>
             TableFormValidator(row.fields).validate(s"$nameWithPath", fldJsObject).map(v => (a, ""))
-
-        }
-
+          }
           val allFlds = a.tableform.getOrElse(Seq()).map {row=>row.fields}.flatten
-
           TableFormValidator(allFlds).validate(s"$nameWithPath", fldJsObject).map(v => (a, ""))
         }
         case _ =>{

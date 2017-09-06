@@ -53,6 +53,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
   }
 
   def doComplete(app: ApplicationSectionDetail, fieldValues: JsObject, userId: String): Future[Result] = {
+    System.out.println("===fieldValues  fieldValues fieldValues fieldValues :---"+ fieldValues)
     val answers = app.formSection.sectionType match {
       case SectionTypeForm | SimpleTypeForm | RowForm | TableForm  => fieldValues
       // Instead of using the values that were passed in from the form we'll use the values that
