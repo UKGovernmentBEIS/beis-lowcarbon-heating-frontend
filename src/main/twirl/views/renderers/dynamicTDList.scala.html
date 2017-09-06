@@ -32,14 +32,11 @@
         @tableItems.map { tableItem =>
             <tr>
 
-
-
                 @tableItem.tableRowData.map { rowdata=>
                 <td>
-                        @rowdata
+                    &nbsp; @rowdata
                 </td>
                 }
-
 
                 <input type="hidden" id="fileupload" title="title" name="supportingDocuments" value="@tableItem">
                 <td>
