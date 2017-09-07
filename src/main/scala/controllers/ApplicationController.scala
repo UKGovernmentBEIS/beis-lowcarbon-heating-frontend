@@ -84,7 +84,7 @@ class ApplicationController @Inject()(
     var mapsecs:Map[String, Seq[ApplicationFormSection]]
         = makeGroupSections(request.appDetail.applicationForm.sections)
 
-    Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, userId))
+    Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, userId, Option(actionHandler.guidanceDocURL)))
   }
 
   def makeGroupSections( sections: Seq[ApplicationFormSection]) : Map[String, Seq[ApplicationFormSection]] = {
@@ -337,7 +337,5 @@ class ApplicationController @Inject()(
     }
 
   }
-
-
 
 }

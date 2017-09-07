@@ -1,10 +1,11 @@
 @(
         opportunityId: OpportunityId,
         sectionCount: NonNegativeInt,
-        completedSectionCount: NonNegativeInt
+        completedSectionCount: NonNegativeInt,
+        guidanceDocURL: Option[String] = None
 )
 @import partials._
-@sidebarNoCounter(opportunityId)
+@sidebarNoCounter(opportunityId, guidanceDocURL)
 <div class="rifs-step-panel">
     <p class="rifs-step-content">
         <span class="bold-xlarge"> @completedSectionCount/@sectionCount </span>

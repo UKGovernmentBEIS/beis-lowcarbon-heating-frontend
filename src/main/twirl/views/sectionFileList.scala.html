@@ -5,7 +5,8 @@
         errs: List[forms.validation.FieldError],
         hints:List[forms.validation.FieldHint],
         userid: String,
-        amazonpublicpownloadurl : String
+        amazonpublicpownloadurl : String,
+        guidanceDocURL: Option[String] = None
 )
 
 @import partials._
@@ -47,7 +48,7 @@
             </form>
         </div>
         <div id="support-column" class="column-third">
-            @sidebar(app.opportunity.id, app.sectionCount, app.completedSectionCount)
+            @sidebar(app.opportunity.id, app.sectionCount, app.completedSectionCount, guidanceDocURL)
         </div>
     </div>
 }

@@ -71,6 +71,7 @@ GET         /manage/opportunities/library                             controller
 GET         /manage/opportunity/:id                                   controllers.manage.OpportunityController.showOpportunityPreview(id:OpportunityId, section:Option[OppSectionNumber])
 GET         /manage/opportunities/guidance                            controllers.manage.OpportunityController.showPMGuidancePage(backUrl: String)
 
+
 GET         /manage/opportunity/:id/deadlines                         controllers.manage.DeadlineController.view(id: OpportunityId)
 POST        /manage/opportunity/:id/deadlines                         controllers.manage.DeadlineController.save(id: OpportunityId)
 GET         /manage/opportunity/:id/deadlines/edit                    controllers.manage.DeadlineController.edit(id: OpportunityId)

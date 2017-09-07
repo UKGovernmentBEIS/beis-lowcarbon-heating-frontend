@@ -77,9 +77,8 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
       val nameWithoutPath = a.name.split("\\.").last
       val fldOptJsValue = fldValues.value.get(nameWithoutPath)
 
-      System.out.println("====fldOptJsValue  fldOptJsValue fldOptJsValue===="+nameWithPath + "==="+ fldOptJsValue)
+      System.out.println("====fldOptJsValue  fldOptJsValue fldOptJsValue===="+ fldValues + "==="+ nameWithPath + "==="+ fldOptJsValue)
 
-      val fldOptJsValue_ = fldValues.value.getOrElse(nameWithoutPath, Json.parse(""))
 
       a.fieldType match {
         case "text" =>
@@ -104,12 +103,22 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
           createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
         }
         case "tableform" => {
+          fldValues.value.get(nameWithoutPath) match{
+            case Some(v) =>
+              val allFlds = a.tableform.getOrElse(Seq()).map {row=>row.fields}.flatten
+              val fldJsObject = v.as[JsObject]
+              TableFormValidator(allFlds).validate(s"$nameWithPath", fldJsObject).map(v => (a, ""))
+            case None => NonMandatoryValidator(None).validate("", Option("")).map(v => (a, ""))
+          }
+
+      /*    val fldOptJsValue_ = fldValues.value.getOrElse(nameWithoutPath, Json.parse(""))
           val fldJsObject = fldOptJsValue_.as[JsObject]
 //          a.tableform.getOrElse(Seq()).toList.traverseU { row=>
 //            TableFormValidator(row.fields).validate(s"$nameWithPath", fldJsObject).map(v => (a, ""))
 //          }
           val allFlds = a.tableform.getOrElse(Seq()).map {row=>row.fields}.flatten
           TableFormValidator(allFlds).validate(s"$nameWithPath", fldJsObject).map(v => (a, ""))
+          */
         }
         case _ =>{
           val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}

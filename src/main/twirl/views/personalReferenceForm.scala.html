@@ -4,7 +4,8 @@
         questions: Map[String, Question],
         answers: play.api.libs.json.JsObject,
         errs: List[forms.validation.FieldError],
-        hints:List[forms.validation.FieldHint]
+        hints:List[forms.validation.FieldHint],
+        guidanceDocURL: Option[String] = None
 )
 @import partials._
 @import helpers._
@@ -47,7 +48,7 @@
             </form>
         </div>
         <div id="support-column" class="column-third">
-            @sidebarNoCounter(app.opportunity.id)
+            @sidebarNoCounter(app.opportunity.id, guidanceDocURL)
         </div>
     </div>
 }

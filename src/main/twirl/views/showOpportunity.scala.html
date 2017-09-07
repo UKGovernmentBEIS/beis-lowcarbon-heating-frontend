@@ -2,7 +2,8 @@
 app: Option[Application],
 opportunity: Opportunity,
 section: OpportunityDescriptionSection,
-userid: String
+userid: String,
+guidanceDocURL: Option[String] = None
 )
 
 @import eu.timepit.refined.auto._
@@ -85,8 +86,8 @@ userid: String
                     <div class="column-half definition-list">
                         <dl>
                             <dt class="heading-small">Value</dt>
-                            <dd>Varies based on the type of Application</dd>
-                           <!--  <dd>&pound;@("%,.0f".format(opportunity.value.amount)) @opportunity.value.unit</dd> -->
+                            <!-- <dd>Varies based on the type of Application</dd> -->
+                           <dd>&pound;@("%,.0f".format(opportunity.value.amount)) @opportunity.value.unit</dd>
                         </dl>
                     </div>
                     <div class="column-full rifs-form-buttons">
@@ -174,7 +175,7 @@ userid: String
                 <ul class="list spacious">
 
                     <li>
-                        <a href="@controllers.routes.OpportunityController.showGuidancePage(opportunity.id)">Guidance</a>
+                        <a href="@guidanceDocURL">Guidance</a>
                     </li>
 
                 </ul>

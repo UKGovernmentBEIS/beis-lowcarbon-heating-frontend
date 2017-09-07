@@ -26,7 +26,7 @@ userid: String
             @for((o,i) <- os.zipWithIndex) {
             <tr>
                 <td>@{i+1}. <a href="/opportunity/@o.id.id">@o.title</a></td>
-                <td>&pound;@("%,.0f".format(o.value.amount))</td>
+                <td>&pound;@("%,.0f".format(o.value.amount)) @o.value.unit</td>
             </tr>
             }
         </table>

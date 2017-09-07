@@ -336,7 +336,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
 
     app.formSection.sectionType match {
       case SectionTypeForm | SimpleTypeForm | RowForm | TableForm =>
-        Ok(views.html.sectionForm(app, answers, errs, hints, userId))
+        Ok(views.html.sectionForm(app, answers, errs, hints, userId, Option(guidanceDocURL)))
 
       case SectionTypeCostList =>
         answers \ "items" match {
@@ -350,7 +350,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
         val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
         val fileUploadItems = itemValues.flatMap(_.validate[FileUploadItem].asOpt)
 
-        Ok(views.html.sectionFileList(app, fileUploadItems, answers, errs, hints, userId, publicDownloadURL))
+        Ok(views.html.sectionFileList(app, fileUploadItems, answers, errs, hints, userId, publicDownloadURL, Option(guidanceDocURL)))
       }
       case DynamicTableForm => {
         val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
@@ -364,6 +364,13 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
     }
   }
 
+
+  def guidanceDocURL = {
+    val guidancedoc = Config.config.file.guidancedoc
+    s"$publicDownloadURL/$guidancedoc"
+  }
+
+
   val publicDownloadURL  ={
     val amazonRegion = Config.config.aws.region
     val amazonDomain = Config.config.aws.domain
@@ -371,6 +378,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
     val amazonPublicDownloadUrl = s"https://s3.$amazonRegion.$amazonDomain/$amazonPublicBucket"
     amazonPublicDownloadUrl
   }
+
   def selectSectionSimpleForm(app: ApplicationSectionDetail, answers: JsObject, errs: FieldErrors): Result = {
     val checks = app.formSection.fields.map(f => f.name -> f.check).toMap
     val hints = hinting(answers, checks)

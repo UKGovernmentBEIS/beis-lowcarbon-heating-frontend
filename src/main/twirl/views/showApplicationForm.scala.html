@@ -5,7 +5,8 @@
 @(app: ApplicationDetail,
 mapsecs: Map[String, Seq[ApplicationFormSection]],
 errs: Seq[forms.validation.SectionError],
-userid: String
+userid: String,
+guidanceDocURL: Option[String] = None
 )
 
 @errorClass = @{if(errs.nonEmpty) "rifs-error-panel" else ""}
@@ -118,7 +119,7 @@ userid: String
     </div>
 
     <div id="support-column" class="column-third">
-        @sidebar(app.opportunity.id, app.sectionCount, app.completedSectionCount)
+        @sidebar(app.opportunity.id, app.sectionCount, app.completedSectionCount, guidanceDocURL)
     </div>
 </div>
 }
