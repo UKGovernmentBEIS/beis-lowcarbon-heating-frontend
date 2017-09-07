@@ -53,7 +53,7 @@ if(isMandatory){ <span class="mandatory-field">*</span> }
             case "text" => {
             <div class="column-half no-lr-padding">
                 <div class="form-group @errorClassFor(field)">
-                    <label for="@f.name">@f.label</label>
+                    <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
                     @errorBlock(field)
                     <div class="input-icon">
                         <input type="text" id="@f.name" class="form-control text-field currency" title="@f.name" name="@f.name" value='@answers.get(f.name)'>
@@ -76,7 +76,7 @@ if(isMandatory){ <span class="mandatory-field">*</span> }
             case "checkbox" => {
             <div class="multiple-choice">
                 <input id="@f.name" name="@f.name" type="checkbox" title="@f.name" @if(answers.get(f.name).nonEmpty){ checked}>
-                <label for="@f.name">@f.label</label>
+                <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
             </div>
             }
             case "textArea" => {

@@ -30,6 +30,10 @@ if(errorsFor(f).nonEmpty) {
 }
 }
 
+@mandatoryClass(isMandatory: Boolean) = @{
+if(isMandatory){ <span class="mandatory-field">*</span> }
+}
+
 <!--<table class="@if(field.tableform.head.fields.size >5) {dynamictd} else{tableformfield}" border="1">-->
 
 <table class="tableformfield" border="1">
@@ -44,7 +48,7 @@ if(errorsFor(f).nonEmpty) {
             <td>
                 @f.fieldType match {
                    case "String" => {
-                   <label for="@f.name">@f.label</label>
+                <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
                    }
                    case "text" => {
                                 <input type="text" id="@f.name" title="@f.name" class="form-control" name="@f.name"

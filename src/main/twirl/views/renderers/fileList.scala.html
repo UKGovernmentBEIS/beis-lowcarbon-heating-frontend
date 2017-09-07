@@ -35,15 +35,18 @@ f.substring(f.lastIndexOf("."), f.length)
 <span class="error-message" role="alert">@e.err</span>
 }
 
-@if(app.formSection.fields.head.asInstanceOf[forms.FileUploadField].downloadfile.nonEmpty){
-
+@if(app.formSection.fields.head.asInstanceOf[forms.FileUploadField].helptext.nonEmpty){
     @app.formSection.fields.head.asInstanceOf[forms.FileUploadField].helptext
-    <p><a href="@amazonpublicpownloadurl/@app.formSection.fields.head.asInstanceOf[forms.FileUploadField].downloadfile">
-        <img src="@routes.Assets.at("images/" +  filetype(app.formSection.fields.head.asInstanceOf[forms.FileUploadField].downloadfile) + "_icon.png")" width="36" height="32" alt="" style="visibility: visible">
-        @app.formSection.fields.head.asInstanceOf[forms.FileUploadField].downloadfile
-    </a>
-    </p>
 }
+
+@if(app.formSection.fields.head.asInstanceOf[forms.FileUploadField].downloadfile.nonEmpty){
+<p><a href="@amazonpublicpownloadurl/@app.formSection.fields.head.asInstanceOf[forms.FileUploadField].downloadfile">
+    <img src="@routes.Assets.at("images/" +  filetype(app.formSection.fields.head.asInstanceOf[forms.FileUploadField].downloadfile) + "_icon.png")" width="36" height="32" alt="" style="visibility: visible">
+    @app.formSection.fields.head.asInstanceOf[forms.FileUploadField].downloadfile
+</a>
+</p>
+}
+
 
 <table class="spacious" border="0">
 

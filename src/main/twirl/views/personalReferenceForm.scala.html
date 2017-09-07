@@ -23,11 +23,9 @@
                   action="@controllers.routes.ApplicationController.savePersonalRef(app.id)"
                   novalidate="novalidate">
                 <p>
-                    Give your application a short and memorable title or reference. This is for your personal use.
+                    Give your application a short and memorable title
                 </p>
-                <p>
-                    You'll enter a title for your event when you start your application.
-                </p>
+
                 @if(errs.nonEmpty) {
                 <div class="error-summary" role="group" aria-labelledby="error-summary-heading" tabindex="-1">
 

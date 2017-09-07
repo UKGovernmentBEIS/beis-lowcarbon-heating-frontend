@@ -163,8 +163,9 @@ if(a.isNumeric.getOrElse(false)) "bignumber" else ""
                              <select class="form-control dropdown" id="@f.name" name="@f.name">
 
                                  <option value="Select one">Select one</option>
-                                 @f.defaultvalue.getOrElse("").split(",").map{ item=>
-                                 <option value=@item @dropdowncheck( answers.get(f.name), item)>@item</option>
+                                 @f.defaultvalue.getOrElse("").split(",").map{item=>
+                                 <option value="@item.split(":")(0)" @dropdowncheck( answers.get(f.name), item.split(":")(0))>
+                                 @item.split(":")(1)</option>
                                  }
 
                              </select>

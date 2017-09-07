@@ -25,7 +25,7 @@ import config.Config
 import controllers.FieldChecks
 import forms.{SimpleField, TextField}
 import forms.validation.FieldValidator.Normalised
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsObject, JsString, Json}
 import forms.DateValues
 case class SimpleFormValues(employeename: Option[String]=None, department: Option[String], natureofillness: Option[String],
                              managername: Option[String], manageremail: Option[String])
@@ -77,6 +77,10 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
       val nameWithoutPath = a.name.split("\\.").last
       val fldOptJsValue = fldValues.value.get(nameWithoutPath)
 
+      System.out.println("====fldOptJsValue  fldOptJsValue fldOptJsValue===="+nameWithPath + "==="+ fldOptJsValue)
+
+      val fldOptJsValue_ = fldValues.value.getOrElse(nameWithoutPath, Json.parse(""))
+
       a.fieldType match {
         case "text" =>
           a.isNumeric.getOrElse(false) match {
@@ -86,7 +90,7 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
             case false =>
               val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
               createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString ).map(v => (a,v))
-          }
+        }
         case "date" => {
           val datevalues = fldOptJsValue.flatMap { j => j.asOpt[DateValues] }.getOrElse(DateValues(None, None, None))
           DateFieldValidator(a.label, true).validate(s"$nameWithPath", datevalues).map(v => (a, ""))
@@ -100,11 +104,10 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
           createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
         }
         case "tableform" => {
-          System.out.println("===tableform tableform tableform tableform" + path + "===="+ fldValues)
-          val fldJsObject = fldOptJsValue.flatMap { j => j.asOpt[JsObject] }
-          a.tableform.getOrElse(Seq()).toList.traverseU { row=>
-            TableFormValidator(row.fields).validate(s"$nameWithPath", fldJsObject).map(v => (a, ""))
-          }
+          val fldJsObject = fldOptJsValue_.as[JsObject]
+//          a.tableform.getOrElse(Seq()).toList.traverseU { row=>
+//            TableFormValidator(row.fields).validate(s"$nameWithPath", fldJsObject).map(v => (a, ""))
+//          }
           val allFlds = a.tableform.getOrElse(Seq()).map {row=>row.fields}.flatten
           TableFormValidator(allFlds).validate(s"$nameWithPath", fldJsObject).map(v => (a, ""))
         }

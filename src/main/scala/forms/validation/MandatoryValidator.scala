@@ -25,18 +25,19 @@ case class MandatoryValidator(label: Option[String] = None, displayName: Option[
   override def normalise(os: Option[String]): Option[String] = os.map(_.trim())
 
   override def doValidation(path: String, so: Normalised[Option[String]]): ValidatedNel[FieldError, String] = {
-    println("==MandatoryValidator doValidation======"+ path)
-    println("==MandatoryValidator doValidation======"+ so) //always coming the telephone one
+    System.out.println("=====PPP PPP PPP===" + path + "==="+ so + "===" + label)
+
     val fieldName = displayName.map(n => s"'$n'").getOrElse("Field")
-
-    println("==MandatoryValidator doValidation======displayName:-"+ displayName)
-    println("==MandatoryValidator doValidation======fieldName:-"+ fieldName)
-
     denormal(so) match {
       //case None | Some("") => FieldError(path, s"$fieldName cannot be empty").invalidNel
       case Some("") => FieldError(path, s"'${label.getOrElse("Field")}' cannot be empty").invalidNel
       case Some(n) => n.validNel
-      case None => "".validNel
+      //case None => "".validNel //Todo:- removing this check for 'Lowcarbon heating', it might cause issue in BEIS forms..test BEIS forms
+      case None => {
+        System.out.println("===== None PPP PPP PPP===" + path + "==="+ so + "===" + label)
+
+        FieldError(path, s"'${label.getOrElse("Field")}' cannot be empty").invalidNel
+      }
     }
   }
 }
