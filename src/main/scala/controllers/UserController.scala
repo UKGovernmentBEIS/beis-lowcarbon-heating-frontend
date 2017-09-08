@@ -152,7 +152,18 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     }
   }
 
-  def loginFormSubmit = Action { implicit request =>
+  def loginFormSubmit = Action.async(JsonForm.parser)  { implicit request =>
+    //TODO:- Here the Roles come into place and Users belong to Group or Role
+    val username = (request.body.values \ "name").validate[String].getOrElse("NA")
+    users.login(Json.toJson(request.body.values).as[JsObject]).flatMap{
+      case Some(msg) =>
+        Future.successful(Redirect(routes.DashBoardController.applicantDashBoard()).withSession(Security.username -> username))
+      case None =>
+        Future.successful(Ok(views.html.loginForm("Login is incorrect. Please add correct details", loginform)))
+    }
+  }
+
+  /*def loginFormSubmit = Action { implicit request =>
 
     loginform.bindFromRequest.fold(
       errors => {
@@ -171,7 +182,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
           Redirect(routes.OpportunityController.showOpportunities()).withSession(Security.username -> user.name)
       }
     )
-  }
+  }*/
 
   def logOut = Action{
     Ok(views.html.loginForm("", loginform)).withNewSession
