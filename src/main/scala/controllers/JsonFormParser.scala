@@ -55,11 +55,6 @@ object JsonForm {
     val dp = params.dataParts
     val fs = params.files
     val jsonFormValues = formToJson(dp.filterKeys(k => !k.startsWith("_")))
-
-    System.out.println("===dpdp dpdp dp dpdp dpdp params====="+ params)
-    System.out.println("===dpdp dpdp dp dpdp dpdp dpdp====="+ dp)
-    System.out.println("===dpdp dpdp dp dpdp fs fs====="+ fs)
-    System.out.println("===dpdp dpdp dp dpdp fs jsonFormValues====="+ jsonFormValues)
     val button: Option[ButtonAction] = decodeButton(dp.keySet)
     button.map(b => JsonFormSubmit(
       fs.map(_.ref.file).headOption, b, jsonFormValues)).getOrElse(sys.error("Could not find an action button on the form post"))

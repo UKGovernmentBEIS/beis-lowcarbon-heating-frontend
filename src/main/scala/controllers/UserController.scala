@@ -22,6 +22,7 @@ import java.util.Base64
 import javax.inject.Inject
 
 import controllers.JsonHelpers.formToJson
+import forms.validation.{EmailValidator, FieldError}
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity
 import org.activiti.engine.repository.ProcessDefinition
 import org.activiti.engine.task.Task
@@ -38,6 +39,15 @@ import org.apache.commons.lang3.StringUtils
 import services.RestService.JsonParseException
 import services.UserOps
 
+//import play.api.data.validation.Validation
+import play.api.data.validation._
+
+import cats.data.ValidatedNel
+import cats.syntax.cartesian._
+import cats.syntax.validated._
+import forms.validation.FieldValidator.Normalised
+
+
 /********************************************************************************
   This file is for temporary Login till any Security component is deployed.
   This file also for Activity samples.
@@ -46,7 +56,7 @@ import services.UserOps
  *********************************************************************************/
 
 class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
-  extends Controller with ApplicationResults {
+  extends Controller with ApplicationResults /*with Constraint[String]*/ {
 
   implicit val loginFormWrites = Json.writes[LoginForm]
   implicit val regnFormWrites = Json.writes[RegistrationForm]
@@ -64,13 +74,24 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   val registrationform:Form[RegistrationForm] = Form(
     mapping(
       "name" -> text,
+      "confirmpassword" -> text,
       "password" -> text,
       "email" -> text
     ) (RegistrationForm.apply)(RegistrationForm.unapply) verifying ("Invalid email or password", result => result match {
-      case registrationForm =>
-        checkNotNull(registrationForm.name.replaceAll("\\s+", ""),
-          registrationForm.password.replaceAll("\\s+", ""))
+      case registrationForm => checkNotNull(registrationForm.name, registrationForm.password)
     })
+  )
+
+  val registrationform1:Form[RegistrationForm] = Form(
+    mapping(
+      "name" -> text,
+      "password" -> text,
+      "confirmpassword" -> text,
+      "email" -> text
+    ) (RegistrationForm.apply)(RegistrationForm.unapply) verifying ("Invalid email or password", result => result match {
+      case registrationForm =>
+        false
+     })
   )
 
   val forgotpasswordform:Form[ForgotPasswordForm] = Form(
@@ -99,12 +120,26 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     new String(Base64.getEncoder.encode((pswd).getBytes))
   }
 
+  def confirmPasswordCheck(password:String,confirmpassword:String): List[FieldError] = {
+
+    password.equals(confirmpassword) match {
+      case false =>   List(FieldError("password", "Password doesn't match"))
+      case true => List()
+    }
+  }
+
   def registrationSubmit =  Action.async(JsonForm.parser)  { implicit request =>
 
     val jsObj = Json.toJson(request.body.values).as[JsObject] + ("id" -> Json.toJson(0))
     val password = (request.body.values \ "password").validate[String].getOrElse("NA")
     val confirmpassword = (request.body.values \ "confirmpassword").validate[String].getOrElse("NA")
-    password.equals(confirmpassword) match {
+    val email = (request.body.values \ "email").validate[String].getOrElse("NA")
+
+    val emailvalidator = EmailValidator(Option("email")).validate("email", email).fold(_.toList, _ => List())
+    //val emailvalidator = EmailValidator(Option("email")).validate("email", email)
+    val errors = confirmPasswordCheck(password, confirmpassword) ++ emailvalidator
+
+    errors.isEmpty match {
       case true =>
           users.register(jsObj - "confirmpassword").flatMap{
               case Some(msg) => {
@@ -116,7 +151,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
                 if(msg.indexOf(dbUniqueKeyError) != -1) {
                   val username = (request.body.values \ "name").validate[String].getOrElse("NA")
                   val errorMsg = s"'$username' already exists. Please choose other name"
-                  Future.successful(Ok(views.html.registrationForm(errorMsg, registrationform)))
+                  Future.successful(Ok(views.html.registrationForm(registrationform, List())))
                 }
                 else
                   Future.successful(Ok(views.html.loginForm("", loginform)))
@@ -126,7 +161,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
           }
       case false =>
         val errMsg = "The passwords entered do not match. Please enter them again"
-        Future.successful(Ok(views.html.registrationForm(errMsg, registrationform)))
+        Future.successful(Ok(views.html.registrationForm(registrationform, errors)))
     }
   }
 
@@ -153,8 +188,8 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   }
 
   def loginFormSubmit = Action.async(JsonForm.parser)  { implicit request =>
-    //TODO:- Here the Roles come into place and Users belong to Group or Role
-    val username = (request.body.values \ "name").validate[String].getOrElse("NA")
+
+  val username = (request.body.values \ "name").validate[String].getOrElse("NA")
     users.login(Json.toJson(request.body.values).as[JsObject]).flatMap{
       case Some(msg) =>
         Future.successful(Redirect(routes.DashBoardController.applicantDashBoard()).withSession(Security.username -> username))
@@ -163,33 +198,13 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     }
   }
 
-  /*def loginFormSubmit = Action { implicit request =>
-
-    loginform.bindFromRequest.fold(
-      errors => {
-        Ok(views.html.loginForm("error", loginform))
-      },
-      user=> {
-
-        //TODO:- Here the Roles come into place and Users belong to Group or Role
-        implicit val userIdInSession = user.name
-        if(user.name.equals("applicant1") || user.name.equals("applicant2") || user.name.equals("applicant3") || user.name.equals("applicant4"))
-          Redirect(routes.DashBoardController.applicantDashBoard()).withSession(Security.username -> user.name)
-        else if(user.name.equals("manager") || user.name.equals("portfoliomanager"))
-          Redirect(routes.DashBoardController.staffDashBoard()).withSession(Security.username -> user.name)
-        //Redirect(manage.routes.OpportunityController.showNewOpportunityForm()).withSession(Security.username -> user.name)
-        else
-          Redirect(routes.OpportunityController.showOpportunities()).withSession(Security.username -> user.name)
-      }
-    )
-  }*/
-
   def logOut = Action{
     Ok(views.html.loginForm("", loginform)).withNewSession
   }
 
   def registrationForm = Action{
-    Ok(views.html.registrationForm("", registrationform))
+    //Ok(views.html.registrationForm("", registrationform))
+    Ok(views.html.registrationForm(registrationform, List()))
   }
 
   def forgotPasswordForm = Action{
@@ -201,8 +216,101 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     processEngine.engine.getRuntimeService().startProcessInstanceByKey("logging-test")
   }
 
-}
+   /* def registrationSubmit__ = Action { implicit request =>
+
+    registrationform.bindFromRequest.fold(
+      errors => {
+        Ok(views.html.registrationForm("testtest", registrationform))
+      },
+      regnForm=> {
+            users.register(Json.toJson(regnForm).as[JsObject] - "confirmpassword").flatMap{
+              case Some(msg) => {
+                /** TODO *************
+                  * need to get the exception TYPE from backend for the exceptions and show them
+                  * or need to get the error number to select the error text from any resource bundle or properties
+                  */
+                val dbUniqueKeyError = "duplicate key value violates unique constraint"
+                if(msg.indexOf(dbUniqueKeyError) != -1) {
+                  val errorMsg = s"'${regnForm.name}' already exists. Please choose other name"
+                  Future.successful(Ok(views.html.registrationForm(errorMsg, registrationform)))
+                }
+                else
+                  Future.successful(Ok(views.html.loginForm("", loginform)))
+              }
+              case None =>
+                Future.successful(Ok(views.html.loginForm("Login is incorrect. Please add correct details", loginform)))
+            }
+        Ok(views.html.registrationForm("testtest", registrationform))
+
+      }
+    )
+  }*/
+
+  /*
+    def loginFormSubmit_ = Action { implicit request =>
+
+      loginform.bindFromRequest.fold(
+        errors => {
+          Ok(views.html.loginForm("error", loginform))
+        },
+        user=> {
+
+          //TODO:- Here the Roles come into place and Users belong to Group or Role
+          implicit val userIdInSession = user.name
+          if(user.name.equals("applicant1") || user.name.equals("applicant2") || user.name.equals("applicant3") || user.name.equals("applicant4"))
+            Redirect(routes.DashBoardController.applicantDashBoard()).withSession(Security.username -> user.name)
+          else if(user.name.equals("manager") || user.name.equals("portfoliomanager"))
+            Redirect(routes.DashBoardController.staffDashBoard()).withSession(Security.username -> user.name)
+          //Redirect(manage.routes.OpportunityController.showNewOpportunityForm()).withSession(Security.username -> user.name)
+          else
+            Redirect(routes.OpportunityController.showOpportunities()).withSession(Security.username -> user.name)
+        }
+      )
+    }
+
+    def registrationSubmit_ = Action { implicit request =>
+
+      registrationform.bindFromRequest.fold(
+        errors => {
+          Ok(views.html.registrationForm("error", registrationform))
+        },
+        regnForm=> {
+          users.register(Json.toJson(regnForm).as[JsObject] - "confirmpassword").flatMap{
+            case Some(msg) => {
+              /** TODO *************
+                * need to get the exception TYPE from backend for the exceptions and show them
+                * or need to get the error number to select the error text from any resource bundle or properties
+                */
+              val dbUniqueKeyError = "duplicate key value violates unique constraint"
+              if(msg.indexOf(dbUniqueKeyError) != -1) {
+                val errorMsg = s"'${regnForm.name}' already exists. Please choose other name"
+                Future.successful(Ok(views.html.registrationForm(errorMsg, registrationform)))
+              }
+              else
+                Future.successful(Ok(views.html.loginForm("", loginform)))
+            }
+            case None =>
+              Future.successful(Ok(views.html.loginForm("Login is incorrect. Please add correct details", loginform)))
+          }
+          //Redirect(Ok(views.html.registrationForm("testtest", registrationform)))
+          Redirect(routes.UserController.registrationForm())
+
+
+        }
+      )
+    }
+
+    def confirmPasswordCheck(password:String,confirmpassword:String): ValidatedNel[FieldError, String] = {
+    password.equals(confirmpassword) match {
+      case true =>    FieldError("password", "Password doesnt match").invalidNel
+      case false => "".validNel
+    }
+  }
+*/
+
+ }
 
 case class LoginForm(name: String, password: String)
-case class RegistrationForm(name: String, password: String, email: String)
+case class RegistrationForm(name: String, password: String, confirmpassword: String, email: String)
+case class RegistrationFormValues(name: Option[String]= None, password: Option[String]= None, confirmpassword: Option[String]= None, email: String)
 case class ForgotPasswordForm(email: String)

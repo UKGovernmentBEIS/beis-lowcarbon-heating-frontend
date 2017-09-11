@@ -53,7 +53,6 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
   }
 
   def doComplete(app: ApplicationSectionDetail, fieldValues: JsObject, userId: String): Future[Result] = {
-    System.out.println("===fieldValues  fieldValues fieldValues fieldValues :---"+ fieldValues)
     val answers = app.formSection.sectionType match {
       case SectionTypeForm | SimpleTypeForm | RowForm | TableForm  => fieldValues
       // Instead of using the values that were passed in from the form we'll use the values that
@@ -128,56 +127,61 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
 
   def doSubmit(id: ApplicationId, applicationDetail: ApplicationDetail, userId: UserId): Future[Option[SubmittedApplicationRef]] = {
     /** Create ProcessDefinition object and activate  **/
-    val bpmreqd = Config.config.bpm.bpmreqd
-    val pdId = ProcessDefinitionId(Config.config.bpm.procdefId)
 
-    val pd = ProcessDefinition(pdId, BusinessKey("businessKey"+ pdId), false, processVariables(applicationDetail, userId))
+    val bpmreqd = Config.config.bpm.bpmreqd.toBoolean
+    bpmreqd match {
+      case true =>
+            val pdId = ProcessDefinitionId(Config.config.bpm.procdefId)
+            val pd = ProcessDefinition(pdId, BusinessKey("businessKey"+ pdId), false, processVariables(applicationDetail, userId))
 
-    /* 2 type of submits to Activiti
-        1)Submit First time by Applicant:- Create new Process Instance AND Update the BEIS forms Applicationn status to Submit
-        2)Submit for 'Request for more Info':- Update existing ProcessInstance AND Update the BEIS forms Applicationn status to Submit
-    */
-    applicationDetail.appStatus.appStatus match {
+            /* 2 type of submits to Activiti
+                1)Submit First time by Applicant:- Create new Process Instance AND Update the BEIS forms Applicationn status to Submit
+                2)Submit for 'Request for more Info':- Update existing ProcessInstance AND Update the BEIS forms Applicationn status to Submit
+            */
+            applicationDetail.appStatus.appStatus match {
 
-        case "In progress" =>  {  /* Fresh Application , so activate the BPM Process*/
+              case "In progress" =>  {  /* Fresh Application , so activate the BPM Process*/
 
-              /** Save Application only if Process database is updated without errors */
-              if(bpmreqd.equals("true")) { ///Is there any need of Back office processing?
-                processes.activateProcess(pdId, pd).flatMap {
-                  case Some(procInstId) => {
-                    /** Update Appplication record with Submit status **/
-                    applications.submit(id)
-                  }
-                  case _ => Future.successful(None)
-                }
-              }else
-                applications.submit(id)
-        }
-        case _ => { /* Already submitted Application, and came back for 'Request for more info' */
-
-            /* Update the existing process instance - get ExecutionID for the Task*/
-            processes.getExecution(pdId, ActivityId("BEIS_Wait_Application")).flatMap{
-              case Some(executionId) =>{
-
-                    /** Update Activiti Execution to Signal the Waiting Task to release by sending ExecutionID**/
-                    val s  = ActionId("signal")
-                    val pv =  ProcessVariable("approvestatus", "Submitted")
-
-                    if(bpmreqd.equals("true")) { ///Is there any need of Back office processing?
-                      processes.sendSignal(executionId, Action(s, Seq(pv))).flatMap {
-                        case Some(executionId) => {
-                          /** Update Appplication record with Submit status **/
-                          applications.submit(id)
-                        }
-                        case _ => Future.successful(None)
-                      }
-                    }else
+                /** Save Application only if Process database is updated without errors */
+                if(bpmreqd.equals("true")) { ///Is there any need of Back office processing?
+                  processes.activateProcess(pdId, pd).flatMap {
+                    case Some(procInstId) => {
+                      /** Update Appplication record with Submit status **/
                       applications.submit(id)
-
+                    }
+                    case _ => Future.successful(None)
+                  }
+                }else
+                  applications.submit(id)
               }
-              case _ => Future.successful(None)
+            case _ => { /* Already submitted Application, and came back for 'Request for more info' */
+
+              /* Update the existing process instance - get ExecutionID for the Task*/
+              processes.getExecution(pdId, ActivityId("BEIS_Wait_Application")).flatMap{
+                case Some(executionId) =>{
+
+                  /** Update Activiti Execution to Signal the Waiting Task to release by sending ExecutionID**/
+                  val s  = ActionId("signal")
+                  val pv =  ProcessVariable("approvestatus", "Submitted")
+
+                  if(bpmreqd.equals("true")) { ///Is there any need of Back office processing?
+                    processes.sendSignal(executionId, Action(s, Seq(pv))).flatMap {
+                      case Some(executionId) => {
+                        /** Update Appplication record with Submit status **/
+                        applications.submit(id)
+                      }
+                      case _ => Future.successful(None)
+                    }
+                  }else
+                    applications.submit(id)
+
+                }
+                case _ => Future.successful(None)
+              }
             }
-        }
+          }
+      case false =>
+          applications.submit(id)
     }
   }
 //-------------Simple App Starts--------------------------------------------------------------

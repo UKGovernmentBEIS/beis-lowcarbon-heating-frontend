@@ -34,7 +34,7 @@ case class TableFormField(name: String, tableform : Seq[TableField]) extends Fie
 
       /*val rows = tableform.flatMap(_.fields)
       FieldChecks.fromValidator(new TableFormValidator(rows))*/
-    //FieldChecks.fromValidator(new TableFormValidator(tableform)
+      //FieldChecks.fromValidator(new TableFormValidator(tableform)
       FieldChecks.noCheck
   }
 
@@ -48,7 +48,6 @@ case class TableFormField(name: String, tableform : Seq[TableField]) extends Fie
     answers.validate[TableFormData] match {
       case JsSuccess(dynamicTableFormFieldAnsers, _) =>
         Logger.debug("Validated in renderFormInput:-" + dynamicTableFormFieldAnsers.rowsData.toString())
-        //System.out.println("Validated in renderFormInput:-" + dynamicTableFormFieldAnsers.rowsData.toString())
         // views.html.renderers.tableFormField(this, questions, dynamicTableFormFieldAnsers, errs, hints)
       case JsError(errs) =>
         Logger.debug("Errors in renderFormInput:-" + errs)

@@ -75,7 +75,6 @@ class TableFormValidator(tableRowfields : Seq[TableRow]) extends FieldValidator[
       val nameWithPath = a.name
       val nameWithoutPath = a.name.split("\\.").last
       val fldOptJsValue = fldValues.value.get(nameWithoutPath)
-      System.out.println("=====n n n n nn n n ====="+ path +"===="+ a.fieldType)
 
       a.fieldType match {
         case "String" => NonMandatoryValidator(None).validate("", Option("")).map(v => (a, ""))
@@ -94,8 +93,6 @@ class TableFormValidator(tableRowfields : Seq[TableRow]) extends FieldValidator[
         }
         case "currency" => {
           val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
-          System.out.println("=====n 1111111n n n nn n n ====="+ path +"===="+ a.fieldType +"==="+ fldOptString)
-
           validatorCurrency(a.label).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
         }
         case "checkbox" => {

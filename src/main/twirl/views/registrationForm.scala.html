@@ -1,8 +1,12 @@
-@(errors : String, registrationform: Form[RegistrationForm])
+@(
+registrationform: Form[RegistrationForm],
+errs: List[forms.validation.FieldError]
+)
 
 @errorClass = @{
-if(errors.nonEmpty) "error" else ""
+if(errs.nonEmpty) "error" else ""
 }
+
 @import helper._
 @import play.api.Play.current
 @import play.api.i18n.Messages.Implicits._
@@ -19,7 +23,22 @@ if(errors.nonEmpty) "error" else ""
                 <p class="lede">
                     Please enter your details
                 </p>
-            <span class="error-message" role="alert">@errors</span>
+
+            @if(errs.nonEmpty) {
+            <div class="error-summary" role="group" aria-labelledby="error-summary-heading" tabindex="-1">
+
+                <h1 class="heading-medium error-summary-heading" id="error-summary-heading">
+                    The information you entered is not valid
+                </h1>
+                <p>
+                    Please correct the problems indicated below.
+                </p>
+
+                @errs.map { e =>
+                <span class="error-message" role="alert">@e.err</span>
+                }
+            </div>
+            }
 
             <table>
                    <tr>
@@ -49,5 +68,5 @@ if(errors.nonEmpty) "error" else ""
         </div>
     </div>
 </div>
-    }
+}
 }

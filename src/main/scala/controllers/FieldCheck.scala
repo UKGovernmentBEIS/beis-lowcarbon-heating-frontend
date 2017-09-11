@@ -58,7 +58,7 @@ object FieldChecks {
     override val validator: FieldValidator[Option[String], Int] = MandatoryValidator(displayName).andThen(IntValidator(None, min, max))
   }
 
-  def   fromValidator[T: Reads](v: FieldValidator[T, _]): FieldCheck = new FieldCheck {
+  def fromValidator[T: Reads](v: FieldValidator[T, _]): FieldCheck = new FieldCheck {
     override def toString: String = s"check from validator $v"
 
     override def apply(path: String, jv: JsValue) = {

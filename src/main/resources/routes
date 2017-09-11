@@ -11,7 +11,8 @@ GET         /beishome                                                 controller
 GET         /robots.txt                                               controllers.Assets.at(path="/public", file="robots.txt")
 GET         /assets/*file                                             controllers.Assets.at(path="/public", file)
 
-GET         /                                                         controllers.StartPageController.startPage
+GET         /startpage                                                controllers.StartPageController.startPage
+GET         /                                                         controllers.UserController.loginForm
 GET         /login                                                    controllers.UserController.loginForm
 POST        /login                                                    controllers.UserController.loginFormSubmit
 GET         /logout                                                   controllers.UserController.logOut
