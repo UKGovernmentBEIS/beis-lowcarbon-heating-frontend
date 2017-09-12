@@ -23,6 +23,7 @@ import javax.inject.Inject
 
 import controllers.JsonHelpers.formToJson
 import forms.validation.{EmailValidator, FieldError}
+import models.UserId
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity
 import org.activiti.engine.repository.ProcessDefinition
 import org.activiti.engine.task.Task
@@ -58,7 +59,10 @@ import forms.validation.FieldValidator.Normalised
 class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   extends Controller with ApplicationResults /*with Constraint[String]*/ {
 
-  implicit val loginFormWrites = Json.writes[LoginForm]
+  implicit val userIdWrites = Json.writes[UserId]
+  implicit val loginFormWrites = Json.writes[Login]
+  implicit val loginWrites = Json.writes[LoginForm]
+  implicit val regnWrites = Json.writes[Registration]
   implicit val regnFormWrites = Json.writes[RegistrationForm]
 
 
@@ -131,18 +135,24 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   def registrationSubmit =  Action.async(JsonForm.parser)  { implicit request =>
 
     val jsObj = Json.toJson(request.body.values).as[JsObject] + ("id" -> Json.toJson(0))
+    val username = (request.body.values \ "name").validate[String].getOrElse("NA")
     val password = (request.body.values \ "password").validate[String].getOrElse("NA")
     val confirmpassword = (request.body.values \ "confirmpassword").validate[String].getOrElse("NA")
     val email = (request.body.values \ "email").validate[String].getOrElse("NA")
 
+    val regn = Registration(UserId(username), password, email)
+
     val emailvalidator = EmailValidator(Option("email")).validate("email", email).fold(_.toList, _ => List())
+    //val emailvalidator = EmailValidator(Option("email")).validate("email", email).fold(_.toList, _ => List())
     //val emailvalidator = EmailValidator(Option("email")).validate("email", email)
     val errors = confirmPasswordCheck(password, confirmpassword) ++ emailvalidator
 
     errors.isEmpty match {
       case true =>
-          users.register(jsObj - "confirmpassword").flatMap{
-              case Some(msg) => {
+        //users.register(jsObj - "confirmpassword").flatMap{
+        users.register(Json.toJson(regn).as[JsObject] + ("id" -> Json.toJson(0))).flatMap{
+
+            case Some(msg) => {
                 /** TODO *************
                   * need to get the exception TYPE from backend for the exceptions and show them
                   * or need to get the error number to select the error text from any resource bundle or properties
@@ -189,8 +199,10 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
 
   def loginFormSubmit = Action.async(JsonForm.parser)  { implicit request =>
 
-  val username = (request.body.values \ "name").validate[String].getOrElse("NA")
-    users.login(Json.toJson(request.body.values).as[JsObject]).flatMap{
+    val username = (request.body.values \ "name").validate[String].getOrElse("NA")
+    val passwrd = (request.body.values \ "password").validate[String].getOrElse("NA")
+    users.login(Json.toJson(Login(UserId(username), passwrd)).as[JsObject]).flatMap{
+    //users.login(Json.toJson(request.body.values).as[JsObject]).flatMap{
       case Some(msg) =>
         Future.successful(Redirect(routes.DashBoardController.applicantDashBoard()).withSession(Security.username -> username))
       case None =>
@@ -311,6 +323,8 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
  }
 
 case class LoginForm(name: String, password: String)
+case class Login(name: UserId, password: String)
 case class RegistrationForm(name: String, password: String, confirmpassword: String, email: String)
+case class Registration(name: UserId, password : String, email: String)
 case class RegistrationFormValues(name: Option[String]= None, password: Option[String]= None, confirmpassword: Option[String]= None, email: String)
 case class ForgotPasswordForm(email: String)

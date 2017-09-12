@@ -51,7 +51,7 @@ class MessageBoardService @Inject()(val ws: WSClient)(implicit val ec: Execution
     delete(urls.messagesById(id))
 
   override def byUserId(userId: UserId): Future[Seq[Message]] = {
-    getWithHeaderUpdate[Seq[Message], String](urls.messages, userId.id).flatMap(msgs =>
+    getWithHeaderUpdate[Seq[Message], String](urls.messages, userId.userId).flatMap(msgs =>
       Future.successful(msgs.getOrElse(Seq())))
   }
 }

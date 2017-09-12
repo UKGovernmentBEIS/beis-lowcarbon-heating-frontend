@@ -279,7 +279,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
 
   def processVariables(applicationDetail: ApplicationDetail, userId: UserId): Seq[ProcessVariable] ={
     val pvAppId       =  ProcessVariable("ApplicationId", applicationDetail.id.id.toString)
-    val pvApplicant   =  ProcessVariable("Applicant", userId.id)
+    val pvApplicant   =  ProcessVariable("Applicant", userId.userId)
     val status        =  ProcessVariable("approvestatus", "Submitted")
     val pvAppRef      =  ProcessVariable("ApplicationReference", applicationDetail.personalReference.getOrElse("Not set").toString)
     val pvOpId        =  ProcessVariable("OpportunityId", applicationDetail.opportunity.id.id.toString())

@@ -21,7 +21,7 @@ package models
   * Created by venkatamutyala on 18/03/2017.
   */
 case class User(id: Long, name: String, password: String, email: String , role: Option[String] = None)
-case class UserId(id: String)
+case class UserId(userId: String)
 case class AdminUser(name: String, password: String, id: String, role: String)
 case class PortfolioUser(name: String, password: String, role: String)
 

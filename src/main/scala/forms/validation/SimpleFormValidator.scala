@@ -108,15 +108,6 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
               TableFormValidator(allFlds).validate(s"$nameWithPath", fldJsObject).map(v => (a, ""))
             case None => NonMandatoryValidator(None).validate("", Option("")).map(v => (a, ""))
           }
-
-      /*    val fldOptJsValue_ = fldValues.value.getOrElse(nameWithoutPath, Json.parse(""))
-          val fldJsObject = fldOptJsValue_.as[JsObject]
-//          a.tableform.getOrElse(Seq()).toList.traverseU { row=>
-//            TableFormValidator(row.fields).validate(s"$nameWithPath", fldJsObject).map(v => (a, ""))
-//          }
-          val allFlds = a.tableform.getOrElse(Seq()).map {row=>row.fields}.flatten
-          TableFormValidator(allFlds).validate(s"$nameWithPath", fldJsObject).map(v => (a, ""))
-          */
         }
         case _ =>{
           val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}

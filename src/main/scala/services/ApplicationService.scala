@@ -200,16 +200,16 @@ class ApplicationService @Inject()(val ws: WSClient)(implicit val ec: ExecutionC
 
 
   override def byFormId(applicationFormId: ApplicationFormId, userId: UserId): Future[Option[Application]] = {
-    getWithHeaderUpdate[Application, String](appFormUrls.application(applicationFormId), userId.id)
+    getWithHeaderUpdate[Application, String](appFormUrls.application(applicationFormId), userId.userId)
   }
 
   override def createForForm(applicationFormId: ApplicationFormId, userId: UserId): Future[Option[Application]] = {
-    getWithHeaderUpdate[Application, String](appFormUrls.applicationCreate(applicationFormId), userId.id)
+    getWithHeaderUpdate[Application, String](appFormUrls.applicationCreate(applicationFormId), userId.userId)
   }
 
 
   override def createForSimpleForm(applicationFormId: ApplicationFormId, userId: UserId): Future[Option[Application]] = {
-    getWithHeaderUpdate[Application, String](appFormUrls.applicationCreateSimpleForms(applicationFormId), userId.id)
+    getWithHeaderUpdate[Application, String](appFormUrls.applicationCreateSimpleForms(applicationFormId), userId.userId)
   }
 
   override def overview(id: ApplicationId): Future[Option[ApplicationOverview]] =
@@ -242,7 +242,7 @@ class ApplicationService @Inject()(val ws: WSClient)(implicit val ec: ExecutionC
     post(urls.personalRef(id), reference)
 
   override def getApplicationsByUserId(userId: UserId): Future[Seq[Application]] = {
-    getWithHeaderUpdate[Seq[Application], String](urls.applications, userId.id).flatMap(apps =>
+    getWithHeaderUpdate[Seq[Application], String](urls.applications, userId.userId).flatMap(apps =>
       Future.successful(apps.getOrElse(Seq())))
   }
 

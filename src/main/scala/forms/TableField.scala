@@ -43,7 +43,7 @@ case class TableField(label: Option[String], name: String, helptext: Option[Stri
 
   override val check: FieldCheck = isMandatory.getOrElse(false) match {
     case true => FieldChecks.fromValidator(validator)
-    case false => FieldChecks.noCheck
+    case false =>FieldChecks.noCheck
   }
 
   override val previewCheck: FieldCheck = FieldChecks.mandatoryCheck

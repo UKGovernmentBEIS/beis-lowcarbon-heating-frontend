@@ -11,7 +11,7 @@
                 <h1 class="heading-xlarge">Message 11</h1>
                 <div>
 
-                    <p><span class="bold">From: </span> @msg.sentBy.id</p>
+                    <p><span class="bold">From: </span> @msg.sentBy.userId</p>
                     <p><span class="bold">Sent at: </span> @DateTimeFormat.forPattern("dd MMMM yyyy").print(msg.sentAt)</p>
                     <p><span class="bold"> Application ref: </span> <a href="/application/@msg.applicationId.get.id">Application</a></p>
                 </div>

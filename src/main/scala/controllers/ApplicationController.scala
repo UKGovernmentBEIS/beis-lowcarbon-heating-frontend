@@ -314,12 +314,14 @@ class ApplicationController @Inject()(
   val appRefQuestion = Map(APP_REF_FIELD_NAME -> Question("Application Funding Title"))
 
   def editPersonalRef(id: ApplicationId) = AppDetailAction(id) { request =>
+    implicit val userId = request.session.get("username").getOrElse("Unauthorised User")
     val answers = JsObject(Seq(APP_REF_FIELD_NAME -> Json.toJson(request.appDetail.personalReference.map(_.value).getOrElse(""))))
     val hints = hinting(answers, Map(appRefField.name -> appRefField.check))
-    Ok(views.html.personalReferenceForm(appRefField, request.appDetail, appRefQuestion, answers, Nil, hints))
+    Ok(views.html.personalReferenceForm(userId, appRefField, request.appDetail, appRefQuestion, answers, Nil, hints, Option(actionHandler.guidanceDocURL)))
   }
 
   def savePersonalRef(id: ApplicationId) = AppDetailAction(id).async(JsonForm.parser) { request =>
+    implicit val userId = request.session.get("username").getOrElse("Unauthorised User")
     request.body.action match {
       case Save => appRefField.check(appRefField.name, Json.toJson(JsonHelpers.flatten(request.body.values).getOrElse(APP_REF_FIELD_NAME, ""))) match {
         case Nil =>
@@ -329,7 +331,7 @@ class ApplicationController @Inject()(
         case errs =>
           val hints = hinting(request.body.values, Map(appRefField.name -> appRefField.check))
           Future.successful(
-            Ok(views.html.personalReferenceForm(appRefField, request.appDetail, appRefQuestion, request.body.values, errs, hints))
+            Ok(views.html.personalReferenceForm(userId, appRefField, request.appDetail, appRefQuestion, request.body.values, errs, hints, Option(actionHandler.guidanceDocURL)))
           )
       }
       case _ =>

@@ -72,7 +72,7 @@ if(a.isNumeric.getOrElse(false)) "bignumber" else ""
                 @f.fieldType match {
 
                    case "String" => {
-                        <label for="@f.name">@f.label</label>
+                        <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
                    }
                    case "text" => {
                         <div class='form-group @errorClassFor(f)'>
@@ -144,7 +144,7 @@ if(a.isNumeric.getOrElse(false)) "bignumber" else ""
                    case "checkbox" => {
                              <div class="multiple-choice">
                                      <input id="@f.name" name="@f.name" type="checkbox" title="@f.name" @if(answers.get(f.name).nonEmpty){ checked}>
-                                     <label for="@f.name">@f.label @mandatoryClass(f.isMandatory)</label>
+                                     <label for="@f.name">@f.label</label>
                              </div>
                    }
                    case "rowform" => {
