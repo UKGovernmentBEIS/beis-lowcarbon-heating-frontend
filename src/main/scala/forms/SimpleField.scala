@@ -45,7 +45,6 @@ case class SimpleField(label: Option[String], name: String, helptext: Option[Str
     case true => {
       fieldType match {
         case "text" =>{
-          System.out.println("====================0HERE   0==========="  )
           FieldChecks.noCheck
             /*isNumeric.getOrElse(false) match {
               case true => FieldChecks.fromValidator(validatorTextArea)

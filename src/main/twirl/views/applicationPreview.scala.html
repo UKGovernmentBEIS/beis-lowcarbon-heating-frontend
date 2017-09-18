@@ -3,7 +3,7 @@
         sections: Seq[ApplicationSection],
         title: Option[String],
         answers: Map[AppSectionNumber, Seq[forms.Field]]
-)
+)(implicit sessionUser: String)
 
 @import models._
 @import partials._
@@ -22,7 +22,7 @@
     leftCols.zip(rightCols)
 }
 
-@main(s"Opportunity ${app.opportunity.title} - BEIS", backLink=Some(BackLink("Return to application overview",controllers.routes.ApplicationController.show(app.id).url)), displayUserName=Some("Experienced Eric")) {
+@main(s"Opportunity ${app.opportunity.title} - BEIS", backLink=Some(BackLink("Return to application overview",controllers.routes.ApplicationController.show(app.id).url)), displayUserName=Some(sessionUser)) {
     <div class="grid-row">
         <div class="column-two-thirds">
 

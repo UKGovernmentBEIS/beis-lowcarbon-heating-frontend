@@ -1,7 +1,7 @@
-@(opportunityId: OpportunityId)
+@(opportunityId: OpportunityId)(implicit sessionUser: String)
 
 
-@main(s"Guidance on BEIS application", displayUserName=Some("Experienced Eric")) {
+@main(s"Guidance on BEIS application", displayUserName=Some(sessionUser)) {
 <div class="grid-row">
     <div class="column-two-thirds">
         <div class="text">

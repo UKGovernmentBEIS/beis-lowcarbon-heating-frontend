@@ -1,13 +1,10 @@
 @(apps: Seq[Application],
 os: Seq[Opportunity],
-ms: Seq[Message],
-userid: String
-)
+ms: Seq[Message])(implicit sessionUser: String)
 
 @import org.joda.time.format.DateTimeFormat
 
-@main("Opportunity list - BEIS", displayUserName=Some(userid)) {
-
+@main("Opportunity list - BEIS", displayUserName=Some(sessionUser)) {
 
 <div>
     <h1 class="heading-xlarge">Applicant Dashboard</h1>

@@ -1,4 +1,5 @@
-@(appForm: ApplicationForm, app: Option[Application], opportunity: Opportunity, section: OpportunityDescriptionSection)
+@(appForm: ApplicationForm, app: Option[Application],
+opportunity: Opportunity, section: OpportunityDescriptionSection)(implicit sessionUser: String)
 
 @import eu.timepit.refined.auto._
 
@@ -34,7 +35,7 @@
 }
 
 @main(s"Opportunity: ${opportunity.title} - BEIS", backLink =
-        Some(BackLink("Return to opportunity list", controllers.routes.OpportunityController.showOpportunities().url)), displayUserName = Some("Experienced Eric")) {
+        Some(BackLink("Return to opportunity list", controllers.routes.OpportunityController.showOpportunities().url)), displayUserName = Some(sessionUser)) {
 
  <div class="grid-row">
         <div class="column-two-thirds">

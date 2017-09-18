@@ -32,6 +32,10 @@ class AppDetailAction @Inject()(applications: ApplicationOps)(implicit ec: Execu
   def apply(id: ApplicationId): ActionBuilder[AppDetailRequest] =
     new ActionBuilder[AppDetailRequest] {
       override def invokeBlock[A](request: Request[A], next: (AppDetailRequest[A]) => Future[Result]): Future[Result] = {
+        implicit val sessionUser: Option[String] = {
+          for (suser<- request.session.get("username"))
+            yield suser
+        }
         applications.detail(id).flatMap {
           case Some(app) => next(AppDetailRequest(app, request))
           case None => Future.successful(NotFound(s"No application with id ${id.id} exists"))

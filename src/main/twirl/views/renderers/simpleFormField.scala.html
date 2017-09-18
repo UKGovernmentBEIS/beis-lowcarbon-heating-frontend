@@ -5,6 +5,8 @@ errs: Seq[forms.validation.FieldError],
 hints: Seq[forms.validation.FieldHint]
 )
 
+@import play.api.libs.json._
+
 @import partials._
 @import helpers._
 
@@ -76,7 +78,6 @@ if(a.isNumeric.getOrElse(false)) "bignumber" else ""
                    }
                    case "text" => {
                         <div class='form-group @errorClassFor(f)'>
-
                         <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
                                      <input type="text"  id="@f.name" class='form-control text-field @bignumberClass(f)' title="@f.name" name="@f.name"
                                             value='@answers.get(f.name)' size="@f.size" width="@f.size" @if(f.isNumeric.getOrElse(false)) { pattern="[0-9]*" } required>

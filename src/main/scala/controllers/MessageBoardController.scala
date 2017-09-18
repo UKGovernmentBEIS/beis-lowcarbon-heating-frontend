@@ -28,7 +28,7 @@ import services.{ApplicationOps, MessageBoardOps, OpportunityOps}
 import scala.concurrent.{ExecutionContext, Future}
 
 class MessageBoardController @Inject()(messages: MessageBoardOps)(implicit ec: ExecutionContext)
-  extends Controller with ApplicationResults {
+  extends Controller with ApplicationResults with SessionUser {
 
   def byId(id:MessageId) = Action.async { implicit request =>
     messages.byId(id).flatMap{

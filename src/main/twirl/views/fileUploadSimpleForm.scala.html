@@ -3,12 +3,12 @@
         answers: play.api.libs.json.JsObject,
         errs: List[forms.validation.FieldError],
         hints:List[forms.validation.FieldHint]
-)
+)(implicit sessionUser: String)
 
 @import partials._
 @import helpers._
 
-@main(s"${app.formSection.title} - BEIS", backLink=Some(BackLink("Return to application overview",controllers.simpleforms.routes.SimpleFormsController.show(app.id).url)), displayUserName=Some("Experienced Eric")) {
+@main(s"${app.formSection.title} - BEIS", backLink=Some(BackLink("Return to application overview",controllers.simpleforms.routes.SimpleFormsController.show(app.id).url)), displayUserName=Some(sessionUser)) {
     <div class="grid-row">
         <div class="column-two-thirds">
             <h1 class="heading-xlarge">

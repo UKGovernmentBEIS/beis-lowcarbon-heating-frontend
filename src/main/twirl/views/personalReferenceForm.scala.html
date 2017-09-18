@@ -1,19 +1,18 @@
 @(
-        userid: String,
         control: forms.TextField,
         app: ApplicationDetail,
         questions: Map[String, Question],
         answers: play.api.libs.json.JsObject,
         errs: List[forms.validation.FieldError],
         hints:List[forms.validation.FieldHint],
-        guidanceDocURL: Option[String] = None
-)
+        guidanceDocURL: String
+)(implicit sessionUser: String)
 @import partials._
 @import helpers._
 
 @main(s"Create Application Reference - BEIS",
         backLink=Some(BackLink("Return to opportunity list",controllers.routes.OpportunityController.showOpportunities().url)),
-        displayUserName=Some(userid)) {
+        displayUserName=Some(sessionUser)) {
     <div class="grid-row">
         <div class="column-two-thirds">
             <h1 class="heading-xlarge">
@@ -49,7 +48,7 @@
             </form>
         </div>
         <div id="support-column" class="column-third">
-            @sidebarNoCounter(app.opportunity.id, guidanceDocURL)
+            @sidebarNoCounter(app.opportunity.id, Option(guidanceDocURL))
         </div>
     </div>
 }

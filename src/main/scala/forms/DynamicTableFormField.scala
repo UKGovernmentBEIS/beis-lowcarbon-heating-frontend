@@ -25,7 +25,7 @@ import play.api.libs.json._
 case class DynamicTableFormField(label: Option[String], name: String, dynamictableform : Seq[TableField]) extends Field {
   implicit val dynamicTableFormReads = Json.reads[SimpleFormValues]
   implicit val tableRowDataReads = Json.reads[TableRowData]
-  implicit val tableItemReads = Json.reads[TableItem]
+  implicit val dynamictableItemReads = Json.reads[DynamicTableItem]
 
   //override def check: FieldCheck = FieldChecks.fromValidator(ContactValidator)
   //override def check: FieldCheck = FieldChecks.fromValidator(new ContactValidator(Seq(telephoneField, emailField, webField, twitterField)))
@@ -40,15 +40,15 @@ case class DynamicTableFormField(label: Option[String], name: String, dynamictab
   override def renderFormInput(questions: Map[String, Question], answers: JsObject, errs: Seq[FieldError], hints: Seq[FieldHint]) = {
 
     val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
-    val tableItems = itemValues.flatMap(_.validate[TableItem].asOpt)
+    val tableItems = itemValues.flatMap(_.validate[DynamicTableItem].asOpt)
     views.html.renderers.dynamicTableformField(this, questions, tableItems, errs, hints)
   }
 
   override def renderPreview(questions: Map[String, Question], answers: JsObject) = {
     val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
-    val tableItems = itemValues.flatMap(_.validate[TableItem].asOpt)
+    val tableItems = itemValues.flatMap(_.validate[DynamicTableItem].asOpt)
     views.html.renderers.preview.dynamicTableFormField(this, tableItems)
   }
 
 }
-case class TableItem(tableRowData: Seq[String], itemNumber: Option[Int] = None)
+case class DynamicTableItem(tableRowData: Seq[String], itemNumber: Option[Int] = None)

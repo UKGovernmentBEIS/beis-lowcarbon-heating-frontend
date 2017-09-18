@@ -5,10 +5,16 @@
 @if( f.isEnabled) {
     <div class="form-group ">
         <label for="@f.name">@f.label </label>
+        @if(answers.get(s"${f.name}").nonEmpty){
+            @answers.get(f.name)
+        }
+        @if(answers.get(s"${f.name}.day").nonEmpty){
+            @answers.get(s"${f.name}.day") - @answers.get(s"${f.name}.month") - @answers.get(s"${f.name}.year")
+        }
+        @if(answers.get(s"${f.name}.value").nonEmpty){
+            @answers.get(s"${f.name}.value")
+        }
 
-     @answers.get(f.name)
-
-        @answers.get(s"${field.name}.day") @answers.get(s"${field.name}.month") @answers.get(s"${field.name}.year")
 
     </div>
 }

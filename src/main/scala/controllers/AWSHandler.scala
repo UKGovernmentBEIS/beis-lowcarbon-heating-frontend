@@ -35,6 +35,7 @@ import play.api.mvc.{Action, Controller, MultipartFormData, Result}
 import services.{AWSOps, ApplicationFormOps, ApplicationOps, OpportunityOps}
 
 import scala.concurrent.{ExecutionContext, Future}
+import play.api.Logger
 
 /**
   * Created by venkatamutyala on 02/07/2017.
@@ -48,14 +49,14 @@ class AWSHandler @Inject()(
                             AppDetailAction: AppDetailAction,
                             AppSectionAction: AppSectionAction
                           )(implicit ec: ExecutionContext)
-  extends Controller with ApplicationResults {
+  extends Controller with ApplicationResults with SessionUser {
 
   implicit val fileuploadReads = Json.reads[FileUploadItem]
   implicit val fileuploadItemF = Json.format[FileUploadItem]
   implicit val fileListReads = Json.reads[FileList]
 
 
-  def showFileItemForm(app: ApplicationSectionDetail, doc: JsObject, errs: FieldErrors, itemNumber: Option[Int] = None): Result = {
+  def showFileItemForm(userId: String, app: ApplicationSectionDetail, doc: JsObject, errs: FieldErrors, itemNumber: Option[Int] = None): Result = {
     import ApplicationData._
     import FieldCheckHelpers._
 
@@ -63,7 +64,7 @@ class AWSHandler @Inject()(
     val checks = itemChecksFor(app.sectionNumber)
     val hints = hinting(doc, checks)
     val answers = app.section.map { s => s.answers }.getOrElse(JsObject(List.empty))
-    Ok(views.html.fileUploadForm(app, answers, errs, hints))
+    Ok(views.html.fileUploadForm(app, answers, errs, hints, userId))
   }
 
   def uploadFileAWSS3(id: ApplicationId,  sectionNumber: AppSectionNumber, appSection: ApplicationSectionDetail , fieldValues: JsObject,
@@ -71,7 +72,7 @@ class AWSHandler @Inject()(
 
     val filename = fieldValues.fields.head._2.toString().replaceAll("^\"|\"$", "")
     StringUtils.isEmpty(filename) match {
-      case true => Future.successful(showFileItemForm(appSection, null, List(FieldError("supportingDocuments", "File name should not be empty"))))
+      case true => Future.successful(showFileItemForm(userId, appSection, null, List(FieldError("supportingDocuments", "File name should not be empty"))))
       case false => {
         val extension = FilenameUtils.getExtension(filename)
         /* File Upload */
@@ -83,7 +84,7 @@ class AWSHandler @Inject()(
             /** AWS S3 call to store files on AWS S3 **/
             awsS3.upload(ResourceKey( itemnumber + "." + extension), f).flatMap{
               case Nil =>  Future.successful(redirectToSectionForm(id, sectionNumber))
-              case errs => Future.successful(showFileItemForm(appSection, null, errs))
+              case errs => Future.successful(showFileItemForm(userId,appSection, null, errs))
             }
           }
         }
@@ -97,7 +98,7 @@ class AWSHandler @Inject()(
 
     val filename = fieldValues.fields.head._2.toString().replaceAll("^\"|\"$", "")
     StringUtils.isEmpty(filename) match {
-      case true => Future.successful(showSimpleFileItemForm(appSection, null, List(FieldError("supportingDocuments", "File name should not be empty"))))
+      case true => Future.successful(showSimpleFileItemForm(userId, appSection, null, List(FieldError("supportingDocuments", "File name should not be empty"))))
       case false => {
         val extension = FilenameUtils.getExtension(filename)
         /* File Upload */
@@ -108,7 +109,7 @@ class AWSHandler @Inject()(
             /** AWS S3 call to store files on AWS S3 **/
             awsS3.upload(ResourceKey( itemnumber + "." + extension), f).flatMap{
               case Nil =>  Future.successful(redirectToSimpleSectionForm(id, sectionNumber))
-              case errs => Future.successful(showSimpleFileItemForm(appSection, null, errs))
+              case errs => Future.successful(showSimpleFileItemForm(userId, appSection, null, errs))
             }
           }
         }
@@ -118,7 +119,7 @@ class AWSHandler @Inject()(
   }
 
 
-  def showSimpleFileItemForm(app: ApplicationSectionDetail, doc: JsObject, errs: FieldErrors, itemNumber: Option[Int] = None): Result = {
+  def showSimpleFileItemForm(userId:String, app: ApplicationSectionDetail, doc: JsObject, errs: FieldErrors, itemNumber: Option[Int] = None): Result = {
     import ApplicationData._
     import FieldCheckHelpers._
 
@@ -126,6 +127,7 @@ class AWSHandler @Inject()(
     val checks = itemChecksFor(app.sectionNumber)
     val hints = hinting(doc, checks)
     val answers = app.section.map { s => s.answers }.getOrElse(JsObject(List.empty))
+    implicit def sessionUser = ""
     Ok(views.html.fileUploadSimpleForm(app, answers, errs, hints))
   }
   //------------
@@ -162,7 +164,7 @@ class AWSHandler @Inject()(
 
   def deleteFileFromLocalFolder(itemNumber: Int) ={
     val filepath = Config.config.file.fileuploaddirectory + "/"  + itemNumber
-    println("Deleting File ........" + filepath)
+    Logger.info(s"Deleting File ........$filepath")
     for {
       foundFile <- new File(filepath).check
       deletedFile <- foundFile.remove

@@ -4,11 +4,11 @@
         answers: play.api.libs.json.JsObject,
         closeButton: String,
         editButton: Option[String]
-)
+)(implicit sessionUser: String)
 
 @import helpers._
 
-@main(s"${app.formSection.title} - BEIS", backLink=Some(BackLink("Return to application overview",controllers.routes.ApplicationController.show(app.id).url)), displayUserName=Some("Experienced Eric")) {
+@main(s"${app.formSection.title} - BEIS", backLink=Some(BackLink("Return to application overview",controllers.routes.ApplicationController.show(app.id).url)), displayUserName=Some(sessionUser)) {
     <div class="grid-row">
         <div class="column-full">
             <h1 class="heading-xlarge">

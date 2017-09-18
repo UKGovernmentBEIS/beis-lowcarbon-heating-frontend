@@ -20,7 +20,7 @@ package controllers
 import javax.inject.Inject
 
 import config.Config
-import forms.{FileUploadItem, TableItem}
+import forms.{DynamicTableItem, FileUploadItem, TableItem}
 import forms.validation.CostItem
 import models._
 import play.api.libs.json.{JsObject, _}
@@ -32,12 +32,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: ApplicationFormOps, opportunities: OpportunityOps,
                               processes: BusinessProcessOps)(implicit ec: ExecutionContext)
-  extends ApplicationResults {
+  extends ApplicationResults with SessionUser {
 
   import ApplicationData._
   import FieldCheckHelpers._
 
-  implicit val tableItemF = Json.format[TableItem]
+  implicit val tableItemF = Json.format[DynamicTableItem]
 
 
   def doSave(app: ApplicationSectionDetail, fieldValues: JsObject, userId: String): Future[Result] = {
@@ -89,7 +89,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
     val tdatatmp  = tddata.substring(1, tddata.length-1)
     val t = tdatatmp.replaceAll("\"", "").split(",").toSeq
 
-    val tableItem:TableItem = TableItem(t)
+    val tableItem:DynamicTableItem = DynamicTableItem(t)
 
     JsonHelpers.allFieldsEmpty(fieldValues) match {
       case true => applications.deleteSection(app.id, app.sectionNumber).map(_ => redirectToOverview(app.id))
@@ -197,7 +197,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
     }
   }
 
-  def doCompleteSimple(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
+  def doCompleteSimple(app: ApplicationSectionDetail, fieldValues: JsObject, userId: String): Future[Result] = {
     val answers = app.formSection.sectionType match {
       case SectionTypeForm | SimpleTypeForm | RowForm | TableForm | DynamicTableForm => fieldValues
       // Instead of using the values that were passed in from the form we'll use the values that
@@ -209,16 +209,16 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
 
     applications.completeSection(app.id, app.sectionNumber, answers).map {
       case Nil => redirectToSimpleFormOverview(app.id)
-      case errs => redisplaySimpleSectionForm(app, answers, errs)
+      case errs => redisplaySimpleSectionForm(app, answers, errs, userId)
     }
   }
 
-  def doSaveItemSimple(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
+  def doSaveItemSimple(app: ApplicationSectionDetail, fieldValues: JsObject, userId: String): Future[Result] = {
     JsonHelpers.allFieldsEmpty(fieldValues) match {
       case true => applications.deleteSection(app.id, app.sectionNumber).map(_ => redirectToSimpleFormOverview(app.id))
       case false => applications.saveItem(app.id, app.sectionNumber, fieldValues).flatMap {
         case Nil => Future.successful(redirectToSimpleFormOverview(app.id))
-        case errs => Future.successful(redisplaySimpleSectionForm(app, fieldValues, errs))
+        case errs => Future.successful(redisplaySimpleSectionForm(app, fieldValues, errs, userId))
       }
     }
   }
@@ -233,12 +233,12 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
     }
   }
 
-  def doPreviewSimple(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
+  def doPreviewSimple(app: ApplicationSectionDetail, fieldValues: JsObject, userId: String): Future[Result] = {
     app.formSection.sectionType match {
       case SectionTypeForm | SimpleTypeForm | RowForm | TableForm | DynamicTableForm =>
         val errs = check(fieldValues, previewChecksFor(app.formSection))
         if (errs.isEmpty) applications.saveSection(app.id, app.sectionNumber, fieldValues).map(_ => redirectToPreview(app.id, app.sectionNumber))
-        else Future.successful(redisplaySimpleSectionForm(app, fieldValues, errs))
+        else Future.successful(redisplaySimpleSectionForm(app, fieldValues, errs, userId))
 
       case SectionTypeCostList => Future.successful(redirectToPreview(app.id, app.sectionNumber))
       case _ => Future.successful(NotFound)
@@ -249,11 +249,11 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
           applications.submitSimpleForm(id)
   }
 
-  def redisplaySimpleSectionForm(app: ApplicationSectionDetail, answers: JsObject, errs: FieldErrors = noErrors): Result = {
-    selectSimpleSectionForm(app, answers, errs)
+  def redisplaySimpleSectionForm(app: ApplicationSectionDetail, answers: JsObject, errs: FieldErrors = noErrors, userId: String): Result = {
+    selectSimpleSectionForm(app, answers, errs, userId)
   }
 
-  def selectSimpleSectionForm(app: ApplicationSectionDetail, answers: JsObject, errs: FieldErrors): Result = {
+  def selectSimpleSectionForm(app: ApplicationSectionDetail, answers: JsObject, errs: FieldErrors, userId: String): Result = {
     val checks = app.formSection.fields.map(f => f.name -> f.check).toMap
     val hints = hinting(answers, checks)
 
@@ -347,7 +347,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
           case JsDefined(JsArray(is)) if is.nonEmpty =>
             val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
             val costItems = itemValues.flatMap(_.validate[CostItem].asOpt)
-            Ok(views.html.sectionList(app, costItems, answers, errs, hints))
+            Ok(views.html.sectionList(app, costItems, answers, errs, hints, userId))
           case _ => Redirect(controllers.routes.CostController.addItem(app.id, app.formSection.sectionNumber))
         }
       case SectionTypeFileList => {
@@ -358,7 +358,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
       }
       case DynamicTableForm => {
         val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
-        val tableItems = itemValues.flatMap(_.validate[TableItem].asOpt)
+        val tableItems = itemValues.flatMap(_.validate[DynamicTableItem].asOpt)
 
         val dform = app.formSection.fields.map{f=>
             f.asInstanceOf[forms.DynamicTableFormField]

@@ -37,13 +37,13 @@ class CostController @Inject()(
                                 applications: ApplicationOps,
                                 AppSectionAction: AppSectionAction
                               )(implicit ec: ExecutionContext)
-  extends Controller with ApplicationResults {
+  extends Controller with ApplicationResults with SessionUser {
 
   implicit val costItemValuesF = Json.format[CostItemValues]
   implicit val costItemF = Json.format[CostItem]
 
   def addItem(applicationId: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(applicationId, sectionNumber) { implicit request =>
-    showItemForm(request.appSection, JsObject(List.empty), List.empty)
+    showItemForm(sessionUser, request.appSection, JsObject(List.empty), List.empty)
   }
 
   def validateItem(o: JsObject): ValidatedNel[FieldError, CostItem] = {
@@ -54,13 +54,13 @@ class CostController @Inject()(
     }
   }
 
-  def editItem(applicationId: ApplicationId, sectionNumber: AppSectionNumber, itemNumber: Int) = AppSectionAction(applicationId, sectionNumber) { request =>
+  def editItem(applicationId: ApplicationId, sectionNumber: AppSectionNumber, itemNumber: Int) = AppSectionAction(applicationId, sectionNumber) { implicit request =>
     val itemO = request.appSection.section.flatMap { s =>
       findItem(s.answers, itemNumber)
     }
 
     itemO match {
-      case Some(item) => showItemForm(request.appSection, JsObject(Seq("item" -> item)), List.empty, Some(itemNumber))
+      case Some(item) => showItemForm(sessionUser, request.appSection, JsObject(Seq("item" -> item)), List.empty, Some(itemNumber))
       case None => BadRequest
     }
   }
@@ -86,9 +86,9 @@ class CostController @Inject()(
         val doc = JsObject(Seq("item" -> itemJson))
         applications.saveItem(applicationId, sectionNumber, doc).map {
           case Nil => redirectToSectionForm(applicationId, sectionNumber)
-          case errs => showItemForm(request.appSection, request.body.values, errs, Some(itemNumber))
+          case errs => showItemForm(sessionUser, request.appSection, request.body.values, errs, Some(itemNumber))
         }
-      case Invalid(errs) => Future.successful(showItemForm(request.appSection, request.body.values, errs.toList, Some(itemNumber)))
+      case Invalid(errs) => Future.successful(showItemForm(sessionUser, request.appSection, request.body.values, errs.toList, Some(itemNumber)))
     }
   }
 
@@ -97,9 +97,9 @@ class CostController @Inject()(
       case Valid(ci) =>
         applications.saveItem(request.appSection.id, request.appSection.sectionNumber, JsObject(Seq("item" -> Json.toJson(ci)))).map {
         case Nil => redirectToSectionForm(applicationId, sectionNumber)
-        case errs => showItemForm(request.appSection, request.body.values, errs)
+        case errs => showItemForm(sessionUser, request.appSection, request.body.values, errs)
       }
-      case Invalid(errs) => Future.successful(showItemForm(request.appSection, request.body.values, errs.toList))
+      case Invalid(errs) => Future.successful(showItemForm(sessionUser, request.appSection, request.body.values, errs.toList))
     }
   }
 
@@ -117,14 +117,14 @@ class CostController @Inject()(
     }
   }
 
-  def showItemForm(app: ApplicationSectionDetail, doc: JsObject, errs: FieldErrors, itemNumber: Option[Int] = None): Result = {
+  def showItemForm(userId: String, app: ApplicationSectionDetail, doc: JsObject, errs: FieldErrors, itemNumber: Option[Int] = None): Result = {
     import ApplicationData._
     import FieldCheckHelpers._
 
     val fields = itemFieldsFor(app.sectionNumber).getOrElse(List.empty)
     val checks = itemChecksFor(app.sectionNumber)
     val hints = hinting(doc, checks)
-
+    implicit def sessionUser = userId
     Ok(views.html.costItemForm(app, fields, app.formSection.questionMap, doc, errs, hints, cancelLink(app), itemNumber))
   }
 

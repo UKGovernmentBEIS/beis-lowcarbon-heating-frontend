@@ -1,6 +1,6 @@
-@(os: Seq[Opportunity])
+@(os: Seq[Opportunity])(implicit sessionUser: String)
 
-@main("Opportunity list - BEIS", backLink=Some(BackLink("Return to dashboard", controllers.routes.DashBoardController.applicantDashBoard().url)), displayUserName=Some("Experienced Eric")) {
+@main("Opportunity list - BEIS", backLink=Some(BackLink("Return to dashboard", controllers.routes.DashBoardController.applicantDashBoard().url)), displayUserName=Some(sessionUser)) {
     <div>
         <h1 class="heading-xlarge">Open BEIS Opportunities</h1>
 

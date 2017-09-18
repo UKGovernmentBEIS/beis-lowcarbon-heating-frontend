@@ -56,6 +56,14 @@ import forms.validation.FieldValidator.Normalised
   Use only http://localhost:9000
  *********************************************************************************/
 
+trait SessionUser{
+
+  implicit def sessionUser(implicit session: Session): String = {
+    //val usr =  for (suser<- session.get("username")) yield suser
+    session.get("username").getOrElse("Unauthorised User")
+  }
+}
+
 class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   extends Controller with ApplicationResults /*with Constraint[String]*/ {
 
@@ -116,7 +124,11 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
       (password.length > 8 )
   }
 
-  def loginForm = Action{
+  def loginForm = Action{ implicit request =>
+    implicit val session: Session = request.session
+    //implicit val session = request.session
+    implicit var suser = request.session.get("username").getOrElse("Unauthorised User")
+    //implicit session: Session
     Ok(views.html.loginForm("", loginform))
   }
 

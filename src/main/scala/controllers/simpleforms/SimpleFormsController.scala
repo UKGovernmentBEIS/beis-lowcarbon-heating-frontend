@@ -51,7 +51,7 @@ class SimpleFormsController @Inject()(
                                        OpportunityAction: OpportunityAction,
                                        AppSectionAction: AppSectionAction
                                      )(implicit ec: ExecutionContext)
-  extends Controller with ApplicationResults {
+  extends Controller with ApplicationResults with SessionUser {
 
   implicit val fileuploadReads = Json.reads[FileUploadItem]
   implicit val fileuploadItemF = Json.format[FileUploadItem]
@@ -61,7 +61,7 @@ class SimpleFormsController @Inject()(
     Ok(views.html.showSimpleApplicationForm(request.appDetail, List.empty))
   }
 
-  def showForms = Action.async {
+  def showForms = Action.async { implicit request =>
     opportunities.getOpenOpportunitySummaries.map { os => Ok(views.html.showOpportunities(os)) }
   }
 
@@ -164,8 +164,7 @@ class SimpleFormsController @Inject()(
       request.body.action match {
 
         case Complete => {
-          println("Complete------")
-          actionHandler.doCompleteSimple(request.appSection, request.body.values)
+          actionHandler.doCompleteSimple(request.appSection, request.body.values, sessionUser)
       }
         case Save => {
           actionHandler.doSaveSimple(request.appSection, request.body.values)
@@ -179,13 +178,13 @@ class SimpleFormsController @Inject()(
               Future.successful(redirectToSimpleFormOverview(id))
           }
         }
-        case SaveItem => actionHandler.doSaveItemSimple(request.appSection, request.body.values)
-        case Preview => actionHandler.doPreviewSimple(request.appSection, request.body.values)
+        case SaveItem => actionHandler.doSaveItemSimple(request.appSection, request.body.values, sessionUser)
+        case Preview => actionHandler.doPreviewSimple(request.appSection, request.body.values, sessionUser)
        // case completeAndPreview => actionHandler.completeAndPreview(request.appSection, request.body.values)
       }
   }
 
-  def submit(id: ApplicationId) = AppDetailAction(id).async { request =>
+  def submit(id: ApplicationId) = AppDetailAction(id).async { implicit request =>
     val userId = request.session.get("username").getOrElse("Unauthorised User")
     val sectionErrors: Seq[SectionError] = request.appDetail.applicationForm.sections.sortBy(_.sectionNumber).flatMap { fs =>
       request.appDetail.sections.find(_.sectionNumber == fs.sectionNumber) match {
@@ -208,7 +207,7 @@ class SimpleFormsController @Inject()(
 
 
   def addFileItem(applicationId: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(applicationId, sectionNumber) { implicit request =>
-    awsHandler.showSimpleFileItemForm(request.appSection, JsObject(List.empty), List.empty)
+    awsHandler.showSimpleFileItemForm(sessionUser, request.appSection, JsObject(List.empty), List.empty)
   }
 
   def deleteFileItem(applicationId: ApplicationId, sectionNumber: AppSectionNumber, itemNumber: Int, ext: String) = Action.async {
@@ -249,7 +248,7 @@ class SimpleFormsController @Inject()(
 
 
 
-  def showGuidancePage(id: OpportunityId) = Action {
+  def showGuidancePage(id: OpportunityId) = Action { implicit request =>
     Ok(views.html.guidance(id))
   }
 

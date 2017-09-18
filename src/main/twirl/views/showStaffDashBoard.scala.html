@@ -2,11 +2,11 @@
 //apps: Seq[Application],
 os: Seq[Opportunity]//,
 //ms: Seq[Message]
-)
+)(implicit sessionUser: String)
 
 @import org.joda.time.format.DateTimeFormat
 
-@main("Opportunity list - BEIS", displayUserName=Some("Experienced Eric")) {
+@main("Opportunity list - BEIS", displayUserName=Some(sessionUser)) {
 
 
 <div>

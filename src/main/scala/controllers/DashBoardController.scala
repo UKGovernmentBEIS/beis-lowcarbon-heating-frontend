@@ -41,7 +41,7 @@ class DashBoardController @Inject()(   applications: ApplicationOps,
                                        appforms: ApplicationFormOps,
                                        msgs: MessageBoardOps
                                      )(implicit ec: ExecutionContext)
-  extends Controller with ApplicationResults {
+  extends Controller with ApplicationResults with SessionUser{
 
   def applicantDashBoard = Action.async { implicit request =>
     val userId = request.session.get("username").getOrElse("Unauthorised User")
@@ -60,7 +60,7 @@ class DashBoardController @Inject()(   applications: ApplicationOps,
         case _ => Seq()
         }
     )yield(
-      Ok(views.html.showApplicantDashBoard(appsSeq, oppsSeq, msgSeq, userId)))
+      Ok(views.html.showApplicantDashBoard(appsSeq, oppsSeq, msgSeq)))
   }
   def staffDashBoard = Action.async { implicit request =>
     val userId = request.session.get("username").getOrElse("Unauthorised User")

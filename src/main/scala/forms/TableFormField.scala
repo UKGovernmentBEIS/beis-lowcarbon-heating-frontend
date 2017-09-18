@@ -28,7 +28,7 @@ case class TableFormField(name: String, tableform : Seq[TableField]) extends Fie
   implicit val tableFormReads = Json.reads[SimpleFormValues]
   implicit val tableRowDataReads = Json.reads[TableRowData]
   implicit val tableFormDataReads = Json.reads[TableFormData]
-  //implicit val tableObjectReads = Json.format[Option[play.api.libs.json.JsObject]]
+  implicit val tableItemReads = Json.reads[TableItem]
 
   override def check: FieldCheck = {
 
@@ -41,13 +41,20 @@ case class TableFormField(name: String, tableform : Seq[TableField]) extends Fie
   override def previewCheck: FieldCheck = FieldChecks.mandatoryCheck
 
   override def renderPreview(questions: Map[String, Question], answers: JsObject) = {
-    views.html.renderers.preview.tableFormField(this, JsonHelpers.flatten(answers))
+    answers.validate[TableFormData] match {
+      case JsSuccess(tableFormFieldAnswers, _) =>
+        Logger.debug("Validated in renderFormInput:-" + tableFormFieldAnswers.rowsData.toString())
+      case JsError(errs) =>
+        Logger.debug("Errors in renderFormInput:-" + errs)
+    }
+
+    views.html.renderers.preview.tableFormField(this, questions, JsonHelpers.flatten(answers))
   }
 
   override def renderFormInput(questions: Map[String, Question], answers: JsObject, errs: Seq[FieldError], hints: Seq[FieldHint]) = {
     answers.validate[TableFormData] match {
-      case JsSuccess(dynamicTableFormFieldAnsers, _) =>
-        Logger.debug("Validated in renderFormInput:-" + dynamicTableFormFieldAnsers.rowsData.toString())
+      case JsSuccess(dynamicTableFormFieldAnswers, _) =>
+        Logger.debug("Validated in renderFormInput:-" + dynamicTableFormFieldAnswers.rowsData.toString())
         // views.html.renderers.tableFormField(this, questions, dynamicTableFormFieldAnsers, errs, hints)
       case JsError(errs) =>
         Logger.debug("Errors in renderFormInput:-" + errs)
@@ -56,3 +63,4 @@ case class TableFormField(name: String, tableform : Seq[TableField]) extends Fie
     views.html.renderers.tableFormField(this, questions, JsonHelpers.flatten(answers), errs, hints)
   }
 }
+case class TableItem(tableRowData: Seq[String], itemNumber: Option[Int] = None)

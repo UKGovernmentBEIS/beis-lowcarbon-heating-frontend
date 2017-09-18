@@ -37,12 +37,12 @@ class ApplicationPreviewController @Inject()(
                                               opps: OpportunityOps,
                                               AppSectionAction: AppSectionAction
                                             )(implicit ec: ExecutionContext)
-  extends Controller {
+  extends Controller with SessionUser{
 
   implicit val ciReads = Json.reads[CostItem]
   implicit val cifReads = Json.reads[FileUploadItem]
 
-  def previewSection(id: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(id, sectionNumber) { request =>
+  def previewSection(id: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(id, sectionNumber) { implicit request =>
     val (backLink, editLink) = request.appSection.section.map(_.isComplete) match {
       case Some(true) =>
         (controllers.routes.ApplicationController.show(request.appSection.id).url,
@@ -54,25 +54,28 @@ class ApplicationPreviewController @Inject()(
 
     request.appSection.formSection.sectionType match {
       case SectionTypeForm | SimpleTypeForm  | RowForm  | TableForm | DynamicTableForm =>
-        renderSectionPreview(request.appSection, request.appSection.formSection.fields, answers, backLink, editLink)
+        renderSectionPreview(request.appSection, request.appSection.formSection.fields, answers, backLink, editLink, sessionUser)
       case SectionTypeCostList =>
         val costItems = request.appSection.section.flatMap(s => (s.answers \ "items").validate[List[CostItem]].asOpt).getOrElse(List.empty)
-        renderListPreview(request.appSection, costItems, answers, backLink, editLink)
+        renderListPreview(request.appSection, costItems, answers, backLink, editLink, sessionUser)
       case SectionTypeFileList =>
         val fileItems = request.appSection.section.flatMap(s => (s.answers \ "items").validate[List[FileUploadItem]].asOpt).getOrElse(List.empty)
-        renderFileListPreview(request.appSection, request.appSection.formSection.fields, answers, backLink, editLink)
+        renderFileListPreview(request.appSection, request.appSection.formSection.fields, answers, backLink, editLink, sessionUser)
     }
   }
 
-  def renderSectionPreview(app: ApplicationSectionDetail, fields: Seq[Field], answers: JsObject, backLink: String, editLink: Option[String]) = {
+  def renderSectionPreview(app: ApplicationSectionDetail, fields: Seq[Field], answers: JsObject, backLink: String, editLink: Option[String], userId: String) = {
+    implicit val sessionUser = userId
     Ok(views.html.sectionPreview(app, fields, answers, backLink, editLink))
   }
 
-  def renderListPreview(app: ApplicationSectionDetail, items: Seq[CostItem], answers: JsObject, backLink: String, editLink: Option[String]) = {
+  def renderListPreview(app: ApplicationSectionDetail, items: Seq[CostItem], answers: JsObject, backLink: String, editLink: Option[String], userId: String) = {
+    implicit val sessionUser = userId
     Ok(views.html.listSectionPreview(app, items, answers, backLink, editLink))
   }
 
-  def renderFileListPreview(app: ApplicationSectionDetail, fields: Seq[Field], answers: JsObject, backLink: String, editLink: Option[String]) = {
+  def renderFileListPreview(app: ApplicationSectionDetail, fields: Seq[Field], answers: JsObject, backLink: String, editLink: Option[String], userId: String) = {
+    implicit val sessionUser = userId
     Ok(views.html.sectionPreview(app, fields, answers, backLink, editLink))
   }
 
@@ -80,7 +83,7 @@ class ApplicationPreviewController @Inject()(
     Map(form.sections.map(sec => sec.sectionNumber -> sec.fields): _*)
   }
 
-  def applicationPreview(id: ApplicationId) = Action.async {
+  def applicationPreview(id: ApplicationId) = Action.async { implicit request =>
     gatherApplicationDetails(id).map {
       case Some(app) =>
         val title = app.sections.find(_.sectionNumber == 1).flatMap(s => (s.answers \ "title").validate[String].asOpt)

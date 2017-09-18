@@ -5,12 +5,12 @@
         items: List[forms.validation.CostItem],
         questions: Map[String, Question],
         errs: List[forms.validation.FieldError]
-)
+)(implicit sessionUser: String)
 
 @import partials._
 @import helpers._
 
-@main(s"${formSection.title} - BEIS", backLink=Some(BackLink("Return to application overview",controllers.routes.ApplicationController.show(app.id).url)), displayUserName=Some("Experienced Eric")) {
+@main(s"${formSection.title} - BEIS", backLink=Some(BackLink("Return to application overview",controllers.routes.ApplicationController.show(app.id).url)), displayUserName=Some(sessionUser)) {
     <div class="grid-row">
         <div class="column-two-thirds">
             <h1 class="heading-xlarge">

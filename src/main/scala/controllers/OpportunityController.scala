@@ -34,9 +34,9 @@ class OpportunityController @Inject()( actionHandler: ActionHandler,
                                        apps: ApplicationOps,
                                        OpportunityAction: OpportunityAction,
                                        OppSectionAction: OppSectionAction
-                                     )(implicit ec: ExecutionContext) extends Controller {
+                                     )(implicit ec: ExecutionContext) extends Controller with SessionUser {
 
-  def showOpportunities = Action.async {
+  def showOpportunities = Action.async { implicit request =>
     opportunities.getOpenOpportunitySummaries.map { os => Ok(views.html.showOpportunities(os)) }
   }
 
@@ -58,7 +58,7 @@ class OpportunityController @Inject()( actionHandler: ActionHandler,
     }
   }
 
-  def showGuidancePage(id: OpportunityId) = Action {
+  def showGuidancePage(id: OpportunityId) = Action { implicit request =>
     Ok(views.html.guidance(id))
   }
 

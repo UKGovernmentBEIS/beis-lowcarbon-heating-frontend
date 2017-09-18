@@ -50,7 +50,7 @@ class ApplicationController @Inject()(
                                        AppDetailAction: AppDetailAction,
                                        AppSectionAction: AppSectionAction
                                      )(implicit ec: ExecutionContext)
-  extends Controller with ApplicationResults {
+  extends Controller with ApplicationResults with SessionUser{
 
   implicit val fileuploadReads = Json.reads[FileUploadItem]
   implicit val fileuploadItemF = Json.format[FileUploadItem]
@@ -78,13 +78,11 @@ class ApplicationController @Inject()(
     }
   }
 
-  def show(id: ApplicationId) = AppDetailAction(id) { request =>
-    val userId = request.session.get("username").getOrElse("Unauthorised User")
-
+  def show(id: ApplicationId) = AppDetailAction(id) { implicit request =>
     var mapsecs:Map[String, Seq[ApplicationFormSection]]
         = makeGroupSections(request.appDetail.applicationForm.sections)
 
-    Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, userId, Option(actionHandler.guidanceDocURL)))
+    Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, actionHandler.guidanceDocURL))
   }
 
   def makeGroupSections( sections: Seq[ApplicationFormSection]) : Map[String, Seq[ApplicationFormSection]] = {
@@ -132,23 +130,22 @@ class ApplicationController @Inject()(
     }
   }
 
-
-
   def addFileItem(applicationId: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(applicationId, sectionNumber) { implicit request =>
-    awsHandler.showFileItemForm(request.appSection, JsObject(List.empty), List.empty)
+    val userId = request.session.get("username").getOrElse("Unauthorised User")
+    awsHandler.showFileItemForm(userId, request.appSection, JsObject(List.empty), List.empty)
   }
-
 
   def addDynamicTDItem(applicationId: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(applicationId, sectionNumber) { implicit request =>
-    showDynamicTDItemForm(request.appSection, JsObject(List.empty), List.empty)
+    showDynamicTDItemForm(sessionUser, request.appSection, JsObject(List.empty), List.empty)
   }
 
-  def showDynamicTDItemForm(app: ApplicationSectionDetail, doc: JsObject, errs: FieldErrors, itemNumber: Option[Int] = None): Result = {
+  def showDynamicTDItemForm(userId: String, app: ApplicationSectionDetail, doc: JsObject, errs: FieldErrors, itemNumber: Option[Int] = None): Result = {
     import ApplicationData._
     import FieldCheckHelpers._
     val checks = itemChecksFor(app.sectionNumber)
     val hints = hinting(doc, checks)
     val answers = app.section.map { s => s.answers }.getOrElse(JsObject(List.empty))
+    implicit def sessionUser = userId
     Ok(views.html.dynamicTDForm(app, answers, errs, hints))
   }
 
@@ -275,7 +272,7 @@ class ApplicationController @Inject()(
       }
   }
 
-  def submit(id: ApplicationId) = AppDetailAction(id).async { request =>
+  def submit(id: ApplicationId) = AppDetailAction(id).async { implicit request =>
     val userId = request.session.get("username").getOrElse("Unauthorised User")
     val sectionErrors: Seq[SectionError] = request.appDetail.applicationForm.sections.sortBy(_.sectionNumber).flatMap { fs =>
       request.appDetail.sections.find(_.sectionNumber == fs.sectionNumber) match {
@@ -295,7 +292,7 @@ class ApplicationController @Inject()(
       }
     } else {
         var mapsecs:Map[String, Seq[ApplicationFormSection]]  = makeGroupSections(request.appDetail.applicationForm.sections.sortBy(_.sectionNumber))
-        Future.successful(Ok(views.html.showApplicationForm(request.appDetail, mapsecs, sectionErrors, userId)))
+        Future.successful(Ok(views.html.showApplicationForm(request.appDetail, mapsecs, sectionErrors, "")))
     }
   }
 
@@ -313,15 +310,13 @@ class ApplicationController @Inject()(
   val appRefField = TextField(label = Some(APP_REF_FIELD_NAME), name = APP_REF_FIELD_NAME, isEnabled = true, isMandatory = false, isNumeric = false, maxWords = 200)
   val appRefQuestion = Map(APP_REF_FIELD_NAME -> Question("Application Funding Title"))
 
-  def editPersonalRef(id: ApplicationId) = AppDetailAction(id) { request =>
-    implicit val userId = request.session.get("username").getOrElse("Unauthorised User")
+  def editPersonalRef(id: ApplicationId) = AppDetailAction(id) { implicit request =>
     val answers = JsObject(Seq(APP_REF_FIELD_NAME -> Json.toJson(request.appDetail.personalReference.map(_.value).getOrElse(""))))
     val hints = hinting(answers, Map(appRefField.name -> appRefField.check))
-    Ok(views.html.personalReferenceForm(userId, appRefField, request.appDetail, appRefQuestion, answers, Nil, hints, Option(actionHandler.guidanceDocURL)))
+    Ok(views.html.personalReferenceForm(appRefField, request.appDetail, appRefQuestion, answers, Nil, hints, actionHandler.guidanceDocURL))
   }
 
-  def savePersonalRef(id: ApplicationId) = AppDetailAction(id).async(JsonForm.parser) { request =>
-    implicit val userId = request.session.get("username").getOrElse("Unauthorised User")
+  def savePersonalRef(id: ApplicationId) = AppDetailAction(id).async(JsonForm.parser) { implicit request =>
     request.body.action match {
       case Save => appRefField.check(appRefField.name, Json.toJson(JsonHelpers.flatten(request.body.values).getOrElse(APP_REF_FIELD_NAME, ""))) match {
         case Nil =>
@@ -331,7 +326,7 @@ class ApplicationController @Inject()(
         case errs =>
           val hints = hinting(request.body.values, Map(appRefField.name -> appRefField.check))
           Future.successful(
-            Ok(views.html.personalReferenceForm(userId, appRefField, request.appDetail, appRefQuestion, request.body.values, errs, hints, Option(actionHandler.guidanceDocURL)))
+            Ok(views.html.personalReferenceForm(appRefField, request.appDetail, appRefQuestion, request.body.values, errs, hints, actionHandler.guidanceDocURL))
           )
       }
       case _ =>

@@ -26,9 +26,6 @@ case class SimpleFormField(name: String, simpleform : Seq[SimpleField]) extends 
   implicit val simpleFormReads = Json.reads[SimpleFormValues]
 
   override def check: FieldCheck = {
-    simpleform.map{ d=>
-      println("dddd============== "+d.label + "--" + d.isMandatory)
-    }
     //FieldChecks.fromValidator(new SimpleFormValidator(Seq(telephoneField, emailField, webField, twitterField)))
     FieldChecks.fromValidator(new SimpleFormValidator(simpleform))
   }
