@@ -28,6 +28,9 @@ answers: Map[String, String]
             case "checkbox" => {
             @answers.get(f.name)
             }
+            case "currency" => {
+                £ @answers.get(f.name)
+            }
             case "date" => {
             <div class='date-selector'>
                 <div>

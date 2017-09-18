@@ -48,7 +48,7 @@ if(isMandatory){ <span class="mandatory-field">*</span> }
             <td>
                 @f.fieldType match {
                    case "String" => {
-                <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
+                                <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
                    }
                    case "text" => {
                                 <input type="text" id="@f.name" title="@f.name" class="form-control" name="@f.name"
@@ -60,9 +60,15 @@ if(isMandatory){ <span class="mandatory-field">*</span> }
                                     <label for="@f.name">@f.label </label>
                                 </div>
                    }
-                   case "textArea" => {
+                   case "textarea" => {
                                 <textarea id="@f.name" class="form-control generic textarea-resize" title="@f.name"
                                     name="@f.name">@answers.get(f.name)</textarea>
+                   }
+                   case "currency" => {
+                                <div class="input-icon">
+                                <i>£</i>
+                                <input type="text" id="@f.name" class="form-control text-field currency" title="@f.name" name="@f.name" value='@answers.get(f.name)'>
+                                </div>
                    }
                    case "date" => {
                                 <div class='date-selector'>
