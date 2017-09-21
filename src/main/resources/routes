@@ -20,7 +20,7 @@ GET         /register                                                 controller
 POST        /register                                                 controllers.UserController.registrationSubmit
 GET         /forgotpassword                                           controllers.UserController.forgotPasswordForm
 POST        /forgotpassword                                           controllers.UserController.forgotPasswordSubmit
-#GET         /forgotpasswordconfirm                                    controllers.UserController.forgotPasswordConfirm
+#GET         /forgotpasswordconfirm                                   controllers.UserController.forgotPasswordConfirm
 
 GET         /opportunities                                            controllers.OpportunityController.showOpportunities
 
@@ -28,7 +28,7 @@ GET         /opportunities/guidance/:opportunityId                    controller
 GET         /opportunity/:opportunityId                               controllers.OpportunityController.showOpportunity(opportunityId:OpportunityId, section:Option[OppSectionNumber])
 GET         /opportunity/:id/section/:num                             controllers.OpportunityController.showOpportunitySection(id:OpportunityId, num:OppSectionNumber)
 
-#GET         /application_form/:id/apply                                controllers.ApplicationController.showOrCreateForForm(id: ApplicationFormId)
+#GET         /application_form/:id/apply                              controllers.ApplicationController.showOrCreateForForm(id: ApplicationFormId)
 GET         /application_form/:id/apply                               controllers.ApplicationController.createForForm(id: ApplicationFormId)
 
 GET         /application/:id                                          controllers.ApplicationController.show(id: ApplicationId)

@@ -52,8 +52,8 @@ import forms.validation.FieldValidator.Normalised
 /********************************************************************************
   This file is for temporary Login till any Security component is deployed.
   This file also for Activity samples.
-  Please donot use this login file. i.e dont use http://localhost:9000/login
-  Use only http://localhost:9000
+  Please donot use this login file. i.e dont use http://localhost:9001/login
+  Use only http://localhost:9001
  *********************************************************************************/
 
 trait SessionUser{
@@ -86,24 +86,12 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   val registrationform:Form[RegistrationForm] = Form(
     mapping(
       "name" -> text,
-      "confirmpassword" -> text,
       "password" -> text,
+      "confirmpassword" -> text,
       "email" -> text
     ) (RegistrationForm.apply)(RegistrationForm.unapply) verifying ("Invalid email or password", result => result match {
       case registrationForm => checkNotNull(registrationForm.name, registrationForm.password)
     })
-  )
-
-  val registrationform1:Form[RegistrationForm] = Form(
-    mapping(
-      "name" -> text,
-      "password" -> text,
-      "confirmpassword" -> text,
-      "email" -> text
-    ) (RegistrationForm.apply)(RegistrationForm.unapply) verifying ("Invalid email or password", result => result match {
-      case registrationForm =>
-        false
-     })
   )
 
   val forgotpasswordform:Form[ForgotPasswordForm] = Form(
@@ -126,10 +114,8 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
 
   def loginForm = Action{ implicit request =>
     implicit val session: Session = request.session
-    //implicit val session = request.session
     implicit var suser = request.session.get("username").getOrElse("Unauthorised User")
-    //implicit session: Session
-    Ok(views.html.loginForm("", loginform))
+    Ok(views.html.loginForm("", Option(loginform)))
   }
 
   def basicAuth(pswd: String) = {
@@ -153,10 +139,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     val email = (request.body.values \ "email").validate[String].getOrElse("NA")
 
     val regn = Registration(UserId(username), password, email)
-
     val emailvalidator = EmailValidator(Option("email")).validate("email", email).fold(_.toList, _ => List())
-    //val emailvalidator = EmailValidator(Option("email")).validate("email", email).fold(_.toList, _ => List())
-    //val emailvalidator = EmailValidator(Option("email")).validate("email", email)
     val errors = confirmPasswordCheck(password, confirmpassword) ++ emailvalidator
 
     errors.isEmpty match {
@@ -176,10 +159,10 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
                   Future.successful(Ok(views.html.registrationForm(registrationform, List())))
                 }
                 else
-                  Future.successful(Ok(views.html.loginForm("", loginform)))
+                  Future.successful(Ok(views.html.loginForm("", Option(loginform))))
               }
               case None =>
-                Future.successful(Ok(views.html.loginForm("Login is incorrect. Please add correct details", loginform)))
+                Future.successful(Ok(views.html.loginForm("Login is incorrect. Please add correct details", Option(loginform))))
           }
       case false =>
         val errMsg = "The passwords entered do not match. Please enter them again"
@@ -216,14 +199,15 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     users.login(Json.toJson(Login(UserId(username), passwrd)).as[JsObject]).flatMap{
     //users.login(Json.toJson(request.body.values).as[JsObject]).flatMap{
       case Some(msg) =>
-        Future.successful(Redirect(routes.DashBoardController.applicantDashBoard()).withSession(Security.username -> username))
+        Future.successful(Redirect(routes.DashBoardController.applicantDashBoard())
+          .withSession((Security.username -> username), ("sessionTime" -> System.currentTimeMillis.toString)))
       case None =>
-        Future.successful(Ok(views.html.loginForm("Login is incorrect. Please add correct details", loginform)))
+        Future.successful(Ok(views.html.loginForm("Login is incorrect. Please add correct details", Option(loginform))))
     }
   }
 
   def logOut = Action{
-    Ok(views.html.loginForm("", loginform)).withNewSession
+    Ok(views.html.loginForm("", Option(loginform))).withNewSession
   }
 
   def registrationForm = Action{

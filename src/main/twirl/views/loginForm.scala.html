@@ -1,4 +1,4 @@
-@(errors : String, loginform: Form[LoginForm])
+@(errors : String, loginform: Option[Form[LoginForm]] =None)
 
 @errorClass = @{
 if(errors.nonEmpty) "error" else ""
