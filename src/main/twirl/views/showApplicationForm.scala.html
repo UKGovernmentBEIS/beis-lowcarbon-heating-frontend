@@ -79,25 +79,23 @@ guidanceDocURL: String)(implicit sessionUser: String)
                             <details>
                                 <summary role="button">
 
-                                            <span class="summary">
+                                            <span class="summary panel-heading">
                                                 @{i+1}. @fs._1
                                             </span>
                                 </summary>
 
-                                @for((f,k) <- fs._2.view.zipWithIndex){
-
-                                <div class="panel panel-border-narrow">
-                                    <section class="container">
-                                        <div class="helptext-first">
+                                <div class="panel panel-border-narrow panel-no-top-padding">
+                                    @for((f,k) <- fs._2.view zip ('a' to 'z').toList){
+                                    <p>
+                                    <div class="helptext-first">
                                             <a id="section-@f.sectionNumber.num-link" href="@controllers.routes.ApplicationController.showSectionForm(app.id, f.sectionNumber)">
-
-                                           @{k+1}.  @if(f.title.split("-").size > 1) { @f.title.split("-")(1)} else{@f.title}  </a></div>
-                                        <div class="helptext-second helptext-border">@statusText(app, f.sectionNumber)</div>
-                                    </section>
-                                </div>
+                                                @k.  @if(f.title.split("-").size > 1) { @f.title.split("-")(1)} else{@f.title}  </a></div>
+                                     <div class="helptext-second helptext-border">@statusText(app, f.sectionNumber)</div>
+                                    </p>
                                 }
-
+                                </div>
                             </details>
+
                             }
                         </td>
                     </tr>
@@ -109,7 +107,7 @@ guidanceDocURL: String)(implicit sessionUser: String)
                     case _ => { <input type="submit" name="@Save.name" class="button button--start" value="Submit application to BEIS" disabled> }
                     }
 
-                    <a href="@controllers.routes.ApplicationPreviewController.applicationPreview(app.id)" class="flat nobreak">
+                    <a href="@controllers.routes.ApplicationPreviewController.applicationPreview(app.id)" class="flat bottom--link-style nobreak">
                         Preview application</a>
                 </p>
             </div>

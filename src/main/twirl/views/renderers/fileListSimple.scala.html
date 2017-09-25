@@ -11,6 +11,7 @@
 @filetype(f: String) = @{
          if(f.endsWith(".pdf")) "pdf"
     else if(f.endsWith(".doc")) "doc"
+    else if(f.endsWith(".docx")) "docx"
     else if(f.endsWith(".xls")) "xls"
     else if(f.endsWith(".txt")) "txt"
     else if(f.endsWith(".jpg") || f.endsWith(".jpeg") || f.endsWith(".bmp") || f.endsWith(".gif") || f.endsWith(".png")) "image"

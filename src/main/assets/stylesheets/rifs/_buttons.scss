@@ -11,6 +11,10 @@
     vertical-align: bottom;
     display: inline-block;
   }
+
+  .bottom--link-style {
+    margin-top: 0.3em;
+  }
 }
 
 // Buttons
@@ -22,6 +26,18 @@ input.button--link-style {
   border: 0;
   color: $link-colour;
   cursor: pointer;
+  margin-right: 1.5em;
+  padding: 0;
+  text-decoration: underline;
+}
+
+input.buttom--link-style {
+  @extend .font-small;
+  background: none;
+  border: 0;
+  color: $link-colour;
+  cursor: pointer;
+  margin-top: 0.5em;
   margin-right: 1.5em;
   padding: 0;
   text-decoration: underline;
