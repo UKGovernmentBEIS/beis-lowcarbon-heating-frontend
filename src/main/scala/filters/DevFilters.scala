@@ -21,6 +21,8 @@ import javax.inject.Inject
 
 import play.api.http.DefaultHttpFilters
 
-class Filters @Inject()(
+class DevFilters @Inject()(
+                         restErrorFilter: RestErrorFilter,
+                         log: LoggingFilter,
                          authorise: AuthoriseFilter
-                       ) extends DefaultHttpFilters(authorise)
+                       ) extends DefaultHttpFilters(restErrorFilter, log, authorise)
