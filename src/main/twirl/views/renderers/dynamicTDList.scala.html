@@ -29,7 +29,7 @@
     </thead>
 
     <tbody>
-        @tableItems.map { tableItem =>
+        @tableItems.reverse.map { tableItem =>
             <tr>
 
                 @tableItem.tableRowData.map { rowdata=>
