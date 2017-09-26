@@ -72,6 +72,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   implicit val loginWrites = Json.writes[LoginForm]
   implicit val regnWrites = Json.writes[Registration]
   implicit val regnFormWrites = Json.writes[RegistrationForm]
+  implicit val resetPasswordWrites = Json.writes[ResetPassword]
 
 
   val loginform:Form[LoginForm] = Form(
@@ -105,15 +106,13 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
 
   val resetpasswordform:Form[ResetPasswordForm] = Form(
     mapping(
+      "refno" -> text,
       "password" -> text,
       "confirmpassword" -> text
     ) (ResetPasswordForm.apply)(ResetPasswordForm.unapply) verifying ("Reset Password", result => result match {
-      case resetpasswordform => checkEmailNotNull(resetpasswordform.password.replaceAll("\\s+", ""))
+      case resetpasswordform => checkEmailNotNull(resetpasswordform.password replaceAll("\\s+", ""))
     })
   )
-
-
-
 
   def checkNotNull(username: String, password: String) =
     (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password))
@@ -219,6 +218,30 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     }
   }
 
+
+  def resetPasswordSubmit = Action.async(JsonForm.parser)  { implicit request =>
+
+    val refno = (request.body.values \ "refno").validate[String].getOrElse("NA")
+    val passwrd = (request.body.values \ "password").validate[String].getOrElse("NA")
+    val confirmpassword = (request.body.values \ "confirmpassword").validate[String].getOrElse("NA")
+
+    val errors = confirmPasswordCheck(passwrd, confirmpassword)
+    errors.isEmpty match {
+      case true =>
+        users.resetpassword(Json.toJson(ResetPassword(refno, passwrd)).as[JsObject]).flatMap{
+          case Some(msg) =>
+            Future.successful(Ok(views.html.loginForm("", Option(loginform))))
+          case None =>
+            Future.successful(Ok(views.html.loginForm("There is an error Please try again", Option(loginform))))
+        }
+      case false =>
+        val errMsg = "The passwords entered do not match. Please enter them again"
+        Future.successful(Ok(views.html.registrationForm(registrationform, errors)))
+    }
+
+  }
+
+
   def logOut = Action{
     Ok(views.html.loginForm("", Option(loginform))).withNewSession
   }
@@ -243,12 +266,11 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
  }
 
 
-
-
 case class LoginForm(name: String, password: String)
 case class Login(name: UserId, password: String)
 case class RegistrationForm(name: String, password: String, confirmpassword: String, email: String)
 case class Registration(name: UserId, password : String, email: String)
-case class RegistrationFormValues(name: Option[String]= None, password: Option[String]= None, confirmpassword: Option[String]= None, email: String)
+//case class RegistrationFormValues(name: Option[String]= None, password: Option[String]= None, confirmpassword: Option[String]= None, email: String)
 case class ForgotPasswordForm(email: String)
-case class ResetPasswordForm(password: String, confirmpassword: String)
+case class ResetPasswordForm(refno: String, password: String, confirmpassword: String)
+case class ResetPassword(refno: String, password: String)

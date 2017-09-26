@@ -21,6 +21,7 @@ POST        /register                                                 controller
 GET         /forgotpassword                                           controllers.UserController.forgotPasswordForm
 GET         /resetpassword/:refno                                     controllers.UserController.resetPasswordForm(refno: String)
 POST        /forgotpassword                                           controllers.UserController.forgotPasswordSubmit
+POST        /resetpassword                                           controllers.UserController.resetPasswordSubmit
 #GET         /forgotpasswordconfirm                                   controllers.UserController.forgotPasswordConfirm
 
 GET         /opportunities                                            controllers.OpportunityController.showOpportunities
