@@ -47,6 +47,7 @@ import cats.data.ValidatedNel
 import cats.syntax.cartesian._
 import cats.syntax.validated._
 import forms.validation.FieldValidator.Normalised
+import scala.util.{Failure, Success, Try}
 
 
 /********************************************************************************
@@ -142,6 +143,14 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     }
   }
 
+  def refNoCheck(refNo:String): List[FieldError] = {
+
+    Try(refNo.toLong) match {
+      case Failure(e) => List(FieldError("refno", "Reference Number is wrong"))
+      case Success(v) => List()
+    }
+  }
+
   def registrationSubmit =  Action.async(JsonForm.parser)  { implicit request =>
 
     val jsObj = Json.toJson(request.body.values).as[JsObject] + ("id" -> Json.toJson(0))
@@ -209,7 +218,6 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     val username = (request.body.values \ "name").validate[String].getOrElse("NA")
     val passwrd = (request.body.values \ "password").validate[String].getOrElse("NA")
     users.login(Json.toJson(Login(UserId(username), passwrd)).as[JsObject]).flatMap{
-    //users.login(Json.toJson(request.body.values).as[JsObject]).flatMap{
       case Some(msg) =>
         Future.successful(Redirect(routes.DashBoardController.applicantDashBoard())
           .withSession((Security.username -> username), ("sessionTime" -> System.currentTimeMillis.toString)))
@@ -225,20 +233,20 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     val passwrd = (request.body.values \ "password").validate[String].getOrElse("NA")
     val confirmpassword = (request.body.values \ "confirmpassword").validate[String].getOrElse("NA")
 
-    val errors = confirmPasswordCheck(passwrd, confirmpassword)
+    val errors = confirmPasswordCheck(passwrd, confirmpassword) ++ refNoCheck(refno)
+
     errors.isEmpty match {
       case true =>
         users.resetpassword(Json.toJson(ResetPassword(refno, passwrd)).as[JsObject]).flatMap{
-          case Some(msg) =>
+          case Some(1) =>
             Future.successful(Ok(views.html.loginForm("", Option(loginform))))
-          case None =>
-            Future.successful(Ok(views.html.loginForm("There is an error Please try again", Option(loginform))))
+          case Some(0) =>
+            Future.successful(Ok(views.html.resetPasswordForm(List(), refno, resetpasswordform)))
         }
       case false =>
         val errMsg = "The passwords entered do not match. Please enter them again"
-        Future.successful(Ok(views.html.registrationForm(registrationform, errors)))
+        Future.successful(Ok(views.html.resetPasswordForm(errors, refno, resetpasswordform)))
     }
-
   }
 
 
@@ -256,7 +264,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   }
 
   def resetPasswordForm(refno: String) = Action{
-    Ok(views.html.resetPasswordForm("", refno, resetpasswordform))
+    Ok(views.html.resetPasswordForm(List(), refno, resetpasswordform))
   }
 
   def start(pid:Int, processEngine: ProcessEngineWrapper){

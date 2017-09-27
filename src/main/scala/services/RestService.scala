@@ -95,11 +95,10 @@ trait RestService {
   def postWithResult[A: Reads, B: Writes](url: String, body: B): Future[Option[A]] = {
     val request:WSRequest = ws.url(url)
     request.post(Json.toJson(body)).map { response =>
+
       response.status match {
         case 200 => response.json.validate[A] match {
-          case JsSuccess(a, _) =>  {
-            Some(a)
-          }
+          case JsSuccess(a, _) => Some(a)
           case JsError(errs) => None
             //throw JsonParseException("POST", request, response, errs)
         }

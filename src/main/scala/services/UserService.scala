@@ -50,8 +50,8 @@ class UserService @Inject()(val ws: WSClient)(implicit val ec: ExecutionContext)
   override def forgotpassword(doc: JsObject): Future[Option[String]] =
     postWithResult[String, JsObject](urls.forgotpassword, doc)
 
-  override def resetpassword(doc: JsObject): Future[Option[String]] =
-    postWithResult[String, JsObject](urls.resetpassword, doc)
+  override def resetpassword(doc: JsObject): Future[Option[Int]] =
+    postWithResult[Int, JsObject](urls.resetpassword, doc)
  }
 
 

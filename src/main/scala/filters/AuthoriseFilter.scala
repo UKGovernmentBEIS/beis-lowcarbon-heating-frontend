@@ -31,14 +31,13 @@ import scala.util.control._
   * Created by venkatamutyala on 18/09/2017.
   */
 
-
 class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionContext) extends Filter {
 
   import play.api.mvc.Results._
 
   override def apply(nextCall: (RequestHeader) => Future[Result])( rh: RequestHeader): Future[Result] = {
 
-    if (rh.uri.startsWith("/assets") || isSessionExcluded(rh)) {
+    if (rh.uri.startsWith("/assets") || rh.uri.startsWith("/resetpassword") || isSessionExcluded(rh)) {
       nextCall(rh)
     }
     else {
