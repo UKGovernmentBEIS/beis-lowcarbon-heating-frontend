@@ -24,7 +24,9 @@ import models.Question
 import play.api.libs.json.{JsObject, Json}
 
 case class TableRow(label: Option[String], name: String,  isNumeric: Option[Boolean] = None,  maxWords: Option[Int] = None,
-                    isEnabled: Boolean, isMandatory: Option[Boolean]= None, fieldType: String)
+                    isEnabled: Boolean, isMandatory: Option[Boolean]= None, fieldType: String,
+                    minYrValue: Option[Int]= None, maxYrValue: Option[Int]= None,
+                    minValue: Option[Int]= None, maxValue: Option[Int]= None)
 
 case class TableField(label: Option[String], name: String, helptext: Option[String]= None, isEnabled: Option[Boolean]=None,
                       isMandatory: Option[Boolean]= None, isNumeric: Option[Boolean]= None, size : Option[Int] = None,

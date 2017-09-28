@@ -32,8 +32,8 @@ case class IntValidator(label: Option[String] = None, minValue: Int = Int.MinVal
 
   override def doValidation(path: String, s: Normalised[String]): ValidatedNel[FieldError, Int] = {
     s match {
-      case ParseInt(i) if i < minValue => FieldError(path, s"Minimum value is $minValue").invalidNel
-      case ParseInt(i) if i > maxValue => FieldError(path, s"Maximum value is $maxValue").invalidNel
+      case ParseInt(i) if i < minValue => FieldError(path, s"'${label.getOrElse("Field")}' Minimum value is $minValue").invalidNel
+      case ParseInt(i) if i > maxValue => FieldError(path, s"'${label.getOrElse("Field")}' Maximum value is $maxValue").invalidNel
       case ParseInt(i) => i.validNel
       case _ => FieldError(path, s"'${label.getOrElse("Field")}' must be a whole number").invalidNel
     }

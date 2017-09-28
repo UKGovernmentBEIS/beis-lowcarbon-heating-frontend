@@ -82,8 +82,9 @@ table.spacious {
 
 
 table.dynamictd {
-
+  table-layout:fixed;
   margin-bottom: 2em;
+  border-collapse:collapse;
 
   th {
     padding-left: 5px;
@@ -96,8 +97,9 @@ table.dynamictd {
     border-right: 2px solid #bfc1c3;
   }
 
-
   td {
+    font-size: 15px;
+    word-wrap:break-word;
     font-weight: bold;
     padding-right: 5px;
     padding-left: 5px;
@@ -117,6 +119,9 @@ table.dynamictd {
 
 }
 
+  .td-end {
+        width: 10%;
+  }
 table.dynamictdpreview {
 
   margin-bottom: 2em;

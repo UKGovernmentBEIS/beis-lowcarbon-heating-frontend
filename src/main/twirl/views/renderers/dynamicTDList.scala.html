@@ -23,7 +23,7 @@
             @tablefields.fields.map{ tablefield=>
                 <th >@tablefield.label </th>
             }
-            <th >&nbsp; </th>
+            <th class="td-end">&nbsp; </th>
     }
     </tr>
     </thead>
@@ -38,8 +38,7 @@
                 </td>
                 }
 
-                <input type="hidden" id="fileupload" title="title" name="supportingDocuments" value="@tableItem">
-                <td>
+                <td >
                     @tableItem.itemNumber.map { num =>
                         <a href="@controllers.routes.ApplicationController.deleteTDItem(app.id, app.formSection.sectionNumber, num)">
                             <img src="@routes.Assets.at("images/minus_icon1.png")" width="22" height="22" alt="" style="visibility: visible">

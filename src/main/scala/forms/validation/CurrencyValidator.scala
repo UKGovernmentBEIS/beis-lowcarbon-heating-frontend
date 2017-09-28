@@ -24,25 +24,38 @@ import forms.validation.FieldValidator.Normalised
 import scala.util.Try
 
 object CurrencyValidator {
-  def apply() = new CurrencyValidator(None, None)
-  def apply(label:Option[String] = None) = new CurrencyValidator(label, None)
+  def apply() = new CurrencyValidator(None, None, None)
 
-  def apply(minValue: BigDecimal) = new CurrencyValidator(None, Some(minValue))
+  def apply(minValue: BigDecimal) = new CurrencyValidator(None, Some(minValue), None)
+
+  def apply(label: String) = new CurrencyValidator(Some(label), None, None)
+
+  def apply(label: String, minValue: BigDecimal, maxValue: BigDecimal) = new CurrencyValidator(Some(label), Some(minValue), Some(maxValue))
 
   final val greaterThanZero = apply(BigDecimal(0.0))
   final val anyValue = apply()
 }
 
-  class CurrencyValidator(label: Option[String] = None, minValue: Option[BigDecimal]) extends FieldValidator[Option[String], BigDecimal] {
+class CurrencyValidator(label:  Option[String], minValue: Option[BigDecimal], maxValue: Option[BigDecimal]) extends FieldValidator[Option[String], BigDecimal] {
   override def normalise(os: Option[String]): Option[String] = os.map(_.trim().replaceAll(",", ""))
 
   override def doValidation(path: String, value: Normalised[Option[String]]): ValidatedNel[FieldError, BigDecimal] = {
+
     Try(BigDecimal(value.getOrElse("")).setScale(2, BigDecimal.RoundingMode.HALF_UP)).toOption match {
-      case Some(bd) => minValue match {
-        case Some(min) if bd <= min => FieldError(path, s"The value must be greater than $min").invalidNel
-        case _ => bd.validNel
+      case Some(a) =>  {
+
+        if(minValue.nonEmpty && maxValue.nonEmpty){
+          if(a < minValue.get)
+            FieldError(path, s"'${label.getOrElse("Field")}' The value must be greater than ${minValue.get}").invalidNel
+          else if(a > maxValue.get)
+            FieldError(path, s"'${label.getOrElse("Field")}' The value must be less than ${maxValue.get}").invalidNel
+          else
+            a.validNel
+       }
+        else
+        a.validNel
       }
-      case None => FieldError(path, s"'${label.getOrElse("Field")}' must be a valid currency value").invalidNel
+      case None => FieldError(path, s"'${label.getOrElse("Field")}' Must be a valid currency value").invalidNel
     }
   }
 }

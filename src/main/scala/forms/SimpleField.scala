@@ -26,11 +26,13 @@ import play.api.libs.json.Json
 case class SimpleField(label: Option[String], name: String, helptext: Option[String]= None, isEnabled: Boolean, isMandatory: Option[Boolean]=None,
                        isNumeric: Option[Boolean]= None, size : Option[Int] = None,  maxWords: Int, fieldType: String,
                        rowform : Option[Seq[RowField]] = None, tableform : Option[Seq[TableField]] = None,
-                       filelist: Option[Seq[FileUploadItem]] = None, defaultvalue: Option[String]) extends Field {
+                       filelist: Option[Seq[FileUploadItem]] = None, defaultvalue: Option[String],
+                       minYrValue: Option[Int]= None, maxYrValue: Option[Int]= None,
+                       minValue: Option[Int]= None, maxValue: Option[Int]= None) extends Field {
 
   val validator = MandatoryValidator(Option(name)).andThen(CharacterCountValidator(None, maxWords))
   val validatorTextArea = MandatoryValidator(Option(name)).andThen(WordCountValidator(None, maxWords))
-  val validatorDate = DateFieldValidator(None, true)
+  val validatorDate = DateFieldValidator(None, true, minYrValue.getOrElse(1000), maxYrValue.getOrElse(3000))
 
 
   implicit val rowFieldFormat = Json.format[RowField]

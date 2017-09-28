@@ -44,7 +44,8 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
   def validator(l:Option[String]= None, n:String, m:Int) = MandatoryValidator(l, Option(n)).andThen(CharacterCountValidator(l, m))
   def validatorTextArea(l:Option[String]= None, n:String, m:Int) = MandatoryValidator(l, Option(n)).andThen(WordCountValidator(l, m))
   def validatorDate(b:Boolean) = DateFieldValidator(None, b)
-  def validatorCurrency(l:Option[String]= None): CurrencyValidator = CurrencyValidator(l)//CurrencyValidator.anyValue
+  def validatorCurrency(l:String, minValue: BigDecimal, maxValue: BigDecimal ): CurrencyValidator =
+                                              CurrencyValidator(l, minValue, maxValue)
   def validatorTextInt(l:Option[String]= None, n:String) = IntValidator(l)
   def validatorCheckbox(l:Option[String]= None, n:String) = MandatoryValidator(l,Option(n))
 
@@ -83,18 +84,25 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
           a.isNumeric.getOrElse(false) match {
             case true =>
               val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
-              IntValidator(a.label).validate(s"$nameWithPath", fldOptString.getOrElse("0")).map(v => (a, ""))
+              IntValidator(a.label, a.minValue.getOrElse(Int.MinValue), a.maxValue.getOrElse(Int.MaxValue))
+                .validate(s"$nameWithPath", fldOptString.getOrElse("0")).map(v => (a, ""))
             case false =>
               val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
               createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString ).map(v => (a,v))
         }
         case "date" => {
           val datevalues = fldOptJsValue.flatMap { j => j.asOpt[DateValues] }.getOrElse(DateValues(None, None, None))
-          DateFieldValidator(a.label, true).validate(s"$nameWithPath", datevalues).map(v => (a, ""))
+          DateFieldValidator(a.label, true, a.minYrValue.getOrElse(1000), a.maxYrValue.getOrElse(3000)).
+            validate(s"$nameWithPath", datevalues).map(v => (a, ""))
         }
         case "currency" => {
-          val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
-          validatorCurrency(a.label).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
+          val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
+          if(a.isMandatory.getOrElse(false) && a.minValue.nonEmpty && a.maxValue.nonEmpty) {
+            CurrencyValidator(a.label.getOrElse("na"), BigDecimal(a.minValue.getOrElse(Int.MinValue)), BigDecimal(a.maxValue.getOrElse(Int.MaxValue)))
+              .validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
+          }
+          else
+            CurrencyValidator(a.label.getOrElse("na")).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
         }
         case "checkbox" => {
           val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
