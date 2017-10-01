@@ -40,7 +40,6 @@ class CurrencyValidator(label:  Option[String], minValue: Option[BigDecimal], ma
   override def normalise(os: Option[String]): Option[String] = os.map(_.trim().replaceAll(",", ""))
 
   override def doValidation(path: String, value: Normalised[Option[String]]): ValidatedNel[FieldError, BigDecimal] = {
-
     Try(BigDecimal(value.getOrElse("")).setScale(2, BigDecimal.RoundingMode.HALF_UP)).toOption match {
       case Some(a) =>  {
 

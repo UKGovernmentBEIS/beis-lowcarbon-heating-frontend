@@ -29,7 +29,8 @@ case class MandatoryValidator(label: Option[String] = None, displayName: Option[
     val fieldName = displayName.map(n => s"'$n'").getOrElse("Field")
     denormal(so) match {
       //case None | Some("") => FieldError(path, s"$fieldName cannot be empty").invalidNel
-      case Some("") => FieldError(path, s"'${label.getOrElse("Field")}' cannot be empty").invalidNel
+      case Some("") =>
+        FieldError(path, s"'${label.getOrElse("Field")}' cannot be empty").invalidNel
       case Some(n) => n.validNel
       //case None => "".validNel //Todo:- removing this check for 'Lowcarbon heating', it might cause issue in BEIS forms..test BEIS forms
       case None =>

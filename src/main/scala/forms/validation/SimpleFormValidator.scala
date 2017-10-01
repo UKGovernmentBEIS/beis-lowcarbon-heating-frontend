@@ -27,6 +27,7 @@ import forms.{SimpleField, TextField}
 import forms.validation.FieldValidator.Normalised
 import play.api.libs.json.{JsObject, JsString, Json}
 import forms.DateValues
+import org.apache.commons.lang3.StringUtils
 case class SimpleFormValues(employeename: Option[String]=None, department: Option[String], natureofillness: Option[String],
                              managername: Option[String], manageremail: Option[String])
 case class SimpleForm(employeename: String, department: String, natureofillness: String,
@@ -78,48 +79,62 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
       val nameWithoutPath = a.name.split("\\.").last
       val fldOptJsValue = fldValues.value.get(nameWithoutPath)
 
-      a.fieldType match {
-        case "String" => NonMandatoryValidator(None).validate("", Option("")).map(v => (a, ""))
-        case "text" =>
-          a.isNumeric.getOrElse(false) match {
-            case true =>
-              val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
-              IntValidator(a.label, a.minValue.getOrElse(Int.MinValue), a.maxValue.getOrElse(Int.MaxValue))
-                .validate(s"$nameWithPath", fldOptString.getOrElse("0")).map(v => (a, ""))
-            case false =>
-              val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
-              createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString ).map(v => (a,v))
-        }
-        case "date" => {
-          val datevalues = fldOptJsValue.flatMap { j => j.asOpt[DateValues] }.getOrElse(DateValues(None, None, None))
-          DateFieldValidator(a.label, true, a.minYrValue.getOrElse(1000), a.maxYrValue.getOrElse(3000)).
-            validate(s"$nameWithPath", datevalues).map(v => (a, ""))
-        }
-        case "currency" => {
-          val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
-          if(a.isMandatory.getOrElse(false) && a.minValue.nonEmpty && a.maxValue.nonEmpty) {
-            CurrencyValidator(a.label.getOrElse("na"), BigDecimal(a.minValue.getOrElse(Int.MinValue)), BigDecimal(a.maxValue.getOrElse(Int.MaxValue)))
-              .validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
+      /** Check if there is data in any field even though the field is not Mandatory **/
+      if(!StringUtils.isEmpty(fldOptJsValue.headOption.get.toString().replace("\"", "" ))) {
+        a.fieldType match {
+          case "String" => NonMandatoryValidator(None).validate("", Option("")).map(v => (a, ""))
+          case "text" =>
+            a.isNumeric.getOrElse(false) match {
+              case true =>
+                val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
+                IntValidator(a.label, a.minValue.getOrElse(Int.MinValue), a.maxValue.getOrElse(Int.MaxValue))
+                  .validate(s"$nameWithPath", fldOptString.getOrElse("0")).map(v => (a, ""))
+              case false =>
+                val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
+                createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString).map(v => (a, v))
+            }
+          case "date" => {
+            val datevalues = fldOptJsValue.flatMap { j => j.asOpt[DateValues] }.getOrElse(DateValues(None, None, None))
+            DateFieldValidator(a.label, true, a.minYrValue.getOrElse(1000), a.maxYrValue.getOrElse(3000)).
+              validate(s"$nameWithPath", datevalues).map(v => (a, ""))
           }
-          else
-            CurrencyValidator(a.label.getOrElse("na")).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
-        }
-        case "checkbox" => {
-          val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
-          createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
-        }
-        case "tableform" => {
-          fldValues.value.get(nameWithoutPath) match{
-            case Some(v) =>
-              val allFlds = a.tableform.getOrElse(Seq()).map {row=>row.fields}.flatten
-              val fldJsObject = v.as[JsObject]
-              TableFormValidator(allFlds).validate(s"$nameWithPath", fldJsObject).map(v => (a, ""))
-            case None => NonMandatoryValidator(None).validate("", Option("")).map(v => (a, ""))
+          case "currency" => {
+            val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
+
+            if (a.isMandatory.getOrElse(false) && a.minValue.nonEmpty && a.maxValue.nonEmpty) {
+              CurrencyValidator(a.label.getOrElse("na"), BigDecimal(a.minValue.getOrElse(Int.MinValue)), BigDecimal(a.maxValue.getOrElse(Int.MaxValue)))
+                .validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
+            }
+            else
+              CurrencyValidator(a.label.getOrElse("na")).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
+          }
+          case "checkbox" => {
+            val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
+            createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
+          }
+          case "tableform" => {
+            fldValues.value.get(nameWithoutPath) match {
+              case Some(v) =>
+                val allFlds = a.tableform.getOrElse(Seq()).map { row => row.fields }.flatten
+                val fldJsObject = v.as[JsObject]
+                TableFormValidator(allFlds).validate(s"$nameWithPath", fldJsObject).map(v => (a, ""))
+              case None => NonMandatoryValidator(None).validate("", Option("")).map(v => (a, ""))
+            }
+          }
+          case _ => {
+            val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
+            createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString).map(v => (a, v))
           }
         }
-        case _ =>{
-          val fldOptString = fldOptJsValue.flatMap {j=> j.asOpt[String]}
-          createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString ).map(v => (a,v))
+      }
+      else{
+        /** Check if the field is Mandatory **/
+        a.isMandatory.getOrElse(false) match {
+          case true =>  {
+            val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
+            MandatoryValidator(a.label, Some(a.name)).validate(s"$nameWithPath", fldOptString).map(v => (a, v))
+          }
+          case false => NonMandatoryValidator(None).validate("", Option("")).map(v => (a, ""))
         }
       }
     }
