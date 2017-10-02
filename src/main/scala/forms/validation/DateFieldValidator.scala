@@ -34,7 +34,7 @@ case class DMY(day: Int, month: Int, year: Int)
 //}
 
 case class DateFieldValidator(label: Option[String] = None, allowPast: Boolean,
-                              minYrValue: Int = Int.MinValue, maxYrValue: Int = Int.MaxValue) extends FieldValidator[DateValues, LocalDate] {
+                              minYearValue: Int = Int.MinValue, maxYearValue: Int = Int.MaxValue) extends FieldValidator[DateValues, LocalDate] {
 
     val mustProvideAValidDateMsg = "Must provide a valid date"
     val mustBeTodayOrLaterMsg = "Must be today or later"
@@ -62,8 +62,8 @@ case class DateFieldValidator(label: Option[String] = None, allowPast: Boolean,
   def validateDate(path: String, dmy: DMY): ValidatedNel[FieldError, LocalDate] =
     Try(new LocalDate(dmy.year, dmy.month, dmy.day)).toOption match {
       case Some(ld) => {
-        if(dmy.year < minYrValue)  FieldError(path, s"'${label.getOrElse("Field")}' year value should be greater than $minYrValue").invalidNel
-        else if(dmy.year > maxYrValue)  FieldError(path, s"'${label.getOrElse("Field")}' year value should be less than $maxYrValue").invalidNel
+        if(dmy.year < minYearValue)  FieldError(path, s"'${label.getOrElse("Field")}' year value should be greater than $minYearValue").invalidNel
+        else if(dmy.year > maxYearValue)  FieldError(path, s"'${label.getOrElse("Field")}' year value should be less than $maxYearValue").invalidNel
         else ld.valid
       }
       case None => FieldError(path, s"'${label.getOrElse("Field")}' $mustProvideAValidDateMsg").invalidNel

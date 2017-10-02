@@ -27,12 +27,12 @@ case class SimpleField(label: Option[String], name: String, helptext: Option[Str
                        isNumeric: Option[Boolean]= None, size : Option[Int] = None,  maxWords: Int, fieldType: String,
                        rowform : Option[Seq[RowField]] = None, tableform : Option[Seq[TableField]] = None,
                        filelist: Option[Seq[FileUploadItem]] = None, defaultvalue: Option[String],
-                       minYrValue: Option[Int]= None, maxYrValue: Option[Int]= None,
+                       minYearValue: Option[Int]= None, maxYearValue: Option[Int]= None,
                        minValue: Option[Int]= None, maxValue: Option[Int]= None) extends Field {
 
   val validator = MandatoryValidator(Option(name)).andThen(CharacterCountValidator(None, maxWords))
   val validatorTextArea = MandatoryValidator(Option(name)).andThen(WordCountValidator(None, maxWords))
-  val validatorDate = DateFieldValidator(None, true, minYrValue.getOrElse(1000), maxYrValue.getOrElse(3000))
+  val validatorDate   = DateFieldValidator(None, true, minYearValue.getOrElse(1900), maxYearValue.getOrElse(2100))
 
 
   implicit val rowFieldFormat = Json.format[RowField]

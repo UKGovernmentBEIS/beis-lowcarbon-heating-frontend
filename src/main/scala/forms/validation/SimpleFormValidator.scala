@@ -95,7 +95,7 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
             }
           case "date" => {
             val datevalues = fldOptJsValue.flatMap { j => j.asOpt[DateValues] }.getOrElse(DateValues(None, None, None))
-            DateFieldValidator(a.label, true, a.minYrValue.getOrElse(1000), a.maxYrValue.getOrElse(3000)).
+            DateFieldValidator(a.label, true, a.minYearValue.getOrElse(1000), a.maxYearValue.getOrElse(3000)).
               validate(s"$nameWithPath", datevalues).map(v => (a, ""))
           }
           case "currency" => {
