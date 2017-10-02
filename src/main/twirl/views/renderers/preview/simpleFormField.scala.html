@@ -1,21 +1,56 @@
 @(field: forms.SimpleFormField, answers: Map[String, String])
 
+@import partials._
+
 @field.simpleform.map { f=>
 
 @if( f.isEnabled) {
-    <div class="form-group ">
-        <label for="@f.name">@f.label </label>
-        @if(answers.get(s"${f.name}").nonEmpty){
-            @answers.get(f.name)
+<div class="form-group wordwrap">
+    <label for="@f.name">@f.label </label>
+    @answers.get(f.name)
+    @answers.get(s"${f.name}.day") @answers.get(s"${field.name}.month") @answers.get(s"${field.name}.year")
+
+    @f.fieldType match {
+        case "tableform" => {
+
+        <table class="dynamictdpreview">
+            @f.tableform.map { rows=>
+                @rows.map { row=>
+                    <tr>
+                        @row.fields.map { r=>
+                            <td>
+                                @if(r.fieldType=="checkbox"){
+
+                                   @if(answers.get(r.name).getOrElse("off") == "on"){
+                                        <div class="multiple-choice">
+                                        <input id="@r.name" name="@r.name" type="checkbox" title="@r.name" checked>
+                                        <label for="@r.name">@r.label</label>
+                                        </div>
+                                    }else{
+                                        <div class="multiple-choice">
+                                        <input id="@r.name" name="@r.name" type="checkbox" title="@r.name">
+                                        <label for="@r.name">@r.label</label>
+                                        </div>
+
+                                }
+                                }else{
+                                <label for="@r.name">@r.label</label>
+                                @answers.get(r.name)
+                                }
+                            </td>
+                        }
+                    <tr>
+                }
+            }
+        </table>
+
         }
-        @if(answers.get(s"${f.name}.day").nonEmpty){
-            @answers.get(s"${f.name}.day") - @answers.get(s"${f.name}.month") - @answers.get(s"${f.name}.year")
+        case _ => {
+        @answers.get(f.name)
         }
-        @if(answers.get(s"${f.name}.value").nonEmpty){
-            @answers.get(s"${f.name}.value")
-        }
+    }
+</div>
 
 
-    </div>
 }
 }

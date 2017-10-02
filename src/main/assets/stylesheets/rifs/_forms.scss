@@ -229,3 +229,9 @@ input.text-field.simpleformcurrency {
  }
  .button.disabled,.button[disabled="disabled"],.button[disabled]{zoom:1;filter:alpha(opacity=50);opacity:0.5
  }
+
+ .wordwrap {
+   table-layout:fixed;
+   word-wrap:break-word;
+   border-collapse:collapse;
+ }

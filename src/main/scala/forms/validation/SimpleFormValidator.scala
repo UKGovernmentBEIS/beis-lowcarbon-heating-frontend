@@ -66,6 +66,8 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
 //              validatorTextArea(fld.label, fld.name, fld.maxWords)
             case "checkbox" =>
               validatorCheckbox(fld.label, fld.name)
+            case "text" =>
+              validator(fld.label, fld.name, 250) //Todo:- Remove this hardcoding when Maxwords on text field changed to MaxChar
             case _ =>
               validator(fld.label, fld.name, fld.maxWords)
           }
@@ -80,7 +82,8 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
       val fldOptJsValue = fldValues.value.get(nameWithoutPath)
 
       /** Check if there is data in any field even though the field is not Mandatory **/
-      if(!StringUtils.isEmpty(fldOptJsValue.headOption.get.toString().replace("\"", "" ))) {
+
+      if(!StringUtils.isEmpty(fldOptJsValue.headOption.getOrElse("").toString().replace("\"", "" ))) {
         a.fieldType match {
           case "String" => NonMandatoryValidator(None).validate("", Option("")).map(v => (a, ""))
           case "text" =>
@@ -128,8 +131,12 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
         }
       }
       else{
+
         /** Check if the field is Mandatory **/
         a.isMandatory.getOrElse(false) match {
+          case true if a.fieldType.equals("String") =>  {
+            NonMandatoryValidator(None).validate("", Option("")).map(v => (a, ""))
+          }
           case true =>  {
             val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
             MandatoryValidator(a.label, Some(a.name)).validate(s"$nameWithPath", fldOptString).map(v => (a, v))

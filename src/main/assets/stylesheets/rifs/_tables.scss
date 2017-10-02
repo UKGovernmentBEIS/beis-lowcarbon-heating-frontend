@@ -123,7 +123,8 @@ table.dynamictd {
         width: 10%;
   }
 table.dynamictdpreview {
-
+  table-layout:fixed;
+  border-collapse:collapse;
   margin-bottom: 2em;
   width: 75%;
   th {
@@ -138,6 +139,7 @@ table.dynamictdpreview {
   }
 
   td {
+    word-wrap:break-word;
     font-weight: bold;
     padding-right: 5px;
     padding-left: 5px;

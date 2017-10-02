@@ -78,6 +78,7 @@ class TableFormValidator(tableRowfields : Seq[TableRow]) extends FieldValidator[
       val nameWithoutPath = a.name.split("\\.").last
       val fldOptJsValue = fldValues.value.get(nameWithoutPath)
 
+
       /** Check if there is data in any field even though the field is not Mandatory **/
       if(!StringUtils.isEmpty(fldOptJsValue.headOption.getOrElse("").toString().replace("\"", "" ))) {
         a.fieldType match {
@@ -91,10 +92,17 @@ class TableFormValidator(tableRowfields : Seq[TableRow]) extends FieldValidator[
               case false =>
                 val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
                 createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString).map(v => (a, v))
-            }
+          }
           case "date" => {
             val datevalues = fldOptJsValue.flatMap { j => j.asOpt[DateValues] }.getOrElse(DateValues(None, None, None))
-            DateFieldValidator(a.label, true, a.minYearValue.getOrElse(1900), a.maxYearValue.getOrElse(2100)).
+
+            if(
+              StringUtils.isEmpty(datevalues.day.getOrElse("").toString().replace("\"", "" )) &&
+              StringUtils.isEmpty(datevalues.month.getOrElse("").toString().replace("\"", "" )) &&
+              StringUtils.isEmpty(datevalues.year.getOrElse("").toString().replace("\"", "" ))
+            ) NonMandatoryValidator(None).validate("", Option("")).map(v => (a, ""))
+            else
+            DateFieldValidator(a.label, true, a.minYearValue.getOrElse(1000), a.minYearValue.getOrElse(3000)).
               validate(s"$nameWithPath", datevalues).map(v => (a, ""))
           }
           case "currency" => {
@@ -118,6 +126,7 @@ class TableFormValidator(tableRowfields : Seq[TableRow]) extends FieldValidator[
         }
       }
       else{
+
         /** Check if the field is Mandatory **/
         a.isMandatory.getOrElse(false) match {
           case true =>  {

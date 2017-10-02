@@ -1,5 +1,4 @@
 @(field: forms.SimpleField,
-questions: Map[String, Question],
 answers: Map[String, String],
 errs: Seq[forms.validation.FieldError],
 hints: Seq[forms.validation.FieldHint]
@@ -40,7 +39,7 @@ if(isMandatory){ <span class="mandatory-field">*</span> }
 }
 
 <label>@field.label</label>
-<table class="tableformfield" border="1">
+<table class="tableformfield" >
 
     @field.tableform.map { rows=>
 
@@ -116,6 +115,9 @@ if(isMandatory){ <span class="mandatory-field">*</span> }
                 Choose file
             </label>
             <input type="text" id="fileupload" class="form-control fileupload-text-field" title="title" name="@f.name">
+            }
+            case "address" => {
+            @addressSectionPreview(field, Map(), answers, errs, hints)
             }
             }
         </td>

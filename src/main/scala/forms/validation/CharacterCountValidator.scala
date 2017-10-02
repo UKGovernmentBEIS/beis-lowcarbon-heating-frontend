@@ -28,10 +28,15 @@ case class CharacterCountValidator(label: Option[String] = None, maxChars: Int) 
   override def normalise(s: String): String = s.trim()
 
   override def doValidation(path: String, s: Normalised[String]): ValidatedNel[FieldError, String] = {
-  s match {
+
+    s match {
       //case n if n.length > maxChars => FieldError(path, s"'${path.substring(path.indexOf('.')+1,path.length)}' Character limit exceeded").invalidNel
-      case n if n.length > maxChars => FieldError(path, s"'${label.getOrElse("Field")}' Character limit exceeded").invalidNel
-      case n => n.validNel
+      case n if n.length > maxChars => {
+        FieldError(path, s"'${label.getOrElse("Field")}' Character limit exceeded").invalidNel
+      }
+      case n => {
+        n.validNel
+      }
     }
   }
 

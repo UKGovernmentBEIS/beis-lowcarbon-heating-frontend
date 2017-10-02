@@ -154,8 +154,7 @@ if(a.isNumeric.getOrElse(false)) "bignumber" else ""
                    }
                    case "tableform" => {
                              <div class='form-group @errorClassFor(f)'>
-
-                   @tableFormSection(f, questions, answers, errs, hints)
+                             @tableFormSection(f, answers, errs, hints)
                    }
                    case "address" => {
                              @addressSection(f, questions, answers, errs, hints)
