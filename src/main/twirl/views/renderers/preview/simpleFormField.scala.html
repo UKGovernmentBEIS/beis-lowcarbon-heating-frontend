@@ -7,7 +7,6 @@
 @if( f.isEnabled) {
 <div class="form-group wordwrap">
     <label for="@f.name">@f.label </label>
-    @answers.get(f.name)
     @answers.get(s"${f.name}.day") @answers.get(s"${field.name}.month") @answers.get(s"${field.name}.year")
 
     @f.fieldType match {
@@ -37,6 +36,11 @@
                                 <label for="@r.name">@r.label</label>
                                 @answers.get(r.name)
                                 }
+
+                                @if(answers.get(s"${r.name}.day") != null && answers.get(s"${r.name}.month") != null && answers.get(s"${r.name}.year") != null){
+                                @answers.get(s"${r.name}.day")  @answers.get(s"${r.name}.month")  @answers.get(s"${r.name}.year")
+                                }
+
                             </td>
                         }
                     <tr>
