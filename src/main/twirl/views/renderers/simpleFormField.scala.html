@@ -143,10 +143,12 @@ if(a.isNumeric.getOrElse(false)) "bignumber" else ""
                              <input type="text" id="fileupload" class="form-control fileupload-text-field" title="title" name="@f.name">
                    }
                    case "checkbox" => {
-                             <div class="multiple-choice">
-                                     <input id="@f.name" name="@f.name" type="checkbox" title="@f.name" @if(answers.get(f.name).nonEmpty){ checked}>
-                                     <label for="@f.name">@f.label</label>
-                             </div>
+                            <div class='form-group @errorClassFor(f)'>
+                                <div class="multiple-choice">
+                                    <input id="@f.name" name="@f.name" type="checkbox" title="@f.name" @if(answers.get(f.name).nonEmpty){ checked}>
+                                    <label for="@f.name">@f.label</label>
+                                </div>
+                            </div>
                    }
                    case "rowform" => {
                              @rowFormSection(f, questions, answers, errs, hints)

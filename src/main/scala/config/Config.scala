@@ -24,7 +24,7 @@ case class BPMConfig(bpmreqd: String, procuser: String, procpwd: String, procdef
 case class FieldValidation(telephone: Int, email: Int, companyname: Int)
 case class LoginConfig(sessionTimeout: Int, excludeSession: String)
 
-case class Config(logAssets: Option[Boolean], logRequests: Boolean, business: BusinessConfig,
+case class Config(logAssets: Option[Boolean], logRequests: Boolean, prod: Boolean, business: BusinessConfig,
                   file: FileConfig, aws: AWSConfig, bpm: BPMConfig, fieldvalidation: FieldValidation, login: LoginConfig)
 
 object Config {
