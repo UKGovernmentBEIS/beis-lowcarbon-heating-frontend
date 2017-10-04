@@ -28,6 +28,10 @@
   @include phase-tag(alpha);
 }
 
+.beta-tag {
+  @include phase-tag(beta);
+}
+
 .username-container {
   float: right;
 }

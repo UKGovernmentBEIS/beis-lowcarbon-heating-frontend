@@ -1,7 +1,10 @@
 @(
 registrationform: Form[RegistrationForm],
 errs: List[forms.validation.FieldError]
-)
+)(implicit flash: Flash)
+
+
+
 
 @errorClass = @{
 if(errs.nonEmpty) "error" else ""

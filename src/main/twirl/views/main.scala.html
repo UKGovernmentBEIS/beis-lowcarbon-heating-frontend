@@ -22,6 +22,7 @@
 @layouts.govuk_template2(Some(title), None)(head, empty, bodyEnd, proposition, empty, empty, empty, empty, empty) {
     <main id="content" class="@mainClass" role="main" tabindex="-1">
             <!-- removed alphaBanner -->
+        @betaBanner()
         <div id="global-header-status">
             @if(backLink.isDefined) {
                 <div class="backlink-container">

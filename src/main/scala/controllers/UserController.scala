@@ -173,11 +173,13 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
                   * need to get the exception TYPE from backend for the exceptions and show them
                   * or need to get the error number to select the error text from any resource bundle or properties
                   */
+
                 val dbUniqueKeyError = "duplicate key value violates unique constraint"
                 if(msg.indexOf(dbUniqueKeyError) != -1) {
                   val username = (request.body.values \ "name").validate[String].getOrElse("NA")
                   val errorMsg = s"'$username' already exists. Please choose other name"
-                  Future.successful(Ok(views.html.registrationForm(registrationform, List())))
+                  Future.successful(Ok(views.html.registrationForm(registrationform, List(FieldError("name", errorMsg))))
+                    .flashing("name"-> username, "email"-> email))
                 }
                 else
                   Future.successful(Ok(views.html.loginForm("", Option(loginform))))
@@ -254,7 +256,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     Ok(views.html.loginForm("", Option(loginform))).withNewSession
   }
 
-  def registrationForm = Action{
+  def registrationForm = Action{ implicit request =>
     //Ok(views.html.registrationForm("", registrationform))
     Ok(views.html.registrationForm(registrationform, List()))
   }
