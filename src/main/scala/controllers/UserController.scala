@@ -177,7 +177,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
                 val dbUniqueKeyError = "duplicate key value violates unique constraint"
                 if(msg.indexOf(dbUniqueKeyError) != -1) {
                   val username = (request.body.values \ "name").validate[String].getOrElse("NA")
-                  val errorMsg = s"'$username' already exists. Please choose other name"
+                  val errorMsg = s"'$username' already exists. Please use different username"
                   Future.successful(Ok(views.html.registrationForm(registrationform, List(FieldError("name", errorMsg))))
                     .flashing("name"-> username, "email"-> email))
                 }
