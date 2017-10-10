@@ -42,7 +42,6 @@ class CurrencyValidator(label:  Option[String], minValue: Option[BigDecimal], ma
   override def doValidation(path: String, value: Normalised[Option[String]]): ValidatedNel[FieldError, BigDecimal] = {
     Try(BigDecimal(value.getOrElse("")).setScale(2, BigDecimal.RoundingMode.HALF_UP)).toOption match {
       case Some(a) =>  {
-
         if(minValue.nonEmpty && maxValue.nonEmpty){
           if(a < minValue.get)
             FieldError(path, s"'${label.getOrElse("Field")}' The value must be greater than ${minValue.get}").invalidNel

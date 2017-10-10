@@ -18,78 +18,76 @@
 package forms.validation
 
 import cats.data.Validated.{Invalid, Valid}
+import forms.TextField
 import org.scalatest.{Matchers, WordSpecLike}
+import play.api.libs.json.{JsObject, JsString}
 
 class ContactValidatorSpec extends WordSpecLike with Matchers {
   "Contact field validator" should {
+    val email = TextField(Some("email"), "contact.email", true, true,  true, 10)
+    val phone = TextField(Some("phone"), "contact.phone", true, true,  true, 10)
+    val web = TextField(Some("web"), "contact.web", true, true,  true, 1)
+    val twitter = TextField(Some("twitter"), "contact.twittter", true, true,  true, 1)
+    val jsobj:JsObject = JsObject(Seq(
+      "web" -> JsString("www.cc.com"),
+      "email" -> JsString("test@csc.com"),
+      "phone" -> JsString("02083242"),
+      "twitter" -> JsString("t@csc.com")
+    ))
+
     "reject a missing value of Email" in {
-      val contactValues = ContactValues(Some("02080000000"), None, None, None)
-      //ContactValidator.validate("contact", contactValues) shouldBe  an[Invalid[_]]
-      ContactValidator.validate("contact", contactValues).map{ e =>
+
+      ContactValidator(Seq(email, phone, web, twitter)).validate("contact", jsobj - "email").map{ e =>
       }.leftMap{err =>
         err.head.err shouldBe "'email' cannot be empty"
       } shouldBe  an[Invalid[_]]
     }
 
     "reject a length of Email exdeeds Specified number of characters" in {
-      val email = "abcdefijklmnopqrstuvwxyzabcdefijklmnopqrstuvwxyzabcdefijklmnopqrstuvwxyzabcdefijklmnopqrstuvwxyzabcdefijklmnopqrstuvwxyz" +
-        "@" +
-        "abcdefijklmnopqrstuvwxyzabcdefijklmnopqrstuvwxyzabcdefijklmnopqrstuvwxyzabcdefijklmnopqrstuvwxyzabcdefijklmnopqrstuvwxyz" +
-        ".com"
-      val contactValues = ContactValues(Some("02080000000"), Some(email), None, None)
-      ContactValidator.validate("contact", contactValues).map{ e =>
+       ContactValidator(Seq(email)).validate("contact", jsobj).map{ e =>
       }.leftMap{err =>
-        err.head.err shouldBe "Character limit exceeded"
+        err.head.err shouldBe "'email' Character limit exceeded"
       } shouldBe  an[Invalid[_]]
     }
 
     "approve an existing of Email" in {
-      val email = "admin@beis.gov.uk"
-      val contactValues = ContactValues(Some("02080000000"), Some(email), None, None)
-      ContactValidator.validate("contact", contactValues).leftMap{ e =>
+
+      ContactValidator(Seq(email)).validate("contact", jsobj-"email" +
+        ("email" -> JsString("t@csc.com"))).leftMap{ e =>
         fail("Character limit exceeded")
       }
     }
 
     "approve a length of Email that is under Specified number of characters" in {
-      val email = "admin@beis.gov.uk"
-      val contactValues = ContactValues(Some("02080000000"), Some(email), None, None)
-      ContactValidator.validate("contact", contactValues) shouldBe an[Valid[_]]
+       ContactValidator(Seq(email)).validate("contact", jsobj-"email" +
+         ("email" -> JsString("t@csc.com"))) shouldBe an[Valid[_]]
     }
 
     "reject a missing value of Telephone" in {
-      val email = "admin@beis.gov.uk"
-      val contactValues = ContactValues(None, Some(email), None, None)
-      ContactValidator.validate("contact", contactValues).map{ e =>
+      ContactValidator(Seq(phone)).validate("contact", jsobj - "phone").map{ e =>
       }.leftMap{err =>
-        err.head.err shouldBe "'telephone' cannot be empty"
+        err.head.err shouldBe "'phone' cannot be empty"
       } shouldBe  an[Invalid[_]]
     }
 
     "reject a length of Telephone exdeeds Specified number of characters" in {
-      val email = "admin@beis.gov.uk"
       val telephone = "123456789012345678901234567890"
-      val contactValues = ContactValues(Some(telephone), Some(email), None, None)
-      ContactValidator.validate("contact", contactValues).map{ e =>
-      }.leftMap{err =>
-        err.head.err shouldBe "Character limit exceeded"
+      ContactValidator(Seq(phone)).validate("contact", jsobj-"phone" +
+        ("phone" -> JsString(telephone))).leftMap{err =>
+        err.head.err shouldBe "'phone' Character limit exceeded"
       } shouldBe  an[Invalid[_]]
     }
 
     "approve an existing of Telephone" in {
-      val email = "admin@beis.gov.uk"
-      val telephone = "123456789012345"
-      val contactValues = ContactValues(Some(telephone), Some(email), None, None)
-      ContactValidator.validate("contact", contactValues).leftMap{ e =>
-        fail("Character limit exceeded")
+      val telephone = "12345678"
+      ContactValidator(Seq(phone)).validate("contact", jsobj-"phone" +
+        ("phone" -> JsString("12345"))).leftMap{ e =>
+        fail("'phone' Character limit exceeded")
       }
     }
 
     "approve a length of Telephone that is inside Specified number of characters range" in {
-      val email = "admin@beis.gov.uk"
-      val telephone = "123456789012345"
-      val contactValues = ContactValues(Some(telephone), Some(email), None, None)
-      ContactValidator.validate("contact", contactValues) shouldBe an[Valid[_]]
+      ContactValidator(Seq(phone)).validate("contact", jsobj) shouldBe an[Valid[_]]
     }
 
   }

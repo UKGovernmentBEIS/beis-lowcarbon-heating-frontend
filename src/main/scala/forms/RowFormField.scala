@@ -25,19 +25,11 @@ import play.api.libs.json._
 case class RowField(label: Option[String], name: String, size: Option[Int] = None, isEnabled: Boolean, fieldType: String)
 
 case class RowFormField(name: String, fieldType: String, rowform : Seq[RowField]) extends Field {
-  implicit val tableFormReads = Json.reads[SimpleFormValues]
+
   implicit val rowFieldReads = Json.format[RowField]
 
-
-
-
   override def check: FieldCheck = {
-    //println("== ContactField case true "+name + " ======= " +  contactitems)
-
-    //FieldChecks.fromValidator(new SimpleFormValidator(Seq(telephoneField, emailField, webField, twitterField)))
-
-    //FieldChecks.fromValidator(SimpleFormValidator)
-    ???
+     ???
   }
 
   override def previewCheck: FieldCheck = FieldChecks.mandatoryCheck
@@ -50,6 +42,5 @@ case class RowFormField(name: String, fieldType: String, rowform : Seq[RowField]
 
     views.html.renderers.rowFormField(this, questions, JsonHelpers.flatten(answers), errs, hints)
   }
-
 
 }

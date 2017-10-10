@@ -40,6 +40,7 @@ import play.api.mvc.{Action, Controller, MultipartFormData, Result}
 import scala.collection.immutable.ListMap
 import scala.concurrent.{ExecutionContext, Future}
 
+
 class ApplicationController @Inject()(
                                        actionHandler: ActionHandler,
                                        awsHandler: AWSHandler,
@@ -81,7 +82,6 @@ class ApplicationController @Inject()(
   def show(id: ApplicationId) = AppDetailAction(id) { implicit request =>
     var mapsecs:Map[String, Seq[ApplicationFormSection]]
         = makeGroupSections(request.appDetail.applicationForm.sections)
-
     Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, actionHandler.guidanceDocURL))
   }
 

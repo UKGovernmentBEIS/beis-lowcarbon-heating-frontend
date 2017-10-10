@@ -28,10 +28,10 @@ import forms.validation.FieldValidator.Normalised
 import play.api.libs.json.{JsObject, JsString, Json}
 import forms.DateValues
 import org.apache.commons.lang3.StringUtils
-case class SimpleFormValues(employeename: Option[String]=None, department: Option[String], natureofillness: Option[String],
-                             managername: Option[String], manageremail: Option[String])
-case class SimpleForm(employeename: String, department: String, natureofillness: String,
-                            managername: String, manageremail: String)
+//case class SimpleFormValues(employeename: Option[String]=None, department: Option[String], natureofillness: Option[String],
+//                             managername: Option[String], manageremail: Option[String])
+//case class SimpleForm(employeename: String, department: String, natureofillness: String,
+//                            managername: String, manageremail: String)
 
 
 object SimpleFormValidator  {
@@ -77,11 +77,13 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
     }
 
     val validChecks: ValidatedNel[FieldError, List[(SimpleField, String)]] = textfields.toList.traverseU { a =>
+
+
       val nameWithPath = a.name
       val nameWithoutPath = a.name.split("\\.").last
       val fldOptJsValue = fldValues.value.get(nameWithoutPath)
-
       /** Check if there is data in any field even though the field is not Mandatory **/
+      println("====111==="+fldOptJsValue + "=="+ a)
 
       if(!StringUtils.isEmpty(fldOptJsValue.headOption.getOrElse("").toString().replace("\"", "" ))) {
         a.fieldType match {

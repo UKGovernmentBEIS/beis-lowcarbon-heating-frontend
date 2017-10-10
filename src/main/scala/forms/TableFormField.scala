@@ -25,7 +25,7 @@ import play.api.libs.json._
 import services.RestService.{JsonParseException, RestFailure}
 
 case class TableFormField(name: String, tableform : Seq[TableField]) extends Field {
-  implicit val tableFormReads = Json.reads[SimpleFormValues]
+  //implicit val tableFormReads = Json.reads[SimpleFormValues]
   implicit val tableRowDataReads = Json.reads[TableRowData]
   implicit val tableFormDataReads = Json.reads[TableFormData]
   implicit val tableItemReads = Json.reads[TableItem]

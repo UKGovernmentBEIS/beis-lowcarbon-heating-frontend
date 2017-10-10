@@ -27,11 +27,11 @@ import org.joda.time.LocalDate
 import scala.util.Try
 
 case class DMY(day: Int, month: Int, year: Int)
-//
-//object DateFieldValidator {
-//  val mustProvideAValidDateMsg = "Must provide a valid date"
-//  val mustBeTodayOrLaterMsg = "Must be today or later"
-//}
+
+object DateFieldValidator {
+  val mustProvideAValidDateMsg = "Must provide a valid date"
+  val mustBeTodayOrLaterMsg = "Must be today or later"
+}
 
 case class DateFieldValidator(label: Option[String] = None, allowPast: Boolean,
                               minYearValue: Int = Int.MinValue, maxYearValue: Int = Int.MaxValue) extends FieldValidator[DateValues, LocalDate] {

@@ -23,7 +23,7 @@ import models._
 import play.api.libs.json._
 
 case class SimpleFormField(name: String, simpleform : Seq[SimpleField]) extends Field {
-  implicit val simpleFormReads = Json.reads[SimpleFormValues]
+ // implicit val simpleFormReads = Json.reads[SimpleFormValues]
 
   override def check: FieldCheck = {
     //FieldChecks.fromValidator(new SimpleFormValidator(Seq(telephoneField, emailField, webField, twitterField)))

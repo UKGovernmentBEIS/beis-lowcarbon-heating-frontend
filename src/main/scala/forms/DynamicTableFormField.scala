@@ -23,14 +23,9 @@ import models._
 import play.api.libs.json._
 
 case class DynamicTableFormField(label: Option[String], name: String, dynamictableform : Seq[TableField]) extends Field {
-  implicit val dynamicTableFormReads = Json.reads[SimpleFormValues]
+
   implicit val tableRowDataReads = Json.reads[TableRowData]
   implicit val dynamictableItemReads = Json.reads[DynamicTableItem]
-
-  //override def check: FieldCheck = FieldChecks.fromValidator(ContactValidator)
-  //override def check: FieldCheck = FieldChecks.fromValidator(new ContactValidator(Seq(telephoneField, emailField, webField, twitterField)))
-  //override def check: FieldCheck = FieldChecks.noCheck
-
 
   override def check: FieldCheck = FieldChecks.noCheck
 

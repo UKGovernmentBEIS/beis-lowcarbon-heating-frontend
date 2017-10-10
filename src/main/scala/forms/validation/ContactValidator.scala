@@ -40,10 +40,12 @@ class ContactValidator(textfields : Seq[TextField]) extends FieldValidator[JsObj
   override def doValidation(path: String, contactValues: Normalised[JsObject]): ValidatedNel[FieldError, List[(TextField, String)]] = {
 
     def createValidator(f : String) = {
-      val textfield = textfields.filter(t => t.name == s"$path.$f")
+      val textfield = textfields.filter(t => {
+        t.name == s"$path.$f"
+      })
       textfield.head.isMandatory match {
         case true =>
-          MandatoryValidator(Some(f)).andThen(CharacterCountValidator(None, textfield.head.maxWords))
+          MandatoryValidator(Some(f)).andThen(CharacterCountValidator(Some(f), textfield.head.maxWords))
         case false => NonMandatoryValidator(None)
       }
     }

@@ -47,7 +47,7 @@ class EventAudienceFormSpec extends WordSpecLike with Matchers with OptionValues
     val section = values.map(vs => ApplicationSection(AppSectionNumber(3), vs, None))
     val name = "eventAudience"
     val q = ApplicationFormQuestion(name, "Who is the event's target audience?", None, Option("Help Text"))
-    val fs: ApplicationFormSection = ApplicationFormSection(AppSectionNumber(5), "Event Audience", Seq(q), SectionTypeForm, Seq(TextAreaField(Some("label"), name, 200)))
+    val fs: ApplicationFormSection = ApplicationFormSection(AppSectionNumber(5), "Event Audience", Seq(q), SectionTypeForm, Seq(TextAreaField(Some("label"), name, true, true, 200)))
 
     val app = ApplicationSectionDetail(
       ApplicationId(1L),
@@ -61,7 +61,9 @@ class EventAudienceFormSpec extends WordSpecLike with Matchers with OptionValues
       app,
       JsObject(List.empty),
       List(),
-      List(FieldHint(name, "500 words maximum"))
+      List(),
+      "user",
+      Some("guidance URL")
     )
   }
 }

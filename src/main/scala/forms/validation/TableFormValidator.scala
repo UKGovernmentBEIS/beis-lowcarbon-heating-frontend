@@ -27,11 +27,6 @@ import forms.validation.FieldValidator.Normalised
 import org.apache.commons.lang3.StringUtils
 import play.api.libs.json.{JsObject, Json}
 
-case class TableFormValues(employeename: Option[String]=None, department: Option[String], natureofillness: Option[String],
-                             managername: Option[String], manageremail: Option[String])
-case class TableForm(employeename: String, department: String, natureofillness: String,
-                            managername: String, manageremail: String)
-
 
 object TableFormValidator  {
   def apply(tableRowfields : Seq[TableRow]) = new TableFormValidator(tableRowfields)

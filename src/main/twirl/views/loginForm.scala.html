@@ -1,5 +1,8 @@
-@(errors : String,
-loginform: Option[Form[LoginForm]] = None)
+@(
+errors : String,
+loginform: Option[Form[LoginForm]] = None,
+isRegnSuccess: Option[Boolean] = None
+)
 
 @errorClass = @{
 if(errors.nonEmpty) "error" else ""
@@ -10,6 +13,13 @@ if(errors.nonEmpty) "error" else ""
 
 @main(s"Department for Business, Energy & Industrial Strategy - BEIS") {
     @helper.form(action = routes.UserController.loginFormSubmit) {
+
+@if(isRegnSuccess.getOrElse(false)){
+<div class="registration-confirmation" role="alert" aria-labelledby="error-summary-heading" tabindex="-1">
+    <p class="heading-medium"> You have successfully registered </p>
+    <p class="heading-small"> Please login to start your application</p>
+</div>
+}
 
 <div class="grid-row">
     <div class="column-two-thirds">

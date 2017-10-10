@@ -165,7 +165,6 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
 
     errors.isEmpty match {
       case true =>
-        //users.register(jsObj - "confirmpassword").flatMap{
         users.register(Json.toJson(regn).as[JsObject] + ("id" -> Json.toJson(0))).flatMap{
 
             case Some(msg) => {
@@ -182,10 +181,10 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
                     .flashing("name"-> username, "email"-> email))
                 }
                 else
-                  Future.successful(Ok(views.html.loginForm("", Option(loginform))))
+                  Future.successful(Ok(views.html.loginForm("", Option(loginform), Some(true))))
               }
               case None =>
-                Future.successful(Ok(views.html.loginForm("Login is incorrect. Please add correct details", Option(loginform))))
+                Future.successful(Ok(views.html.loginForm("Login details are incorrect. Please add correct details", Option(loginform))))
           }
       case false =>
         val errMsg = "The passwords entered do not match. Please enter them again"
@@ -224,7 +223,8 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
         Future.successful(Redirect(routes.DashBoardController.applicantDashBoard())
           .withSession((Security.username -> username), ("sessionTime" -> System.currentTimeMillis.toString)))
       case None =>
-        Future.successful(Ok(views.html.loginForm("Login is incorrect. Please add correct details", Option(loginform))))
+        val errMsg = "Login is incorrect. Please add correct details"
+        Future.successful(Ok(views.html.loginForm(errMsg, Option(loginform))))
     }
   }
 

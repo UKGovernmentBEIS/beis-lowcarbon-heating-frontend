@@ -31,9 +31,8 @@ case class CharacterCountValidator(label: Option[String] = None, maxChars: Int) 
 
     s match {
       //case n if n.length > maxChars => FieldError(path, s"'${path.substring(path.indexOf('.')+1,path.length)}' Character limit exceeded").invalidNel
-      case n if n.length > maxChars => {
+      case n if n.length > maxChars =>
         FieldError(path, s"'${label.getOrElse("Field")}' Character limit exceeded").invalidNel
-      }
       case n => {
         n.validNel
       }
