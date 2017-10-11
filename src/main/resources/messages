@@ -1,2 +1,16 @@
 name = Name
 password = Password
+
+##### Error, Warning and Success messages #####
+
+error.BF000 =
+error.BF001 = The password entered does not match. Please enter them again
+error.BF002 = Login details are incorrect. Please add correct details
+error.BF003 = Password doesn't match
+error.BF004 = Reference Number is wrong
+error.BF005 = Unauthorised User
+error.BF006 = Details not found. Please add correct details
+error.BF007 = Details are incorrect. Please add correct details
+error.BF008 = {0} already exists. Please use different username
+error.BF009 = An exception occurred while registering {0}. Please try again.
+success.BF001 = "database query successful"

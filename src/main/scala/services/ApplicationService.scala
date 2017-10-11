@@ -48,8 +48,6 @@ import java.io.{ByteArrayOutputStream, File}
 
 import akka.stream.scaladsl.{FileIO, Source}
 
-//import scala.io.Source
-
 
 class ApplicationURLs(baseUrl: String) {
   def application(id: ApplicationId): String =
@@ -105,14 +103,6 @@ class ApplicationURLs(baseUrl: String) {
 
 class ApplicationService @Inject()(val ws: WSClient)(implicit val ec: ExecutionContext)
   extends ApplicationOps with RestService {
-  //TODO remove these comments
-  //implicit val fileuploadItemF = Json.format[FileUploadItem]
-  //implicit val fileListF = Json.format[FileList]
-  //implicit val multipartFormDataReads = Json.format[play.api.mvc.MultipartFormData.FilePart[play.api.libs.Files.TemporaryFile]]
-  //implicit val temporaryFileReads = Json.format[play.api.libs.Files.TemporaryFile]
-  //implicit val fileReads = Json.reads[java.io.File]
-  //implicit val fileFormat = Json.format[java.io.File]
-  //mplicit val filePartReads = Json.format[play.api.mvc.MultipartFormData.FilePart[ A]
 
   val baseUrl = Config.config.business.baseUrl
   val urls = new ApplicationURLs(baseUrl)
@@ -125,13 +115,8 @@ class ApplicationService @Inject()(val ws: WSClient)(implicit val ec: ExecutionC
     post(urls.section(id, sectionNumber), doc)
 
   override def completeSection(id: ApplicationId, sectionNumber: AppSectionNumber, doc: JsObject): Future[FieldErrors] = {
-    //println("== 2224446666 doc========="+ doc + "====" )
     sectionDetail(id, sectionNumber).flatMap {
       case Some(app) => {
-//        println("== 2224446666 1 ========="+ app.formSection + "===="+ checksFor(app.formSection) + "====" )
-//        println("== 2224446666 doc========="+ doc + "====" )
-//        println("== 2224446666 2 ========="+ FieldCheckHelpers.check(doc, checksFor(app.formSection)) + "====" )
-
         FieldCheckHelpers.check(doc, checksFor(app.formSection)) match {
           case Nil => post(urls.complete(id, sectionNumber), doc).map(_ => List())
           case errs =>
@@ -148,17 +133,10 @@ class ApplicationService @Inject()(val ws: WSClient)(implicit val ec: ExecutionC
 
     formSection.sectionType match {
       case SectionTypeForm | SimpleTypeForm | RowForm | TableForm | DynamicTableForm =>
-//        formSection.fields.map(f =>
-//          println("== ApplicationService  2a========="+   f.name + "-----") //companyInfo  ----- sicknessAbsence
-//        )
         formSection.fields.map(f =>
           f.name -> f.check).toMap
 
-
-
-
       case SectionTypeCostList => Map("items" -> FieldChecks.fromValidator(CostSectionValidator(2000)))
-      //case SectionTypeFileList => Map("items" -> FieldChecks.noCheck)
       case SectionTypeFileList =>
         formSection.fields.map({
           f => f.name -> f.check
@@ -246,45 +224,4 @@ class ApplicationService @Inject()(val ws: WSClient)(implicit val ec: ExecutionC
       Future.successful(apps.getOrElse(Seq())))
   }
 
-  //TODO:- NOT USED remove this method
-  override def uploadFile(fileName: String, fileType: String,  mf: MultipartFormData.FilePart[TemporaryFile]): Future[Unit] = {
-
-    //play.api.mvc.MultipartFormData.FilePart[Source[ByteString, Any]]
-    /*  This is for upload a file to backend Using REST API */
-
-    val dataParts = Map(
-      "filename" -> Seq("Test"),
-      "filetype" -> Seq("pdf")
-    )
-
-    //val file = new java.io.File("/Users/venkatamutyala/test/test.txt")
-    //val fileParts = new play.api.mvc.MultipartFormData.FilePart("attachment", "foo.jpg", Some("image/jpeg"), file)
-    //val multipartFormData = MultipartFormData(dataParts, fileParts, Seq(), Seq())
-
-    //val multipartFormData = MultipartFormData(dataParts, fileParts, Seq(), Seq())
-    //ws.url("").post(Source(fileParts :: dataParts :: List()))
-    //ws.url("").post(Source(play.api.mvc.MultipartFormData.FilePart("hello", "hello.txt", Option("text/plain"), FileIO.fromFile(tmpFile)) :: DataPart("key", "value") :: List()))
-    //WS.url(url).post(multipartFormData)
-    // /////post(urls.uploadFile(), "")
-    //post(urls.uploadFile(), Source(fileParts :: dataParts :: List()))
-    //-------------
-    //val source: String = Source.fromFile("/Users/venkatamutyala/test/test.txt").getLines.mkString
-    //val json: JsValue = Json.parse(source)
-    //------------
-    //val stream = new FileInputStream(file)
-
-    //val json = try {  Json.parse(stream) } finally { stream.close() }
-    //println("JSon:-" + Json.stringify (json))
-
-    //val model = Source fromInputStream{ getClass getResourceAsStream "/Users/venkatamutyala/test/test.txt" } getLines() toString()
-    //println("Json:-" + Json.toJson(file))
-    //ws.url("").post(Source(FilePart("hello", "hello.txt", Option("text/plain"), FileIO.fromFile(file)) :: DataPart("key", "value") :: List()))
-    //ws.url("").post(mf)
-    //ws.url("").post()
-    //ws.url("").post(Source.single(mf))
-
-    // post(urls.uploadFile(), Source.single(fileParts))
-    post(urls.uploadFile(), "")
-    //
-  }
 }

@@ -71,7 +71,7 @@ trait ApplicationOps {
 
   def updatePersonalReference(id: ApplicationId, reference: String): Future[Unit]
 
-  def uploadFile(fileName: String, fileType: String,  mf: MultipartFormData.FilePart[TemporaryFile]): Future[Unit]
+  //def uploadFile(fileName: String, fileType: String,  mf: MultipartFormData.FilePart[TemporaryFile]): Future[Unit]
 
   def getApplicationsByUserId(userId: UserId): Future[Seq[Application]]
 

@@ -83,7 +83,6 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
       val nameWithoutPath = a.name.split("\\.").last
       val fldOptJsValue = fldValues.value.get(nameWithoutPath)
       /** Check if there is data in any field even though the field is not Mandatory **/
-      println("====111==="+fldOptJsValue + "=="+ a)
 
       if(!StringUtils.isEmpty(fldOptJsValue.headOption.getOrElse("").toString().replace("\"", "" ))) {
         a.fieldType match {

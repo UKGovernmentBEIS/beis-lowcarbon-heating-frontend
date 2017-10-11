@@ -49,6 +49,9 @@ import cats.syntax.validated._
 import forms.validation.FieldValidator.Normalised
 import scala.util.{Failure, Success, Try}
 
+import play.api.Play.current
+import play.api.i18n.Messages
+import play.api.i18n.Messages.Implicits._
 
 /********************************************************************************
   This file is for temporary Login till any Security component is deployed.
@@ -61,7 +64,7 @@ trait SessionUser{
 
   implicit def sessionUser(implicit session: Session): String = {
     //val usr =  for (suser<- session.get("username")) yield suser
-    session.get("username").getOrElse("Unauthorised User")
+    session.get("username").getOrElse(Messages("error.BF005"))
   }
 }
 
@@ -74,7 +77,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   implicit val regnWrites = Json.writes[Registration]
   implicit val regnFormWrites = Json.writes[RegistrationForm]
   implicit val resetPasswordWrites = Json.writes[ResetPassword]
-
+  implicit val messages = Messages
 
   val loginform:Form[LoginForm] = Form(
     mapping(
@@ -127,7 +130,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
 
   def loginForm = Action{ implicit request =>
     implicit val session: Session = request.session
-    implicit var suser = request.session.get("username").getOrElse("Unauthorised User")
+    implicit var suser = request.session.get("username").getOrElse(Messages("error.BF005"))
     Ok(views.html.loginForm("", Option(loginform)))
   }
 
@@ -138,7 +141,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   def confirmPasswordCheck(password:String,confirmpassword:String): List[FieldError] = {
 
     password.equals(confirmpassword) match {
-      case false =>   List(FieldError("password", "Password doesn't match"))
+      case false =>   List(FieldError("password", Messages("error.BF003")))
       case true => List()
     }
   }
@@ -146,7 +149,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   def refNoCheck(refNo:String): List[FieldError] = {
 
     Try(refNo.toLong) match {
-      case Failure(e) => List(FieldError("refno", "Reference Number is wrong"))
+      case Failure(e) => List(FieldError("refno", Messages("error.BF004")))
       case Success(v) => List()
     }
   }
@@ -167,27 +170,28 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
       case true =>
         users.register(Json.toJson(regn).as[JsObject] + ("id" -> Json.toJson(0))).flatMap{
 
-            case Some(msg) => {
+            case Some(errCode) => {
                 /** TODO *************
                   * need to get the exception TYPE from backend for the exceptions and show them
                   * or need to get the error number to select the error text from any resource bundle or properties
                   */
-
-                val dbUniqueKeyError = "duplicate key value violates unique constraint"
-                if(msg.indexOf(dbUniqueKeyError) != -1) {
+                if(errCode.indexOf("error") != -1) {
                   val username = (request.body.values \ "name").validate[String].getOrElse("NA")
-                  val errorMsg = s"'$username' already exists. Please use different username"
+                  val errorMsg = Messages(errCode, s"'$username'")
+
                   Future.successful(Ok(views.html.registrationForm(registrationform, List(FieldError("name", errorMsg))))
                     .flashing("name"-> username, "email"-> email))
                 }
+                else if(errCode.indexOf("success") != -1)
+                  Future.successful(Ok(views.html.loginForm(Messages("error.BF000"), Option(loginform), Some(true))))
                 else
-                  Future.successful(Ok(views.html.loginForm("", Option(loginform), Some(true))))
-              }
+                  Future.successful(Ok(views.html.loginForm(Messages("error.BF000"), Option(loginform))))
+            }
               case None =>
-                Future.successful(Ok(views.html.loginForm("Login details are incorrect. Please add correct details", Option(loginform))))
+                Future.successful(Ok(views.html.loginForm(Messages("error.BF002"), Option(loginform))))
           }
       case false =>
-        val errMsg = "The passwords entered do not match. Please enter them again"
+        val errMsg = Messages("error.BF001")
         Future.successful(Ok(views.html.registrationForm(registrationform, errors)))
     }
   }
@@ -195,22 +199,16 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   def forgotPasswordSubmit = Action.async(JsonForm.parser)  { implicit request =>
     val email = (request.body.values \ "email").validate[String].getOrElse("NA")
     users.forgotpassword(Json.toJson(request.body.values).as[JsObject]).flatMap{
-      case Some(msg) => {
-        /** TODO *************
-          * need to get the exception TYPE from backend for the exceptions and show them
-          * or need to get the error number to select the error text from any resource bundle or properties
-          */
-        val dbError = "empty.head"
-        if (msg.indexOf(dbError) != -1) {
+      case Some(errCode) => {
+         if (errCode.indexOf("error") != -1) {
           val username = (request.body.values \ "name").validate[String].getOrElse("NA")
-          val errorMsg = "Details not found. Please add correct details"
-          Future.successful(Ok(views.html.forgotPasswordForm(errorMsg, forgotpasswordform)))
+          Future.successful(Ok(views.html.forgotPasswordForm(Messages(errCode), forgotpasswordform)))
         }
         else
           Future.successful(Ok(views.html.forgotPasswordConfirm(email)))
       }
       case None =>
-        Future.successful(Ok(views.html.forgotPasswordForm("Details are incorrect. Please add correct details", forgotpasswordform)))
+        Future.successful(Ok(views.html.forgotPasswordForm(Messages("error.BF007"), forgotpasswordform)))
     }
   }
 
@@ -223,7 +221,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
         Future.successful(Redirect(routes.DashBoardController.applicantDashBoard())
           .withSession((Security.username -> username), ("sessionTime" -> System.currentTimeMillis.toString)))
       case None =>
-        val errMsg = "Login is incorrect. Please add correct details"
+        val errMsg = Messages("error.BF002")
         Future.successful(Ok(views.html.loginForm(errMsg, Option(loginform))))
     }
   }
@@ -246,7 +244,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
             Future.successful(Ok(views.html.resetPasswordForm(List(), refno, resetpasswordform)))
         }
       case false =>
-        val errMsg = "The passwords entered do not match. Please enter them again"
+        val errMsg = Messages("error.BF001")
         Future.successful(Ok(views.html.resetPasswordForm(errors, refno, resetpasswordform)))
     }
   }
