@@ -157,11 +157,13 @@ if(a.isNumeric.getOrElse(false)) "bignumber" else ""
                    case "tableform" => {
                              <div class='form-group @errorClassFor(f)'>
                              @tableFormSection(f, answers, errs, hints)
+                             </div>
                    }
                    case "address" => {
                              @addressSection(f, questions, answers, errs, hints)
                    }
                    case "dropdown" => {
+                             <div class='form-group @errorClassFor(f)'>
                              <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
 
                              <select class="form-control dropdown" id="@f.name" name="@f.name">
@@ -173,7 +175,8 @@ if(a.isNumeric.getOrElse(false)) "bignumber" else ""
                                  }
 
                              </select>
-                   }
+                             </div>
+                }
 
                 }
             </td></tr>

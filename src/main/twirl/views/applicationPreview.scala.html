@@ -22,7 +22,7 @@
     leftCols.zip(rightCols)
 }
 
-@main(s"Opportunity ${app.opportunity.title} - BEIS", backLink=Some(BackLink("Return to application overview",controllers.routes.ApplicationController.show(app.id).url)), displayUserName=Some(sessionUser)) {
+@main(s"Opportunity ${app.opportunity.title} - BEIS", backLink=Some(BackLink("Return to application overview",controllers.routes.ApplicationController.show(app.id, None).url)), displayUserName=Some(sessionUser)) {
     <div class="grid-row">
         <div class="column-two-thirds">
 
@@ -63,7 +63,7 @@
 
                     <div class="rifs-form-buttons">
                         <p>
-                            <a href="@controllers.routes.ApplicationController.show(app.id)" class="button">
+                            <a href="@controllers.routes.ApplicationController.show(app.id, None)" class="button">
                                 Close
                             </a>
                         </p>

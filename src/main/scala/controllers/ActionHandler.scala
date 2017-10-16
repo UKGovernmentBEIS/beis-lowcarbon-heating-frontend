@@ -45,10 +45,10 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
       case SectionTypeForm | SimpleTypeForm | RowForm | TableForm => {
         if (JsonHelpers.allFieldsEmpty(fieldValues)) applications.deleteSection(app.id, app.sectionNumber)
         else applications.saveSection(app.id, app.sectionNumber, fieldValues)
-      }.map(_ => redirectToOverview(app.id))
-      case SectionTypeCostList => Future.successful(redirectToOverview(app.id))
-      case SectionTypeFileList => Future.successful(redirectToOverview(app.id))
-      case DynamicTableForm => Future.successful(redirectToOverview(app.id))
+      }.map(_ => redirectToOverview(app.id, Some(app.sectionNumber.num.value)))
+      case SectionTypeCostList => Future.successful(redirectToOverview(app.id, Some(app.sectionNumber.num.value)))
+      case SectionTypeFileList => Future.successful(redirectToOverview(app.id, Some(app.sectionNumber.num.value)))
+      case DynamicTableForm => Future.successful(redirectToOverview(app.id, Some(app.sectionNumber.num.value)))
     }
   }
 
@@ -63,7 +63,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
       case DynamicTableForm => app.section.map(_.answers).getOrElse(JsObject(Seq()))
     }
     applications.completeSection(app.id, app.sectionNumber, answers).map {
-      case Nil => redirectToOverview(app.id)
+      case Nil => redirectToOverview(app.id, Some(app.sectionNumber.num.value))
       case errs => {
         redisplaySectionForm(app, answers, errs, userId)
       }

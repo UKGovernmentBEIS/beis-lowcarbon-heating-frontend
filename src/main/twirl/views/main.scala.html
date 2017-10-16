@@ -32,8 +32,8 @@
             }
             @if(displayUserName.isDefined) {
                 <div class="username-container">
-                    <span><span class="visually-hidden">Signed in as </span>@displayUserName.getOrElse("")</span>
-                    <span> <a href="@controllers.routes.UserController.logOut()" class="flat nobreak">
+                    <span class="visually-hidden">Signed in as </span>@displayUserName.getOrElse("")</span>
+                    &nbsp; &nbsp; <span> <a href="@controllers.routes.UserController.logOut()" class="flat nobreak">
                         Logout</a></span>
                 </div>
             }

@@ -39,3 +39,4 @@ case class AccessibleDateTimeFormat() {
     s"$x of ${inner.print(date)}"
   }
 }
+

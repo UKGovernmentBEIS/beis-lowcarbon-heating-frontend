@@ -28,11 +28,6 @@ import forms.validation.FieldValidator.Normalised
 import play.api.libs.json.{JsObject, JsString, Json}
 import forms.DateValues
 import org.apache.commons.lang3.StringUtils
-//case class SimpleFormValues(employeename: Option[String]=None, department: Option[String], natureofillness: Option[String],
-//                             managername: Option[String], manageremail: Option[String])
-//case class SimpleForm(employeename: String, department: String, natureofillness: String,
-//                            managername: String, manageremail: String)
-
 
 object SimpleFormValidator  {
   def apply(textfields : Seq[SimpleField]) = new SimpleFormValidator(textfields)
@@ -49,6 +44,7 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
                                               CurrencyValidator(l, minValue, maxValue)
   def validatorTextInt(l:Option[String]= None, n:String) = IntValidator(l)
   def validatorCheckbox(l:Option[String]= None, n:String) = MandatoryValidator(l,Option(n))
+  def validatorDropdown(l:Option[String]= None) = DropdownValidator(l)
 
   override def doValidation(path: String, fldValues: Normalised[JsObject]): ValidatedNel[FieldError, List[(SimpleField, String)]] = {
 
@@ -62,8 +58,8 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
           fld.fieldType match {
             case "textarea" =>
               validatorTextArea(fld.label, fld.name, fld.maxWords)
-//            case "currency" =>
-//              validatorTextArea(fld.label, fld.name, fld.maxWords)
+            case "dropdown" =>
+              validatorDropdown(fld.label)
             case "checkbox" =>
               validatorCheckbox(fld.label, fld.name)
             case "text" =>

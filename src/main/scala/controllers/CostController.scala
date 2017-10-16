@@ -130,7 +130,7 @@ class CostController @Inject()(
 
   def cancelLink(app: ApplicationSectionDetail): String = {
     val items = app.section.flatMap(s => (s.answers \ "items").validate[JsArray].asOpt).getOrElse(JsArray(List.empty)).value
-    if (items.isEmpty) controllers.routes.ApplicationController.show(app.id).url
+    if (items.isEmpty) controllers.routes.ApplicationController.show(app.id, None).url
     else sectionFormCall(app.id, app.sectionNumber).url
   }
 }

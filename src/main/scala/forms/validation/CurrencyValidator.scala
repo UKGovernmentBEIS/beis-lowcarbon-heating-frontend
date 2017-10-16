@@ -22,6 +22,9 @@ import cats.syntax.validated._
 import forms.validation.FieldValidator.Normalised
 
 import scala.util.Try
+import play.api.i18n.Messages
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
 
 object CurrencyValidator {
   def apply() = new CurrencyValidator(None, None, None)
@@ -37,6 +40,8 @@ object CurrencyValidator {
 }
 
 class CurrencyValidator(label:  Option[String], minValue: Option[BigDecimal], maxValue: Option[BigDecimal]) extends FieldValidator[Option[String], BigDecimal] {
+
+  implicit val messages = Messages
   override def normalise(os: Option[String]): Option[String] = os.map(_.trim().replaceAll(",", ""))
 
   override def doValidation(path: String, value: Normalised[Option[String]]): ValidatedNel[FieldError, BigDecimal] = {
@@ -44,9 +49,9 @@ class CurrencyValidator(label:  Option[String], minValue: Option[BigDecimal], ma
       case Some(a) =>  {
         if(minValue.nonEmpty && maxValue.nonEmpty){
           if(a < minValue.get)
-            FieldError(path, s"'${label.getOrElse("Field")}' The value must be greater than ${minValue.get}").invalidNel
+            FieldError(path, Messages("error.BF028", s"'${label.getOrElse("Field")}'", minValue.get)).invalidNel
           else if(a > maxValue.get)
-            FieldError(path, s"'${label.getOrElse("Field")}' The value must be less than ${maxValue.get}").invalidNel
+            FieldError(path, Messages("error.BF029", s"'${label.getOrElse("Field")}'", maxValue.get)).invalidNel
           else
             a.validNel
        }

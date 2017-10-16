@@ -23,19 +23,27 @@ import forms.validation.FieldValidator.Normalised
 
 import scala.util.Try
 
+import play.api.i18n.Messages
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
+import scala.util.Try
+
 object ParseInt {
   def unapply(s: String): Option[Int] = Try(s.toInt).toOption
 }
 
 case class IntValidator(label: Option[String] = None, minValue: Int = Int.MinValue, maxValue: Int = Int.MaxValue) extends FieldValidator[String, Int] {
+
+  implicit val messages = Messages
+
   override def normalise(s: String): String = s.trim()
 
   override def doValidation(path: String, s: Normalised[String]): ValidatedNel[FieldError, Int] = {
     s match {
-      case ParseInt(i) if i < minValue => FieldError(path, s"'${label.getOrElse("Field")}' Minimum value is $minValue").invalidNel
-      case ParseInt(i) if i > maxValue => FieldError(path, s"'${label.getOrElse("Field")}' Maximum value is $maxValue").invalidNel
+      case ParseInt(i) if i < minValue => FieldError(path, Messages("error.BF012", s"'${label.getOrElse("Field")}'", minValue)).invalidNel
+      case ParseInt(i) if i > maxValue => FieldError(path, Messages("error.BF013", s"'${label.getOrElse("Field")}'", maxValue)).invalidNel
       case ParseInt(i) => i.validNel
-      case _ => FieldError(path, s"'${label.getOrElse("Field")}' must be a whole number").invalidNel
+      case _ => FieldError(path, Messages("error.BF014", s"'${label.getOrElse("Field")}'")).invalidNel
     }
   }
 }

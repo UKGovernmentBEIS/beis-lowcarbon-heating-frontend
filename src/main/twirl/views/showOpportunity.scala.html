@@ -95,7 +95,7 @@ guidanceDocURL: Option[String] = None
                             @app match {
                                 case Some(a) => {
                                     @a.personalReference match {
-                                        case Some(ap) => { <a href="@controllers.routes.ApplicationController.show(a.id)" class="button"> View Application</a> }
+                                        case Some(ap) => { <a href="@controllers.routes.ApplicationController.show(a.id, None)" class="button"> View Application</a> }
                                         case None => { <a href="@controllers.routes.ApplicationController.editPersonalRef(a.id)" class="button"> View Application</a> }
                                     }
                                 }
@@ -123,7 +123,7 @@ guidanceDocURL: Option[String] = None
                             @app match {
                                 case Some(a) => {
                                     @a.personalReference match {
-                                        case Some(ap) => { <a href="@controllers.routes.ApplicationController.show(a.id)" class="button"> View Application</a> }
+                                        case Some(ap) => { <a href="@controllers.routes.ApplicationController.show(a.id, None)" class="button"> View Application</a> }
                                         case None => { <a href="@controllers.routes.ApplicationController.editPersonalRef(a.id)" class="button"> View Application</a> }
                                     }
                                 }

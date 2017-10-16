@@ -32,7 +32,7 @@ trait ApplicationResults {
 
   def redirectToSectionForm(applicationId: ApplicationId, sectionNumber: AppSectionNumber) = Redirect(sectionFormCall(applicationId, sectionNumber))
 
-  def redirectToOverview(applicationId: ApplicationId) = Redirect(controllers.routes.ApplicationController.show(applicationId))
+  def redirectToOverview(applicationId: ApplicationId, sectionNum:Option[Int]=None) = Redirect(controllers.routes.ApplicationController.show(applicationId, sectionNum))
 
   def redirectToSimpleSectionForm(applicationId: ApplicationId, sectionNumber: AppSectionNumber) = Redirect(sectionSimpleFormCall(applicationId, sectionNumber))
 

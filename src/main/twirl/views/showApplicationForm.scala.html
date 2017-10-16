@@ -5,7 +5,10 @@
 @(app: ApplicationDetail,
 mapsecs: Map[String, Seq[ApplicationFormSection]],
 errs: Seq[forms.validation.SectionError],
-guidanceDocURL: String)(implicit sessionUser: String)
+guidanceDocURL: String,
+groupName: Option[String]=None,
+secNo: Option[Int]=None
+)(implicit sessionUser: String)
 
 
 @errorClass = @{if(errs.nonEmpty) "rifs-error-panel" else ""}
@@ -88,11 +91,11 @@ guidanceDocURL: String)(implicit sessionUser: String)
                                     @for((f,k) <- fs._2.view zip ('a' to 'z').toList){
                                     <p>
                                     <div class="helptext-first">
-                                            <a id="section-@f.sectionNumber.num-link" href="@controllers.routes.ApplicationController.showSectionForm(app.id, f.sectionNumber)">
-                                                @k.  @if(f.title.split("-").size > 1) { @f.title.split("-")(1)} else{@f.title}  </a></div>
-                                     <div class="helptext-second helptext-border">@statusText(app, f.sectionNumber)</div>
+                                        <a id="section-@f.sectionNumber.num-link" href="@controllers.routes.ApplicationController.showSectionForm(app.id, f.sectionNumber)">
+                                            @k.  @if(f.title.split("-").size > 1) { @f.title.split("-")(1)} else{@f.title}  </a></div>
+                                    <div class="helptext-second helptext-border">@statusText(app, f.sectionNumber)</div>
                                     </p>
-                                }
+                                    }
                                 </div>
                             </details>
 

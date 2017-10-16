@@ -20,21 +20,27 @@ package forms.validation
 import cats.data.ValidatedNel
 import cats.syntax.validated._
 import forms.validation.FieldValidator.Normalised
+import play.api.i18n.Messages
+import play.api.i18n.Messages
+import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
 
 case class MandatoryValidator(label: Option[String] = None, displayName: Option[String] = None) extends FieldValidator[Option[String], String] {
   override def normalise(os: Option[String]): Option[String] = os.map(_.trim())
 
   override def doValidation(path: String, so: Normalised[Option[String]]): ValidatedNel[FieldError, String] = {
 
+    implicit val messages = Messages
+
     val fieldName = displayName.map(n => s"'$n'").getOrElse("Field")
     denormal(so) match {
       //case None | Some("") => FieldError(path, s"$fieldName cannot be empty").invalidNel
       case Some("") =>
-        FieldError(path, s"'${label.getOrElse("Field")}' cannot be empty").invalidNel
+        FieldError(path, Messages("error.BF017", s"'${label.getOrElse("Field")}'")).invalidNel
       case Some(n) => n.validNel
       //case None => "".validNel //Todo:- removing this check for 'Lowcarbon heating', it might cause issue in BEIS forms..test BEIS forms
       case None =>
-        FieldError(path, s"'${label.getOrElse("Field")}' cannot be empty").invalidNel
+        FieldError(path, Messages("error.BF017", s"'${label.getOrElse("Field")}'")).invalidNel
     }
   }
 }

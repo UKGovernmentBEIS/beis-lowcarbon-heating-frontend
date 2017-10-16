@@ -20,28 +20,21 @@ package forms.validation
 import cats.data.ValidatedNel
 import cats.syntax.validated._
 import forms.validation.FieldValidator.Normalised
-import play.api.data.validation.{Constraints, Invalid, Valid}
 import play.api.i18n.Messages
 import play.api.Play.current
 import play.api.i18n.Messages.Implicits._
+import scala.util.Try
 
-case class EmailValidator(label: Option[String] = None) extends FieldValidator[String, String] {
+case class DropdownValidator(label: Option[String] = None) extends FieldValidator[Option[String], String] {
+  implicit val messages = Messages
 
-  import EmailValidator._
+  override def normalise(os: Option[String]): Option[String] = os.map(_.trim())
 
-  override def normalise(s: String): String = s.trim()
-
-  override def doValidation(path: String, s: Normalised[String]): ValidatedNel[FieldError, String] = {
-    implicit val messages = Messages
-
-    Constraints.emailAddress(s) match {
-      case  Valid =>
-        "".validNel
-      case  Invalid(errs) =>
-        FieldError(path,  Messages("error.BF022")).invalidNel
-      }
+  override def doValidation(path: String, s: Normalised[Option[String]]): ValidatedNel[FieldError, String] = {
+    denormal(s) match {
+      case Some(fld) if fld.equals("Select one") =>
+        FieldError(path, Messages("error.BF011", s"'${label.getOrElse("Field")}'")  ).invalidNel
+      case _ => "".validNel
     }
-
+  }
 }
-
-

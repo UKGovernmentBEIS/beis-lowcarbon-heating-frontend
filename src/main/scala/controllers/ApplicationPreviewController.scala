@@ -45,7 +45,7 @@ class ApplicationPreviewController @Inject()(
   def previewSection(id: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(id, sectionNumber) { implicit request =>
     val (backLink, editLink) = request.appSection.section.map(_.isComplete) match {
       case Some(true) =>
-        (controllers.routes.ApplicationController.show(request.appSection.id).url,
+        (controllers.routes.ApplicationController.show(request.appSection.id, None).url,
           Some(controllers.routes.ApplicationController.resetAndEditSection(request.appSection.id, request.appSection.sectionNumber).url))
       case _ =>
         (controllers.routes.ApplicationController.editSectionForm(request.appSection.id, request.appSection.sectionNumber).url, None)

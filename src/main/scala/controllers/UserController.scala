@@ -138,6 +138,14 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     new String(Base64.getEncoder.encode((pswd).getBytes))
   }
 
+  def nullSpaceCheck(fld : String, value : String): List[FieldError] = {
+
+    value.split(" ").length > 1 match {
+      case true =>   List(FieldError("name", Messages("error.BF010", fld, s"'$value'")))
+      case false => List()
+    }
+  }
+
   def confirmPasswordCheck(password:String,confirmpassword:String): List[FieldError] = {
 
     password.equals(confirmpassword) match {
@@ -163,8 +171,13 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     val email = (request.body.values \ "email").validate[String].getOrElse("NA")
 
     val regn = Registration(UserId(username), password, email)
+
     val emailvalidator = EmailValidator(Option("email")).validate("email", email).fold(_.toList, _ => List())
-    val errors = confirmPasswordCheck(password, confirmpassword) ++ emailvalidator
+    val errors = nullSpaceCheck("Username", username) ++
+                 nullSpaceCheck("Email", email) ++
+                 nullSpaceCheck("Password", password) ++
+                 confirmPasswordCheck(password, confirmpassword) ++
+                 emailvalidator
 
     errors.isEmpty match {
       case true =>

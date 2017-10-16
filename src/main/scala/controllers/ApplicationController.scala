@@ -79,10 +79,19 @@ class ApplicationController @Inject()(
     }
   }
 
-  def show(id: ApplicationId) = AppDetailAction(id) { implicit request =>
+  def show(id: ApplicationId, sectionNum:Option[Int]=None) = AppDetailAction(id) { implicit request =>
     var mapsecs:Map[String, Seq[ApplicationFormSection]]
         = makeGroupSections(request.appDetail.applicationForm.sections)
-    Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, actionHandler.guidanceDocURL))
+    //println("=====sectionNum====="+ sectionNum)
+    //request.appDetail.applicationForm.sections.map(a=> println("====333===="+ a.sectionNumber))
+    //println("=====11sectionNum====="+request.appDetail.applicationForm.sections.filter(_.sectionNumber.num.value == sectionNum.get ).head.title)
+    sectionNum match {
+      case Some(secNo) =>
+        val groupName = request.appDetail.applicationForm.sections.filter(_.sectionNumber.num.value == secNo).head.title
+        Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, actionHandler.guidanceDocURL, Some(groupName), Some(secNo)))
+      case None =>
+        Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, actionHandler.guidanceDocURL))
+    }
   }
 
   def makeGroupSections( sections: Seq[ApplicationFormSection]) : Map[String, Seq[ApplicationFormSection]] = {
@@ -321,7 +330,7 @@ class ApplicationController @Inject()(
       case Save => appRefField.check(appRefField.name, Json.toJson(JsonHelpers.flatten(request.body.values).getOrElse(APP_REF_FIELD_NAME, ""))) match {
         case Nil =>
           applications.updatePersonalReference(request.appDetail.id, JsonHelpers.flatten(request.body.values).getOrElse(APP_REF_FIELD_NAME, "")).map { _ =>
-            Redirect(controllers.routes.ApplicationController.show(request.appDetail.id))
+            Redirect(controllers.routes.ApplicationController.show(request.appDetail.id, None))
           }
         case errs =>
           val hints = hinting(request.body.values, Map(appRefField.name -> appRefField.check))
@@ -330,7 +339,7 @@ class ApplicationController @Inject()(
           )
       }
       case _ =>
-        Future.successful(Redirect(controllers.routes.ApplicationController.show(request.appDetail.id)))
+        Future.successful(Redirect(controllers.routes.ApplicationController.show(request.appDetail.id, None)))
     }
 
   }
