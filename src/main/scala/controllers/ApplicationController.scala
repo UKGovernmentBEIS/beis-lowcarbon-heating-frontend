@@ -82,10 +82,8 @@ class ApplicationController @Inject()(
   def show(id: ApplicationId, sectionNum:Option[Int]=None) = AppDetailAction(id) { implicit request =>
     var mapsecs:Map[String, Seq[ApplicationFormSection]]
         = makeGroupSections(request.appDetail.applicationForm.sections)
-    //println("=====sectionNum====="+ sectionNum)
-    //request.appDetail.applicationForm.sections.map(a=> println("====333===="+ a.sectionNumber))
-    //println("=====11sectionNum====="+request.appDetail.applicationForm.sections.filter(_.sectionNumber.num.value == sectionNum.get ).head.title)
-    sectionNum match {
+
+      sectionNum match {
       case Some(secNo) =>
         val groupName = request.appDetail.applicationForm.sections.filter(_.sectionNumber.num.value == secNo).head.title
         Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, actionHandler.guidanceDocURL, Some(groupName), Some(secNo)))

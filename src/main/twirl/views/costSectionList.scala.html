@@ -10,7 +10,7 @@
 @import partials._
 @import helpers._
 
-@main(s"${formSection.title} - BEIS", backLink=Some(BackLink("Return to application overview",controllers.routes.ApplicationController.show(app.id).url)), displayUserName=Some(sessionUser)) {
+@main(s"${formSection.title} - BEIS", backLink=Some(BackLink("Return to application overview",controllers.routes.ApplicationController.show(app.id, None).url)), displayUserName=Some(sessionUser)) {
     <div class="grid-row">
         <div class="column-two-thirds">
             <h1 class="heading-xlarge">
@@ -22,7 +22,7 @@
                     <h1 class="heading-medium error-summary-heading" id="error-summary-heading">
                         The information you entered is not valid
                     </h1>
-                    <p>Please correct the problems indicated below.</p>
+                    <p>Please correct the problems indicated below.</p>z
                 </div>
             }
             @questions.get("item").map { q => <p class="question text">@q.text</p>
@@ -75,7 +75,7 @@
                         <td class="align-right">
                         @item.itemNumber.map { num =>
                             <a href="@controllers.routes.CostController.deleteItem(app.id, formSection.sectionNumber, num)">
-                                Delete</a>
+                                XXXDelete</a>
                         }</td>
                     </tr>
                 }
