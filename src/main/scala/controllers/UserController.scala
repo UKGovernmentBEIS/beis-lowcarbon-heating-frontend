@@ -21,8 +21,9 @@ import java.util
 import java.util.Base64
 import javax.inject.Inject
 
+import controllers.FieldCheckHelpers.FieldErrors
 import controllers.JsonHelpers.formToJson
-import forms.validation.{EmailValidator, FieldError}
+import forms.validation._
 import models.UserId
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity
 import org.activiti.engine.repository.ProcessDefinition
@@ -138,7 +139,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     new String(Base64.getEncoder.encode((pswd).getBytes))
   }
 
-  def nullSpaceCheck(fld : String, value : String): List[FieldError] = {
+  def nullSpaceCheck_(fld : String, value : String): List[FieldError] = {
 
     value.split(" ").length > 1 match {
       case true =>   List(FieldError("name", Messages("error.BF010", fld, s"'$value'")))
@@ -146,11 +147,11 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     }
   }
 
-  def confirmPasswordCheck(password:String,confirmpassword:String): List[FieldError] = {
+  def confirmPasswordCheck(password:String,confirmpassword:String): ValidatedNel[FieldError, String] = {
 
     password.equals(confirmpassword) match {
-      case false =>   List(FieldError("password", Messages("error.BF003")))
-      case true => List()
+      case false =>  FieldError("password", Messages("error.BF003")).invalidNel
+      case true => "".validNel
     }
   }
 
@@ -162,6 +163,12 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     }
   }
 
+  def mandatoryFieldCheck(path: String, s: Option[String], displayName: String): List[FieldError] =
+    (MandatoryValidator(Some(displayName)).validate(path, s).andThen(NullSpaceValidator(Some(displayName)).validate(path, _))).fold(_.toList, _ => List())
+
+  def passswordCheck(path: String, s: Option[String], displayName: String): List[FieldError] =
+    (PasswordValidator(Some(displayName)).validate(path, s)).fold(_.toList, _ => List())
+
   def registrationSubmit =  Action.async(JsonForm.parser)  { implicit request =>
 
     val jsObj = Json.toJson(request.body.values).as[JsObject] + ("id" -> Json.toJson(0))
@@ -172,12 +179,18 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
 
     val regn = Registration(UserId(username), password, email)
 
-    val emailvalidator = EmailValidator(Option("email")).validate("email", email).fold(_.toList, _ => List())
-    val errors = nullSpaceCheck("Username", username) ++
-                 nullSpaceCheck("Email", email) ++
-                 nullSpaceCheck("Password", password) ++
-                 confirmPasswordCheck(password, confirmpassword) ++
-                 emailvalidator
+    val mandatoryCheck = (mandatoryFieldCheck(s"name", Some(username), "name") ++
+      mandatoryFieldCheck(s"email", Some(email), "email") ++
+      mandatoryFieldCheck(s"password", Some(password), "password") ++
+      mandatoryFieldCheck(s"confirmpassword", Some(confirmpassword), "confirmpassword"))
+
+    PasswordValidator
+    val emailvalidator = EmailValidator(Option("email")).validate("email", email)
+
+    val errors = mandatoryCheck ++
+      confirmPasswordCheck(password, confirmpassword).fold(_.toList, _ => List()) ++
+      passswordCheck("password", Some(password), "password") ++
+      emailvalidator.fold(_.toList, _ => List())
 
     errors.isEmpty match {
       case true =>
@@ -246,7 +259,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     val passwrd = (request.body.values \ "password").validate[String].getOrElse("NA")
     val confirmpassword = (request.body.values \ "confirmpassword").validate[String].getOrElse("NA")
 
-    val errors = confirmPasswordCheck(passwrd, confirmpassword) ++ refNoCheck(refno)
+    val errors = confirmPasswordCheck(passwrd, confirmpassword).fold(_.toList, _ => List()) ++ refNoCheck(refno)
 
     errors.isEmpty match {
       case true =>

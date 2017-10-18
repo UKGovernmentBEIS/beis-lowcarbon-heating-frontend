@@ -83,7 +83,7 @@ if(isMandatory){ <span class="mandatory-field">*</span> }
             </div>
             </div>
             }
-            case "textArea" => {
+            case "textarea" => {
             <div class="form-group @errorClassOnName(f.name)">
             <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
             <textarea id="@f.name" class="form-control generic textarea-resize" title="@f.name"

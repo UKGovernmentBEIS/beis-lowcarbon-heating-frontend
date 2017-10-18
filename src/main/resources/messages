@@ -36,5 +36,7 @@ error.BF029 = {0} The value must be less than {1}
 error.BF030 = {0} Characters over limit
 error.BF031 = {0} Characters maximum
 error.BF032 = {0} Character limit exceeded
+error.BF033 = {0} must contain at least 8 characters
+error.BF034 = {0} must contain at least one letter and one number
 
 success.BF001 = "database query successful"

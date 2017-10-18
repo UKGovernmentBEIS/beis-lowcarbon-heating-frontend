@@ -77,29 +77,48 @@ secNo: Option[Int]=None
                     <tbody>
                     <tr>
                         <td>
+
+
                             @mapsecs.view.zipWithIndex.map{ case (fs,i) =>
 
-                            <details>
-                                <summary role="button">
+                            @if(groupName.getOrElse("NA").indexOf(fs._1) != -1){
+                            <details open>
+                                }else{
+                                <details >
+                                    }
+
+                                    <summary role="button">
 
                                             <span class="summary panel-heading">
                                                 @{i+1}. @fs._1
                                             </span>
-                                </summary>
+                                    </summary>
 
-                                <div class="panel panel-border-narrow panel-no-top-padding">
-                                    @for((f,k) <- fs._2.view zip ('a' to 'z').toList){
-                                    <p>
-                                    <div class="helptext-first">
-                                        <a id="section-@f.sectionNumber.num-link" href="@controllers.routes.ApplicationController.showSectionForm(app.id, f.sectionNumber)">
-                                            @k.  @if(f.title.split("-").size > 1) { @f.title.split("-")(1)} else{@f.title}  </a></div>
-                                    <div class="helptext-second helptext-border">@statusText(app, f.sectionNumber)</div>
-                                    </p>
-                                    }
-                                </div>
-                            </details>
+                                    <div class="panel panel-border-narrow panel-no-top-padding">
+                                        @for((f,k) <- fs._2.view zip ('a' to 'z').toList){
+                                        <p>
+                                            @if(secNo.getOrElse(0) == f.sectionNumber.num.value){
+                                        <div class="helptext-first helptext-selected">
+                                            }else{
+                                            <div class="helptext-first">
+                                                }
+                                                <a id="section-@f.sectionNumber.num-link" href="@controllers.routes.ApplicationController.showSectionForm(app.id, f.sectionNumber)">
+                                                    @k.  @if(f.title.split("-").size > 1) { @f.title.split("-")(1)} else{@f.title}  </a>
+                                            </div>
 
-                            }
+                                            @if(secNo.getOrElse(0) == f.sectionNumber.num.value){
+                                            <div class="helptext-second helptext-border helptext-selected">
+                                                }else{
+                                                <div class="helptext-second helptext-border">
+                                                    }
+
+                                                    @statusText(app, f.sectionNumber)</div>
+                                        </p>
+                                        }
+                                    </div>
+                                </details>
+
+                                }
                         </td>
                     </tr>
                     </tbody>
