@@ -184,7 +184,6 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
       mandatoryFieldCheck(s"password", Some(password), "password") ++
       mandatoryFieldCheck(s"confirmpassword", Some(confirmpassword), "confirmpassword"))
 
-    PasswordValidator
     val emailvalidator = EmailValidator(Option("email")).validate("email", email)
 
     val errors = mandatoryCheck ++
@@ -256,18 +255,28 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   def resetPasswordSubmit = Action.async(JsonForm.parser)  { implicit request =>
 
     val refno = (request.body.values \ "refno").validate[String].getOrElse("NA")
-    val passwrd = (request.body.values \ "password").validate[String].getOrElse("NA")
+    val password = (request.body.values \ "password").validate[String].getOrElse("NA")
     val confirmpassword = (request.body.values \ "confirmpassword").validate[String].getOrElse("NA")
 
-    val errors = confirmPasswordCheck(passwrd, confirmpassword).fold(_.toList, _ => List()) ++ refNoCheck(refno)
+
+    val mandatoryCheck = (mandatoryFieldCheck(s"password", Some(password), "password") ++
+      mandatoryFieldCheck(s"confirmpassword", Some(confirmpassword), "confirmpassword"))
+
+    val errors = mandatoryCheck ++
+      confirmPasswordCheck(password, confirmpassword).fold(_.toList, _ => List()) ++
+      passswordCheck("password", Some(password), "password")
+
+
+    //val errors = confirmPasswordCheck(password, confirmpassword).fold(_.toList, _ => List()) ++ refNoCheck(refno)
 
     errors.isEmpty match {
       case true =>
-        users.resetpassword(Json.toJson(ResetPassword(refno, passwrd)).as[JsObject]).flatMap{
+        users.resetpassword(Json.toJson(ResetPassword(refno, password)).as[JsObject]).flatMap{
           case Some(1) =>
             Future.successful(Ok(views.html.loginForm("", Option(loginform))))
           case Some(0) =>
-            Future.successful(Ok(views.html.resetPasswordForm(List(), refno, resetpasswordform)))
+            val errs = List(FieldError("password", Messages("error.BF035")))
+            Future.successful(Ok(views.html.resetPasswordForm(errs, refno, resetpasswordform)))
         }
       case false =>
         val errMsg = Messages("error.BF001")

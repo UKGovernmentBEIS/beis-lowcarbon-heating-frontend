@@ -38,5 +38,6 @@ error.BF031 = {0} Characters maximum
 error.BF032 = {0} Character limit exceeded
 error.BF033 = {0} must contain at least 8 characters
 error.BF034 = {0} must contain at least one letter and one number
+error.BF035 = Please use the link sent in email and try again
 
 success.BF001 = "database query successful"

@@ -87,7 +87,7 @@ class ApplicationPreviewController @Inject()(
     gatherApplicationDetails(id).map {
       case Some(app) =>
         val title = app.sections.find(_.sectionNumber == 1).flatMap(s => (s.answers \ "title").validate[String].asOpt)
-        Ok(views.html.applicationPreview(app, app.sections.sortBy(_.sectionNumber), title, getFieldMap(app.applicationForm)))
+        Ok(views.html.applicationPreview(app, app.sections.sortBy(_.sectionNumber), title, getFieldMap(app.applicationForm), actionHandler.guidanceDocURL))
 
       case _ => NotFound
     }
