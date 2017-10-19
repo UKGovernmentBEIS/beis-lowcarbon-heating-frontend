@@ -25,7 +25,7 @@ import actions.{AppDetailAction, AppSectionAction}
 import config.Config
 import controllers.FieldCheckHelpers.FieldErrors
 import forms.{FileList, FileUploadItem}
-import forms.validation.FieldError
+import forms.validation.{FieldError, MandatoryValidator, NullSpaceValidator}
 import models.{AppSectionNumber, ApplicationId, ApplicationSectionDetail, ResourceKey}
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang3.StringUtils
@@ -36,7 +36,10 @@ import services.{AWSOps, ApplicationFormOps, ApplicationOps, OpportunityOps}
 
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.Logger
-
+import play.api.i18n.Messages
+import play.api.Play.current
+import play.api.i18n.Messages
+import play.api.i18n.Messages.Implicits._
 /**
   * Created by venkatamutyala on 02/07/2017.
   */
@@ -54,6 +57,7 @@ class AWSHandler @Inject()(
   implicit val fileuploadReads = Json.reads[FileUploadItem]
   implicit val fileuploadItemF = Json.format[FileUploadItem]
   implicit val fileListReads = Json.reads[FileList]
+  implicit val messages = Messages
 
 
   def showFileItemForm(userId: String, app: ApplicationSectionDetail, doc: JsObject, errs: FieldErrors, itemNumber: Option[Int] = None): Result = {
@@ -67,13 +71,48 @@ class AWSHandler @Inject()(
     Ok(views.html.fileUploadForm(app, answers, errs, hints, userId))
   }
 
+  def mandatoryCheck(path: String, s: String): List[FieldError] = {
+    StringUtils.isEmpty(s) match {
+      case true => List(FieldError(path, Messages("error.BF036")))
+      case false  => List()
+    }
+  }
+
+  def checkFileExtensions(path: String, ext: String): List[FieldError] ={
+    println("==="+ ext)
+    val allowedfileextensions = Config.config.file.allowedfileextensions
+    val exts = allowedfileextensions.split(",").toList
+    exts.contains(ext) match {
+      case false => List(FieldError(path, Messages("error.BF037", s"'$ext'")))
+      case true  => List()
+    }
+  }
+
+  def checkFileSize(path: String, f: File, filename: String): List[FieldError] ={
+    val allowedfilesize = Config.config.file.allowedfilesize
+
+    f.length() >  allowedfilesize*1000000 match {
+      case true => List(FieldError(path, Messages("error.BF038", s"'$filename'", allowedfilesize)))
+      case false  => List()
+    }
+  }
+
   def uploadFileAWSS3(id: ApplicationId,  sectionNumber: AppSectionNumber, appSection: ApplicationSectionDetail , fieldValues: JsObject,
                       f: File, userId : String) :Future[Result] = {
 
     val filename = fieldValues.fields.head._2.toString().replaceAll("^\"|\"$", "")
-    StringUtils.isEmpty(filename) match {
-      case true => Future.successful(showFileItemForm(userId, appSection, null, List(FieldError("supportingDocuments", "File name should not be empty"))))
-      case false => {
+    val extensionCheck = if(filename.indexOf(".") != -1)
+                            checkFileExtensions("supportingDocuments", filename.split("\\.")last)
+                         else List()
+    val sizeCheck = if(mandatoryCheck("supportingDocuments", filename).isEmpty)
+                            checkFileSize("supportingDocuments", f, filename)
+                          else List()
+
+    val errors = mandatoryCheck("supportingDocuments", filename) ++ extensionCheck ++ sizeCheck
+
+    errors.isEmpty match {
+      case false => Future.successful(showFileItemForm(userId, appSection, null, errors))
+      case true => {
         val extension = FilenameUtils.getExtension(filename)
         /* File Upload */
         val fileUploadItem:FileUploadItem = FileUploadItem(filename)
@@ -98,7 +137,7 @@ class AWSHandler @Inject()(
 
     val filename = fieldValues.fields.head._2.toString().replaceAll("^\"|\"$", "")
     StringUtils.isEmpty(filename) match {
-      case true => Future.successful(showSimpleFileItemForm(userId, appSection, null, List(FieldError("supportingDocuments", "File name should not be empty"))))
+      case true => Future.successful(showSimpleFileItemForm(userId, appSection, null, List(FieldError("supportingDocuments", Messages("error.BF036")))))
       case false => {
         val extension = FilenameUtils.getExtension(filename)
         /* File Upload */

@@ -164,7 +164,8 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
   }
 
   def mandatoryFieldCheck(path: String, s: Option[String], displayName: String): List[FieldError] =
-    (MandatoryValidator(Some(displayName)).validate(path, s).andThen(NullSpaceValidator(Some(displayName)).validate(path, _))).fold(_.toList, _ => List())
+    (MandatoryValidator(Some(displayName)).validate(path, s).andThen(NullSpaceValidator(Some(displayName)).validate(path, _)))
+      .fold(_.toList, _ => List())
 
   def passswordCheck(path: String, s: Option[String], displayName: String): List[FieldError] =
     (PasswordValidator(Some(displayName)).validate(path, s)).fold(_.toList, _ => List())

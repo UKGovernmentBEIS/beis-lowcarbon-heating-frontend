@@ -61,9 +61,9 @@ case class DateTimeRangeValidator(allowPast: Boolean, isEndDateMandatory: Boolea
 
   val dateValidator = DateFieldValidator(None, allowPast)
 
-  /*val mustProvideValidStartDateMessage = "You must provide a valid start date"
+  val mustProvideValidStartDateMessage = "You must provide a valid start date"
   val mustProvideValidEndDateMessage = "You must provide a valid end date"
-  val endMustBeLaterThanStartMessage = "End date must be later than the start date"*/
+  val endMustBeLaterThanStartMessage = "End date must be later than the start date"
 
   /**
     * Check that the individual form values are valid and build up a `DateTimeRange` instance that

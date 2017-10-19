@@ -39,5 +39,9 @@ error.BF032 = {0} Character limit exceeded
 error.BF033 = {0} must contain at least 8 characters
 error.BF034 = {0} must contain at least one letter and one number
 error.BF035 = Please use the link sent in email and try again
+error.BF036 = File name should not be empty
+error.BF037 = {0} extension is not allowed
+error.BF038 = {0} file size exceeded {1} MB limit
+
 
 success.BF001 = "database query successful"

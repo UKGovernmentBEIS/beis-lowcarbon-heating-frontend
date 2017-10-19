@@ -20,10 +20,13 @@
             <form method="POST"
                   action="@controllers.routes.ApplicationController.postSection(app.id, app.formSection.sectionNumber)"
                   novalidate="novalidate" enctype="multipart/form-data">
+                <span class="form-hint">
+                Please use the files with extensions 'txt, pdf, doc, docx, ppt, pptx, xls, xlsx, odt' only
+                </span>
                 @if(errs.nonEmpty) {
-                @errs.map { e =>
-                <span class="error-message" role="alert">@e.err</span>
-                }
+                    @errs.map { e =>
+                        <span class="error-message" role="alert">@e.err</span>
+                    }
                 }
 
                 @app.formSection.fields.map(_.renderFormInput(app.formSection.questionMap, answers, errs, hints))
