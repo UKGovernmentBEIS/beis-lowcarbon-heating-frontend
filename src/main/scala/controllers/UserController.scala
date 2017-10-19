@@ -204,8 +204,8 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
                   val username = (request.body.values \ "name").validate[String].getOrElse("NA")
                   val errorMsg = Messages(errCode, s"'$username'")
 
-                  Future.successful(Ok(views.html.registrationForm(registrationform, List(FieldError("name", errorMsg))))
-                    .flashing("name"-> username, "email"-> email))
+                  Future.successful(Ok(views.html.registrationForm(registrationform, List(FieldError("name", errorMsg)))
+                  (Flash(Map("name" -> username, "email" -> email))) ))
                 }
                 else if(errCode.indexOf("success") != -1)
                   Future.successful(Ok(views.html.loginForm(Messages("error.BF000"), Option(loginform), Some(true))))
@@ -217,23 +217,27 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
           }
       case false =>
         val errMsg = Messages("error.BF001")
-        Future.successful(Ok(views.html.registrationForm(registrationform, errors)))
+        Future.successful(Ok(views.html.registrationForm(registrationform, errors)
+                    (Flash(Map("name" -> username, "email" -> email)))  ))
     }
   }
 
   def forgotPasswordSubmit = Action.async(JsonForm.parser)  { implicit request =>
+    val username = (request.body.values \ "name").validate[String].getOrElse("NA")
     val email = (request.body.values \ "email").validate[String].getOrElse("NA")
     users.forgotpassword(Json.toJson(request.body.values).as[JsObject]).flatMap{
       case Some(errCode) => {
          if (errCode.indexOf("error") != -1) {
           val username = (request.body.values \ "name").validate[String].getOrElse("NA")
-          Future.successful(Ok(views.html.forgotPasswordForm(Messages(errCode), forgotpasswordform)))
+          Future.successful(Ok(views.html.forgotPasswordForm(Messages(errCode), forgotpasswordform)
+          (Flash(Map("name" -> username, "email" -> email))) ))
         }
         else
           Future.successful(Ok(views.html.forgotPasswordConfirm(email)))
       }
       case None =>
-        Future.successful(Ok(views.html.forgotPasswordForm(Messages("error.BF007"), forgotpasswordform)))
+        Future.successful(Ok(views.html.forgotPasswordForm(Messages("error.BF007"), forgotpasswordform)
+        (Flash(Map("name" -> username, "email" -> email))) ))
     }
   }
 
@@ -266,9 +270,6 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
       confirmPasswordCheck(password, confirmpassword).fold(_.toList, _ => List()) ++
       passswordCheck("password", Some(password), "password")
 
-
-    //val errors = confirmPasswordCheck(password, confirmpassword).fold(_.toList, _ => List()) ++ refNoCheck(refno)
-
     errors.isEmpty match {
       case true =>
         users.resetpassword(Json.toJson(ResetPassword(refno, password)).as[JsObject]).flatMap{
@@ -294,7 +295,7 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     Ok(views.html.registrationForm(registrationform, List()))
   }
 
-  def forgotPasswordForm = Action{
+  def forgotPasswordForm = Action{implicit request =>
     Ok(views.html.forgotPasswordForm("", forgotpasswordform))
   }
 
