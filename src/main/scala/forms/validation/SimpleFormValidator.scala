@@ -45,6 +45,7 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
   def validatorTextInt(l:Option[String]= None, n:String) = IntValidator(l)
   def validatorCheckbox(l:Option[String]= None, n:String) = MandatoryValidator(l,Option(n))
   def validatorDropdown(l:Option[String]= None) = DropdownValidator(l)
+  def validatorRadiobutton(l:Option[String]= None) = RadiobuttonValidator(l)
 
   override def doValidation(path: String, fldValues: Normalised[JsObject]): ValidatedNel[FieldError, List[(SimpleField, String)]] = {
 
@@ -62,6 +63,8 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
               validatorDropdown(fld.label)
             case "checkbox" =>
               validatorCheckbox(fld.label, fld.name)
+            case "radiobutton" =>
+              validatorRadiobutton(fld.label)
             case "text" =>
               validator(fld.label, fld.name, 250) //Todo:- Remove this hardcoding when Maxwords on text field changed to MaxChar
             case _ =>
@@ -109,6 +112,10 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
               CurrencyValidator(a.label.getOrElse("na")).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
           }
           case "checkbox" => {
+            val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
+            createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
+          }
+          case "radiobutton" => {
             val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
             createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
           }

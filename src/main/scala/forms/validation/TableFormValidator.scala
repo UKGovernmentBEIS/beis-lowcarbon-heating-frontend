@@ -43,6 +43,7 @@ class TableFormValidator(tableRowfields : Seq[TableRow]) extends FieldValidator[
     CurrencyValidator(l, minValue, maxValue)
   def validatorTextInt(l:Option[String]= None, n:String) = IntValidator(l)
   def validatorCheckbox(l:Option[String]= None, n:String) = MandatoryValidator(l,Option(n))
+  def validatorRadiobutton(l:Option[String]= None) = RadiobuttonValidator(l)
 
   override def doValidation(path: String, fldValues: Normalised[JsObject]): ValidatedNel[FieldError, List[(TableRow, String)]] = {
 
@@ -56,6 +57,8 @@ class TableFormValidator(tableRowfields : Seq[TableRow]) extends FieldValidator[
           fld.fieldType match {
             case "textarea" =>
               validatorTextArea(fld.label, fld.name, fld.maxWords.getOrElse(0))
+            case "radiobutton" =>
+              validatorRadiobutton(fld.label)
             case "checkbox" =>
               validatorCheckbox(fld.label, fld.name)
             case _ =>
@@ -107,6 +110,10 @@ class TableFormValidator(tableRowfields : Seq[TableRow]) extends FieldValidator[
             }
             else
               CurrencyValidator(a.label.getOrElse("na")).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
+          }
+          case "radiobutton" => {
+            val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }
+            createValidator(nameWithoutPath).validate(s"$nameWithPath", fldOptString).map(v => (a, ""))
           }
           case "checkbox" => {
             val fldOptString = fldOptJsValue.flatMap { j => j.asOpt[String] }

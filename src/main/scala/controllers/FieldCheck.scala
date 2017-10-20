@@ -71,7 +71,7 @@ object FieldChecks {
           Logger.debug(s"$errs")
           //List(FieldError(path, "Could not decode form values!"))
 
-          //TODOD:- When any element (eg. checkbox, is not checked, the Element along with the value is not coming.
+          //TODOD:- When any element (eg. checkbox, or a Radiobutton is not checked, the Element along with the value is not coming.
           // need to get the element with null value so that it produce proepr error.
           List(FieldError(path, s"$path cannot be empty!"))
 

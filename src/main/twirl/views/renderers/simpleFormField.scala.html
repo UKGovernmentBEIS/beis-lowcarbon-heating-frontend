@@ -162,20 +162,39 @@ if(a.isNumeric.getOrElse(false)) "bignumber" else ""
                    case "address" => {
                              @addressSection(f, questions, answers, errs, hints)
                    }
-                   case "dropdown" => {
-                             <div class='form-group @errorClassFor(f)'>
+
+                case "dropdown" => {
+                <div class='form-group @errorClassFor(f)'>
+                    <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
+
+                    <select class="form-control dropdown" id="@f.name" name="@f.name">
+
+                        <option value="Select one">Select one</option>
+                        @f.defaultvalue.getOrElse("").split(",").map{item=>
+                        <option value="@item.split(":")(0)" @dropdowncheck( answers.get(f.name), item.split(":")(0))>
+                        @item.split(":")(1)</option>
+                        }
+
+                    </select>
+                </div>
+                }
+
+                case "radiobutton" => {
+                <div class='form-group @errorClassFor(f)'>
                              <label for="@f.name">@f.label @mandatoryClass(f.isMandatory.getOrElse(false))</label>
+                                 <fieldset class="inline">
 
-                             <select class="form-control dropdown" id="@f.name" name="@f.name">
-
-                                 <option value="Select one">Select one</option>
-                                 @f.defaultvalue.getOrElse("").split(",").map{item=>
-                                 <option value="@item.split(":")(0)" @dropdowncheck( answers.get(f.name), item.split(":")(0))>
-                                 @item.split(":")(1)</option>
-                                 }
-
-                             </select>
+                                 <div class="multiple-choice">
+                                     <input id="radio-inline-1" type="radio"  name="@f.name" value="yes" @if(answers.get(f.name).getOrElse("") == "yes"){ checked}>
+                                     <label for="radio-inline-1">Yes</label>
+                                 </div>
+                                 <div class="multiple-choice">
+                                     <input id="radio-inline-1" type="radio"  name="@f.name" value="no" @if(answers.get(f.name).getOrElse("") == "no"){ checked}>
+                                     <label for="radio-inline-1">No</label>
+                                 </div>
                              </div>
+                </fieldset>
+
                 }
 
                 }

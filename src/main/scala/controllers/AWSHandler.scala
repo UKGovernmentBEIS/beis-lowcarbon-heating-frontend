@@ -191,7 +191,6 @@ class AWSHandler @Inject()(
   }
 
 
-
   def deleteFileFromAWSS3(itemNumber: String) ={
     val file = awsS3.delete(ResourceKey(itemNumber))
   }
