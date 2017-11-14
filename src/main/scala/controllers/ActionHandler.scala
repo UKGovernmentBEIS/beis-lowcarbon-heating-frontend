@@ -129,6 +129,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
     /** Create ProcessDefinition object and activate  **/
 
     val bpmreqd = Config.config.bpm.bpmreqd.toBoolean
+
     bpmreqd match {
       case true =>
             val pdId = ProcessDefinitionId(Config.config.bpm.procdefId)
@@ -143,7 +144,8 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
               case "In progress" =>  {  /* Fresh Application , so activate the BPM Process*/
 
                 /** Save Application only if Process database is updated without errors */
-                if(bpmreqd.equals("true")) { ///Is there any need of Back office processing?
+                if(bpmreqd) { ///Is there any need of Back office processing?
+
                   processes.activateProcess(pdId, pd).flatMap {
                     case Some(procInstId) => {
                       /** Update Appplication record with Submit status **/

@@ -22,11 +22,18 @@ import play.api.mvc.Results.Redirect
 import play.api.mvc.Results._
 import play.api.mvc._
 import javax.inject.Inject
+
 import scala.concurrent.{ExecutionContext, Future}
 import akka.stream.Materializer
 import config.Config
+
 import util.control.Breaks._
 import scala.util.control._
+
+import play.api.Play.current
+import play.api.i18n.Messages
+import play.api.i18n.Messages.Implicits._
+
 /**
   * Created by venkatamutyala on 18/09/2017.
   */
@@ -34,6 +41,7 @@ import scala.util.control._
 class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionContext) extends Filter {
 
   import play.api.mvc.Results._
+  implicit val messages = Messages
 
   override def apply(nextCall: (RequestHeader) => Future[Result])( rh: RequestHeader): Future[Result] = {
 
@@ -43,7 +51,7 @@ class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionCon
     else {
 
         isSessionTimedOut(rh.session.get("sessionTime").getOrElse(System.currentTimeMillis.toString).toLong) match {
-          case true => Future.successful (Ok (views.html.loginForm ("Your session has timed out. Please login") ).withNewSession)
+          case true => Future.successful (Ok (views.html.loginForm (Messages("error.BF039")) ).withNewSession)
           case false => {
             rh.session.get ("username").map {
               user =>
@@ -53,7 +61,7 @@ class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionCon
                                        ("sessionTime" -> System.currentTimeMillis.toString)))
               }
             }.getOrElse {
-            Future.successful (Ok (views.html.loginForm ("Authorisation required. Please login") ) )
+            Future.successful (Ok (views.html.loginForm (Messages("error.BF040")) ) )
             }
           }
         }

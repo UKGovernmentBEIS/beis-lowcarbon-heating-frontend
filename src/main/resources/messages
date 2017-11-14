@@ -42,6 +42,7 @@ error.BF035 = Please use the link sent in email and try again
 error.BF036 = File name should not be empty
 error.BF037 = {0} extension is not allowed
 error.BF038 = {0} file size exceeded {1} MB limit
+error.BF039 = Your session has timed out. Please login
+error.BF040 = Authorisation required. Please login
 
-
-success.BF001 = "database query successful"
+success.BF001 = "database query successful

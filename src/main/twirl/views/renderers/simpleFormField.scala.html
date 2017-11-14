@@ -66,10 +66,10 @@ if(a.isNumeric.getOrElse(false)) "bignumber" else ""
             }
         </div>
 
-@field.simpleform.map { f=>
+        @field.simpleform.map { f=>
 
-    @if( f.isEnabled) {
-            <tr><td>
+        @if( f.isEnabled) {
+        <tr><td>
 
                 @f.fieldType match {
 
