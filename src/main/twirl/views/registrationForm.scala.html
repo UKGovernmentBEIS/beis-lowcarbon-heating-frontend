@@ -21,13 +21,13 @@ if(errs.nonEmpty) "error" else ""
     <div class="column-two-thirds">
         <div class='form-group @errorClass'>
 
-                <h1 class="heading-xlarge"> User Registration </h1>
+                <h1 class="heading-xlarge"> Register </h1>
 
                 <p class="lede">
                     Please enter your details
                 </p>
             <span class="form-hint">
-                Passoword must contain at least 8 characters and at least one letter and one number
+                Password must contain at least 8 characters and include one letter and one number.
             </span>
             @if(errs.nonEmpty) {
             <div class="error-summary" role="group" aria-labelledby="error-summary-heading" tabindex="-1">

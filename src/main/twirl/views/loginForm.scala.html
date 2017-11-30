@@ -25,10 +25,10 @@ if(errors.nonEmpty) "error" else ""
     <div class="column-two-thirds">
         <div class='form-group @errorClass'>
 
-            <h1 class="heading-xlarge"> User Login </h1>
+            <h1 class="heading-xlarge"> Sign in </h1>
 
             <p class="lede">
-                    Please enter your Username and Password
+                    Please enter your username and password
             </p>
             <span class="error-message" role="alert">@errors</span>
 
@@ -43,10 +43,10 @@ if(errors.nonEmpty) "error" else ""
                    </tr>
                    <tr>
                        <td><div class="rifs-form-buttons">
-                           <input type="submit" name="@Save.name" class="button button--start" value="Login">
+                           <input type="submit" name="@Save.name" class="button button--start" value="Sign in">
                        </div>
                        </td>
-                       <td>New User <a href="/register">Register</a>,
+                       <td>
                             <a href="/forgotpassword">Forgot password</a>
                        </td>
                    </tr>

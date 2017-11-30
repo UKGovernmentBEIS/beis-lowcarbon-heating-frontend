@@ -263,7 +263,6 @@ class UserController @Inject()(users: UserOps)(implicit ec: ExecutionContext)
     val password = (request.body.values \ "password").validate[String].getOrElse("NA")
     val confirmpassword = (request.body.values \ "confirmpassword").validate[String].getOrElse("NA")
 
-
     val mandatoryCheck = (mandatoryFieldCheck(s"password", Some(password), "password") ++
       mandatoryFieldCheck(s"confirmpassword", Some(confirmpassword), "confirmpassword"))
 

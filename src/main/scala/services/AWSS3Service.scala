@@ -36,7 +36,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import scala.collection.JavaConversions._
 
-class AWSS3Service @Inject()(implicit val ec: ExecutionContext)
+class   AWSS3Service @Inject()(implicit val ec: ExecutionContext)
   extends AWSOps {
 
   val baseUrl = Config.config.business.baseUrl

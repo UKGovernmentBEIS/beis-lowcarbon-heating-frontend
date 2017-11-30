@@ -30,7 +30,7 @@
                 @backLink.get.label</a>
                 </div>
             }
-            @if(displayUserName.isDefined) {
+            @if(displayUserName.isDefined && !displayUserName.get.equals("Unauthorised User")) {
                 <div class="username-container">
                     <span class="visually-hidden">Signed in as </span>@displayUserName.getOrElse("")</span>
                     &nbsp; &nbsp; <span> <a href="@controllers.routes.UserController.logOut()" class="flat nobreak">
