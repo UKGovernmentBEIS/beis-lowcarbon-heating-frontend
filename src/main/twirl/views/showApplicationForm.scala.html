@@ -102,7 +102,7 @@ secNo: Option[Int]=None
                                                  <div class="helptext-first">
                                                 }
                                                 <a id="section-@f.sectionNumber.num-link" href="@controllers.routes.ApplicationController.showSectionForm(app.id, f.sectionNumber)">
-                                                    @k.  @if(f.title.split("-").size > 1) { @f.title.split("-")(1)} else{@f.title}  </a>
+                                                    @k.  @if(f.title.split(":").size > 1) { @f.title.split(":")(1)} else{@f.title}  </a>
                                             </div>
 
                                                 <div class="helptext-second helptext-border">
