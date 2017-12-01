@@ -101,15 +101,15 @@ class ApplicationController @Inject()(
         secs = Seq()
 
         sections.sortBy(_.sectionNumber).map { s =>
-          if (a.title.split("-")(0) == s.title.split("-")(0))
+          if (a.title.split(":")(0) == s.title.split(":")(0))
             secs = secs :+ s
       }
 
-      if (a.title.indexOf("-") != -1)
-        mapsecs  = mapsecs + (a.title.split("-")(0)-> secs)
+      if (a.title.indexOf(":") != -1)
+        mapsecs  = mapsecs + (a.title.split(":")(0)-> secs)
       else
         mapsecs  = mapsecs + (a.title -> secs)
-        //mapsecs  = mapsecs + (a.title.split("-")(0)-> Seq())
+        //mapsecs  = mapsecs + (a.title.split(":")(0)-> Seq())
     }
 
     mapsecs
