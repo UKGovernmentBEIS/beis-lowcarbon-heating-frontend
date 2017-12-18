@@ -31,8 +31,10 @@ import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang3.StringUtils
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
+import play.api.i18n.Messages
 import play.api.libs.Files.TemporaryFile
 import play.api.libs.json._
+import play.api.mvc.Results.Ok
 import play.api.mvc._
 import services.{AWSOps, ApplicationFormOps, ApplicationOps, OpportunityOps}
 import play.api.mvc.{Action, Controller, MultipartFormData, Result}
@@ -40,6 +42,9 @@ import play.api.mvc.{Action, Controller, MultipartFormData, Result}
 import scala.collection.immutable.ListMap
 import scala.concurrent.{ExecutionContext, Future}
 
+import play.api.Play.current
+import play.api.i18n.Messages
+import play.api.i18n.Messages.Implicits._
 
 class ApplicationController @Inject()(
                                        actionHandler: ActionHandler,
@@ -56,6 +61,7 @@ class ApplicationController @Inject()(
   implicit val fileuploadReads = Json.reads[FileUploadItem]
   implicit val fileuploadItemF = Json.format[FileUploadItem]
   implicit val fileListReads = Json.reads[FileList]
+  implicit val messages = Messages
 
 
   //TODO:- Need to check user is Authenticated and Authorised before access the methds - to be done using Shibboleth??
@@ -79,17 +85,43 @@ class ApplicationController @Inject()(
     }
   }
 
-  def show(id: ApplicationId, sectionNum:Option[Int]=None) = AppDetailAction(id) { implicit request =>
+  def show(id: ApplicationId, sectionNum:Option[Int]=None) = AppDetailAction(id).async { implicit request =>
     var mapsecs:Map[String, Seq[ApplicationFormSection]]
         = makeGroupSections(request.appDetail.applicationForm.sections)
 
-      sectionNum match {
-      case Some(secNo) =>
-        val groupName = request.appDetail.applicationForm.sections.filter(_.sectionNumber.num.value == secNo).head.title
-        Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, actionHandler.guidanceDocURL, Some(groupName), Some(secNo)))
-      case None =>
-        Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, actionHandler.guidanceDocURL))
+
+    applications.byId(id).flatMap {
+      case Some(app) =>
+        if(!app.userId.userId.equals(sessionUser)) {
+          println("===app.userId.userId======" + app.userId.userId)
+          println("===sessionUser======" + sessionUser)
+          Ok("Bye").withNewSession
+          Future.successful (Ok(views.html.loginForm(Messages("error.BF040")) ).withNewSession)
+        }
+        else{
+
+          sectionNum match {
+            case Some(secNo) =>
+              val groupName = request.appDetail.applicationForm.sections.filter(_.sectionNumber.num.value == secNo).head.title
+              Future.successful(Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, actionHandler.guidanceDocURL, Some(groupName), Some(secNo))))
+            case None =>
+              Future.successful(Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, actionHandler.guidanceDocURL)))
+          }
+
+        }
+
+      case None => Future.successful(Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, actionHandler.guidanceDocURL)))
     }
+
+
+//      sectionNum match {
+//      case Some(secNo) =>
+//        val groupName = request.appDetail.applicationForm.sections.filter(_.sectionNumber.num.value == secNo).head.title
+//        Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, actionHandler.guidanceDocURL, Some(groupName), Some(secNo)))
+//      case None =>
+//        Ok(views.html.showApplicationForm(request.appDetail, mapsecs, List.empty, actionHandler.guidanceDocURL))
+//    }
+
   }
 
   def makeGroupSections( sections: Seq[ApplicationFormSection]) : Map[String, Seq[ApplicationFormSection]] = {
@@ -125,10 +157,25 @@ class ApplicationController @Inject()(
 
   import FieldCheckHelpers._
 
-  def editSectionForm(id: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(id, sectionNumber) { request =>
+  def editSectionForm(id: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(id, sectionNumber).async{ implicit request =>
     val userId = request.session.get("username").getOrElse("Unauthorised User")
     val hints = request.appSection.section.map(s => hinting(s.answers, checksFor(request.appSection.formSection))).getOrElse(List.empty)
-    actionHandler.renderSectionForm(request.appSection, noErrors, hints, userId)
+
+    applications.byId(id).flatMap {
+      case Some(app) =>
+        if(!app.userId.userId.equals(sessionUser)) {
+          println("===app.userId.userId======" + app.userId.userId)
+          println("===sessionUser======" + sessionUser)
+          Ok("Bye").withNewSession
+          Future.successful (Ok(views.html.loginForm(Messages("error.BF040")) ).withNewSession)
+        }
+        else{
+              Future.successful( actionHandler.renderSectionForm(request.appSection, noErrors, hints, userId))
+        }
+
+      case None => Future.successful (Ok(views.html.loginForm(Messages("error.BF040")) ).withNewSession)
+    }
+
   }
 
   def resetAndEditSection(id: ApplicationId, sectionNumber: AppSectionNumber) = Action.async { request =>
@@ -215,22 +262,59 @@ class ApplicationController @Inject()(
     }
   }
 
-  def showSectionForm(id: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(id, sectionNumber) { request =>
+  def showSectionForm(id: ApplicationId, sectionNumber: AppSectionNumber) =  AppSectionAction(id, sectionNumber).async { implicit request =>
     val userId = request.session.get("username").getOrElse("Unauthorised User")
-    request.appSection.section match {
-      case None =>
-        val hints = hinting(JsObject(List.empty), checksFor(request.appSection.formSection))
-        actionHandler.renderSectionForm(request.appSection, noErrors, hints, userId)
 
-      case Some(s) =>
 
-        if (s.isComplete) actionHandler.redirectToPreview(id, sectionNumber)
-        else {
-          val hints = hinting(s.answers, checksFor(request.appSection.formSection))
 
-           actionHandler.renderSectionForm(request.appSection, noErrors, hints, userId)
+    applications.byId(id).flatMap {
+      case Some(app) =>
+        if(!app.userId.userId.equals(sessionUser)) {
+          println("===app.userId.userId======" + app.userId.userId)
+          println("===sessionUser======" + sessionUser)
+          Ok("Bye").withNewSession
+          Future.successful (Ok(views.html.loginForm(Messages("error.BF040")) ).withNewSession)
         }
+        else{
+
+          request.appSection.section match {
+            case None =>
+              val hints = hinting(JsObject(List.empty), checksFor(request.appSection.formSection))
+              Future.successful (actionHandler.renderSectionForm(request.appSection, noErrors, hints, userId))
+
+            case Some(s) =>
+
+              if (s.isComplete)
+                Future.successful (actionHandler.redirectToPreview(id, sectionNumber))
+              else {
+                val hints = hinting(s.answers, checksFor(request.appSection.formSection))
+
+                Future.successful (actionHandler.renderSectionForm(request.appSection, noErrors, hints, userId))
+              }
+          }
+
+        }
+
+      case None => Future.successful (Ok(views.html.loginForm(Messages("error.BF040")) ).withNewSession)
     }
+
+
+
+
+//    request.appSection.section match {
+//      case None =>
+//        val hints = hinting(JsObject(List.empty), checksFor(request.appSection.formSection))
+//        actionHandler.renderSectionForm(request.appSection, noErrors, hints, userId)
+//
+//      case Some(s) =>
+//
+//        if (s.isComplete) actionHandler.redirectToPreview(id, sectionNumber)
+//        else {
+//          val hints = hinting(s.answers, checksFor(request.appSection.formSection))
+//
+//           actionHandler.renderSectionForm(request.appSection, noErrors, hints, userId)
+//        }
+//    }
   }
 
   def showSectionSimpleForm(id: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(id, sectionNumber) { request =>

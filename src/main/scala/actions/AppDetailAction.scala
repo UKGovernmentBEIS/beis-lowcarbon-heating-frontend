@@ -20,15 +20,21 @@ package actions
 import javax.inject.Inject
 
 import models.{Application, ApplicationDetail, ApplicationId}
+import play.api.i18n.Messages
 import play.api.mvc.Results._
 import play.api.mvc._
 import services.ApplicationOps
 
 import scala.concurrent.{ExecutionContext, Future}
 
+import play.api.Play.current
+import play.api.i18n.Messages
+import play.api.i18n.Messages.Implicits._
 case class AppDetailRequest[A](appDetail: ApplicationDetail, request: Request[A]) extends WrappedRequest[A](request)
 
 class AppDetailAction @Inject()(applications: ApplicationOps)(implicit ec: ExecutionContext) {
+  implicit val messages = Messages
+
   def apply(id: ApplicationId): ActionBuilder[AppDetailRequest] =
     new ActionBuilder[AppDetailRequest] {
       override def invokeBlock[A](request: Request[A], next: (AppDetailRequest[A]) => Future[Result]): Future[Result] = {
@@ -38,7 +44,8 @@ class AppDetailAction @Inject()(applications: ApplicationOps)(implicit ec: Execu
         }
         applications.detail(id).flatMap {
           case Some(app) => next(AppDetailRequest(app, request))
-          case None => Future.successful(NotFound(s"No application with id ${id.id} exists"))
+          case None =>
+            Future.successful (Ok(views.html.loginForm(Messages("error.BF040")) ).withNewSession)
         }
       }
     }
