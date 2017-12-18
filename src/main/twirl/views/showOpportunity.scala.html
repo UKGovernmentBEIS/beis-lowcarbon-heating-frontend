@@ -4,7 +4,7 @@ opportunity: Opportunity,
 section: OpportunityDescriptionSection,
 userid: String,
 guidanceDocURL: Option[String] = None
-)
+)(implicit sessionUser: String)
 
 @import eu.timepit.refined.auto._
 
@@ -40,39 +40,15 @@ guidanceDocURL: Option[String] = None
 }
 
 @main(s"Opportunity: ${opportunity.title} - BEIS", backLink =
-        Some(BackLink("Return to opportunity list", controllers.routes.OpportunityController.showOpportunities().url)), displayUserName = Some(userid)) {
+        None, displayUserName=Some(sessionUser)) {
+
 
  <div class="grid-row">
         <div class="column-two-thirds">
 
             <header class="page-header">
-                <h1 class="heading-xlarge">@opportunity.title</h1>
+                <h1 class="heading-xlarge">Apply for a low carbon heating innovation grant</h1>
             </header>
-
-            <aside>
-                <a class="js-navigation-toggle show-all-parts" data-for="#nav-container">
-                    Show all parts of this opportunity</a>
-                <div id="nav-container">
-                    <nav role="navigation" class="page-navigation" aria-label="Navigation">
-                        <ol>
-                        @titleCols.map { case ((col1, idx), _) =>
-                        <li id="title-@(idx + 1)">
-                        @sectionLink(col1._1, col1._2)
-                        </li>
-                        }
-                        </ol>
-                        <ol>
-                        @titleCols.map { case (_, col2) =>
-                            @col2.map { case (t, idx) =>
-                            <li id="title-@(idx + 1)">
-                            @sectionLink(t._1, t._2)
-                            </li>
-                            }.getOrElse("")
-                        }
-                        </ol>
-                    </nav>
-                </div>
-            </aside>
 
             <div class="rifs-summary-panel">
                 <aside role="complementary" class="notice">
@@ -87,27 +63,53 @@ guidanceDocURL: Option[String] = None
                         <dl>
                             <dt class="heading-small">Value</dt>
                             <!-- <dd>Varies based on the type of Application</dd> -->
-                           <dd>&pound;@("%,.0f".format(opportunity.value.amount)) @opportunity.value.unit</dd>
+                           <dd>&pound;200,000 to &pound;@("%,.0f".format(opportunity.value.amount)) </dd>
                         </dl>
                     </div>
-                    <div class="column-full rifs-form-buttons">
+                    <div class="column-full definition-list">
+                        @if(sessionUser.equals("Unauthorised User")) {
+                            <p>
+                                    <a href="/login" role="button">
+                                        <a href="/login"> Sign in</a> if you have already started an application.
+
+                                    </a>
+                            </p>
+                        }
                         <p>
-                            @app match {
-                                case Some(a) => {
-                                    @a.personalReference match {
-                                        case Some(ap) => { <a href="@controllers.routes.ApplicationController.show(a.id, None)" class="button"> View Application</a> }
-                                        case None => { <a href="@controllers.routes.ApplicationController.editPersonalRef(a.id)" class="button"> View Application</a> }
-                                    }
-                                }
-                                case None => { <a href="@controllers.routes.ApplicationController.createForForm(appForm.id)" class="button"> Apply Now</a> }
+
+                            @if(!sessionUser.equals("Unauthorised User") && !app.isEmpty) {
+                               <!-- <a class="button button-start startnow-padding" href="/applicant/dashboard" role="button">-->
+                                    <a class="button button-start startnow-padding" href="@controllers.routes.ApplicationController.createForForm(appForm.id)" class="button">
+
+                                    Continue
+                                </a>
+                            }
+
+                            @if(!sessionUser.equals("Unauthorised User") && app.isEmpty) {
+                            <!-- <a class="button button-start startnow-padding" href="/applicant/dashboard" role="button">-->
+                            <a class="button button-start startnow-padding" href="@controllers.routes.ApplicationController.createForForm(appForm.id)" class="button">
+
+                                Start now
+                            </a>
+                            }
+
+                            @if(sessionUser.equals("Unauthorised User") && app.isEmpty) {
+                                <a class="button button-start startnow-padding" href="/register" role="button">
+                                        Start now
+                                </a>
                             }
                         </p>
+                        <p>
+                        You can apply for a grant to develop innovative low carbon heating solutions in exisiting UK buildings.
+                        </p>
+
                     </div>
                 </aside>
             </div>
 
             <article>
-                <h2 class="heading-large">@section.sectionNumber.num. @section.title</h2>
+                <!-- <h2 class="heading-large">@section.sectionNumber.num. @section.title</h2>-->
+                <h2 class="heading-large">@section.title</h2>
                 @if(section.sectionType == OppSectionType.Questions) {
                     @helpers.textForQuestions(appForm)
                 } else {
@@ -117,20 +119,6 @@ guidanceDocURL: Option[String] = None
                         }
                     }
                 }
-
-                    <div class="rifs-form-buttons">
-                        <p>
-                            @app match {
-                                case Some(a) => {
-                                    @a.personalReference match {
-                                        case Some(ap) => { <a href="@controllers.routes.ApplicationController.show(a.id, None)" class="button"> View Application</a> }
-                                        case None => { <a href="@controllers.routes.ApplicationController.editPersonalRef(a.id)" class="button"> View Application</a> }
-                                    }
-                                }
-                                case None => { <a href="@controllers.routes.ApplicationController.createForForm(appForm.id)" class="button"> Apply Now</a> }
-                            }
-                        </p>
-                    </div>
 
                 </article>
 
@@ -170,14 +158,10 @@ guidanceDocURL: Option[String] = None
 
         <div id="support-column" class="column-third">
             <aside role="complementary">
-                <hr class="hr-blue">
-                <h2 class="heading-medium no-top-margin">Support</h2>
+                <!-- <h2 class="heading-medium no-top-margin">Support</h2> -->
                 <ul class="list spacious">
 
-                    <li>
-                        <a href="@guidanceDocURL.getOrElse("nodocument")" target="_blank" >
-                        Guidance</a>
-                    </li>
+
 
                 </ul>
             </aside>

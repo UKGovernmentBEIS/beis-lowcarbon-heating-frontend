@@ -40,21 +40,21 @@ class OpportunityController @Inject()( actionHandler: ActionHandler,
     opportunities.getOpenOpportunitySummaries.map { os => Ok(views.html.showOpportunities(os)) }
   }
 
-  def showOpportunity(id: OpportunityId, sectionNumber: Option[OppSectionNumber]) = OpportunityAction(id) { request =>
+  def showOpportunity(id: OpportunityId, sectionNumber: Option[OppSectionNumber]) = OpportunityAction(id) { implicit request =>
 
     Redirect(controllers.routes.OpportunityController.showOpportunitySection(id, sectionNumber.getOrElse(OppSectionNumber(1))))
   }
 
-  def showOpportunitySection(id: OpportunityId, sectionNum: OppSectionNumber) = OppSectionAction(id, sectionNum).async { request =>
+  def showOpportunitySection(id: OpportunityId, sectionNum: OppSectionNumber) = OppSectionAction(id, sectionNum).async { implicit request =>
     val userId = request.session.get("username").getOrElse("Unauthorised User")
     //TODO:- need to merge these 2 Database calls to one
     appForms.byOpportunityId(id).flatMap {
-       case Some(appform) => apps.byFormId(appform.id, UserId(userId)).flatMap{
-            case app: Option[Application] => Future.successful(Ok(views.html.showOpportunity(appform, app, request.opportunity, request.section,
-              userId, Option(actionHandler.guidanceDocURL))))
-            // None => Future.successful(NotFound)
-       }
-       case None => Future.successful(NotFound)
+      case Some(appform) => apps.byFormId(appform.id, UserId(userId)).flatMap{
+        case app: Option[Application] => Future.successful(Ok(views.html.showOpportunity(appform, app, request.opportunity, request.section,
+          userId, Option(actionHandler.guidanceDocURL))))
+        // None => Future.successful(NotFound)
+      }
+      case None => Future.successful(NotFound)
     }
   }
 
