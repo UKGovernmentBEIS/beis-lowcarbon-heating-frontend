@@ -141,7 +141,6 @@ class ApplicationController @Inject()(
         mapsecs  = mapsecs + (a.title.split(":")(0)-> secs)
       else
         mapsecs  = mapsecs + (a.title -> secs)
-        //mapsecs  = mapsecs + (a.title.split(":")(0)-> Seq())
     }
 
     mapsecs

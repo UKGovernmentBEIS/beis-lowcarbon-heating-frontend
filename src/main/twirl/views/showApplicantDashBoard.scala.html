@@ -12,13 +12,13 @@ ms: Seq[Message])(implicit sessionUser: String)
 
 <div class="grid-row">
     <div class="column-half">
-        <h1> BEIS Opportunities</h1>
+       <!-- <h1> BEIS Opportunities</h1>
 
-        <p class="lede">Links to all open BEIS opportunities</p>
+        <p class="lede">Links to all open BEIS opportunities</p> -->
 
         <table class="spacious">
             <tr>
-                <th role="presentation">Opportunity title</th> <th role="presentation">Value</th>
+                <th role="presentation">Opportunity </th> <th role="presentation">Value</th>
             </tr>
             @for((o,i) <- os.zipWithIndex) {
             <tr>
@@ -30,20 +30,33 @@ ms: Seq[Message])(implicit sessionUser: String)
     </div>
 
     <div class="column-half">
-        <h1> BEIS Applications</h1>
+       <!-- <h1> BEIS Applications</h1>
 
-        <p class="lede">Links to all BEIS Applications</p>
+        <p class="lede">Links to all BEIS Applications</p> -->
 
         <table class="spacious" >
             <tr>
-                <th role="presentation">Application title</th> <th role="presentation">Status</th>
+                <th role="presentation">Application </th> <th role="presentation">Status</th>
             </tr>
+            @if(apps.size==0){
+            <tr>
+                <td><a class="button button-start startnow-padding" href="/register" role="button">Start now</a></td>
+                <td>Not started
+                </td>
+            </tr>
+            }
             @for((o,i) <- apps.zipWithIndex) {
             <tr>
-                <td>@{i+1}. <a href="/application/@o.id.id">@o.personalReference.getOrElse("< No title >")</a></td>
+                <td>
+                    <a class="button button-start startnow-padding" href="/application/@o.id.id" role="button">
+                        Continue
+                    </a>
+                    <!--@o.personalReference.getOrElse("< No title >")</a>-->
+                </td>
                 <td>@o.appStatus.appStatus
                     @if(o.appStatus.appStatus == "Approved"){
-                    <img src="@routes.Assets.at("images/checkmark-26x26.png")" alt="" width=26 height=26 class="greentick">
+                    <img src="@routes.Assets.at(" images/checkmark-26x26.png")" alt="" width=26 height=26
+                    class="greentick">
                     }
                 </td>
             </tr>

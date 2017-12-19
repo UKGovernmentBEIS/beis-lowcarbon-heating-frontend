@@ -16,7 +16,7 @@ secNo: Option[Int]=None
 @changePersonalRef(title: String) = {
 <a href="@controllers.routes.ApplicationController.editPersonalRef(app.id)">@title</a>
 }
-@main(s"Overview - BEIS", backLink=Some(BackLink("Return to my dashboard", controllers.routes.DashBoardController.applicantDashBoard().url)), displayUserName=Some(sessionUser)) {
+@main(s"Overview - BEIS", backLink=Some(BackLink("Home", s"/applicant/dashboard")), displayUserName=Some(sessionUser)) {
 <!-- main content -->
 
 <div class="grid-row">
@@ -24,23 +24,28 @@ secNo: Option[Int]=None
         <div>
             <h1 class="heading-xlarge">
                 <span class="heading-secondary">@formatId(app.opportunity.id.id): @app.opportunity.title</span>
-                Application overview
+                Application
             </h1>
 
-            <div class="grid-row">
-                <div class="column-half">
-                    <p>
-                        @app.personalReference.getOrElse(changePersonalRef("Add personal reference"))
-                    </p>
-                </div>
-                <div class="column-half text-center-lg-only ">
-                    <p>
-                        @app.personalReference.map(_=>changePersonalRef("Change"))
-                    </p>
-                </div>
-            </div>
+            <!--  <div class="grid-row">
+                 <div class="column-half">
+                     <p>
+                         @app.personalReference.getOrElse(changePersonalRef("Add personal reference"))
+                     </p>
+                 </div>
+                 <div class="column-half text-center-lg-only ">
+                     <p>
+                         @app.personalReference.map(_=>changePersonalRef("Change"))
+                     </p>
+                 </div>
+             </div>
 
-            <p>Complete all application sections before submitting to BEIS.</p>
+             <p>Complete all application sections before submitting to BEIS.</p>
+
+
+        <p>You should read the <a href="@guidanceDocURL" target="_blank"> guidance notes </a> before completing this form. If you have any queries after reading the guidance,
+           please send them to <a href="mailto:builtenvironmentinnovation@@beis.gov.uk" target="_top">
+           builtenvironmentinnovation@@beis.gov.uk</a></p>
         </div>
 
         @if(errs.nonEmpty) {
@@ -66,7 +71,7 @@ secNo: Option[Int]=None
                     <tr>
                         <th>
                             <section class="container">
-                                <div class="helptext-first">Event details</div>
+                                <div class="helptext-first">Section</div>
                                 <div class="helptext-second">Status</div>
                             </section>
                         </th>
@@ -102,7 +107,7 @@ secNo: Option[Int]=None
                                                  <div class="helptext-first">
                                                 }
                                                 <a id="section-@f.sectionNumber.num-link" href="@controllers.routes.ApplicationController.showSectionForm(app.id, f.sectionNumber)">
-                                                    @k.  @if(f.title.split(":").size > 1) { @f.title.split(":")(1)} else{@f.title}  </a>
+                                                    @k.  @if(f.title.split(":").size > 1) {  @f.title.substring( f.title.split(":")(0).length+1, f.title.length)} else{@f.title}  </a>
                                             </div>
 
                                                 <div class="helptext-second helptext-border">
@@ -120,8 +125,8 @@ secNo: Option[Int]=None
                 </table>
                 <p class="rifs-form-buttons">
                     @app.appStatus.appStatus match {
-                    case "Need more Info" | "In progress" => { <input type="submit" name="@Save.name" class="button button--start" value="Submit application to BEIS"> }
-                    case _ => { <input type="submit" name="@Save.name" class="button button--start" value="Submit application to BEIS" disabled> }
+                    case "Need more Info" | "In progress" => { <input type="submit" name="@Save.name" class="button button--start" value="Submit application"> }
+                    case _ => { <input type="submit" name="@Save.name" class="button button--start" value="Submit application" disabled> }
                     }
 
                     <a href="@controllers.routes.ApplicationPreviewController.applicationPreview(app.id)" class="flat bottom--link-style nobreak">
