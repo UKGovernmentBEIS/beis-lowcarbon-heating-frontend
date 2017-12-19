@@ -98,18 +98,16 @@ class ApplicationController @Inject()(
     var mapsecs:ListMap[String, Seq[ApplicationFormSection]] = ListMap()
 
     sections.sortBy(_.sectionNumber).map { a =>
-        secs = Seq()
+      secs = Seq()
 
-        sections.sortBy(_.sectionNumber).map { s =>
+      sections.sortBy(_.sectionNumber).map { s =>
           if (a.title.split(":")(0) == s.title.split(":")(0))
             secs = secs :+ s
       }
-
       if (a.title.indexOf(":") != -1)
         mapsecs  = mapsecs + (a.title.split(":")(0)-> secs)
       else
         mapsecs  = mapsecs + (a.title -> secs)
-        //mapsecs  = mapsecs + (a.title.split(":")(0)-> Seq())
     }
 
     mapsecs
