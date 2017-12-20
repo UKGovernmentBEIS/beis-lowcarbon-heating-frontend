@@ -29,14 +29,17 @@ ms: Seq[Message])(implicit sessionUser: String)
         </table>
     </div>
 
+    @if(apps.size>0){
     <div class="column-half">
-       <!-- <h1> BEIS Applications</h1>
+        <!--<h1> BEIS Applications</h1>
 
-        <p class="lede">Links to all BEIS Applications</p> -->
+        <p class="lede">Links to all BEIS Applications</p>-->
 
-        <table class="spacious" >
+
+        <table class="spacious">
             <tr>
-                <th role="presentation">Application </th> <th role="presentation">Status</th>
+                <th role="presentation">Application</th>
+                <th role="presentation">Status</th>
             </tr>
             @if(apps.size==0){
             <tr>
@@ -45,6 +48,7 @@ ms: Seq[Message])(implicit sessionUser: String)
                 </td>
             </tr>
             }
+
             @for((o,i) <- apps.zipWithIndex) {
             <tr>
                 <td>
@@ -64,6 +68,8 @@ ms: Seq[Message])(implicit sessionUser: String)
         </table>
 
     </div>
+    }
+
 </div>
 
 <div class="grid-row">

@@ -34,7 +34,10 @@
 
                 @tableItem.tableRowData.map { rowdata=>
                 <td>
-                    &nbsp; @rowdata
+                    &nbsp;
+                    <div>@for(line <- splitLineswithR(rowdata)) {
+                        <p>@line</p>
+                        }</div>
                 </td>
                 }
 

@@ -53,4 +53,6 @@ package object helpers {
 
   def splitLines(s: Option[NonEmptyString]): Seq[String] = s.map(nes=>splitLines(nes.value)).getOrElse(List[String]())
 
+  def splitLineswithR(s: String): List[String] = s.split("""\\r\\n""").toList.map(_.replaceAll("""\\""", "")).toList
+
 }

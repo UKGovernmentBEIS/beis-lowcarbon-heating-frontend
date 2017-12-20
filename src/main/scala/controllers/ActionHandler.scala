@@ -86,18 +86,16 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
 
   def doSaveDynamicTDItem(app: ApplicationSectionDetail, fieldValues: JsObject, userId: String): Future[Result] = {
     val tddata = fieldValues.fields.head._2.toString().replaceAll("^\"|\"$\"[\"]", "")
-    val tdatatmp  = tddata.substring(1, tddata.length-1)
-    val t = tdatatmp.replaceAll("\"", "").split(",").toSeq
-
+    val tdatatmp  = tddata.replaceAll("""","""","*column*")//.replaceAll("""\\""", "")
+    val t = tdatatmp.substring(2, tdatatmp.length-2).split("\\*column\\*")
     val tableItem:DynamicTableItem = DynamicTableItem(t)
-
     JsonHelpers.allFieldsEmpty(fieldValues) match {
       case true => applications.deleteSection(app.id, app.sectionNumber).map(_ => redirectToOverview(app.id))
-       case false =>
-       applications.saveItem(app.id, app.sectionNumber, JsObject(Seq("item" -> Json.toJson(tableItem))) ).flatMap {
-         case Nil => Future.successful(redirectToSectionForm(app.id, app.sectionNumber))
-         case errs => Future.successful(redisplaySectionForm(app, fieldValues, errs, userId))
-      }
+      case false =>
+        applications.saveItem(app.id, app.sectionNumber, JsObject(Seq("item" -> Json.toJson(tableItem))) ).flatMap {
+          case Nil => Future.successful(redirectToSectionForm(app.id, app.sectionNumber))
+          case errs => Future.successful(redisplaySectionForm(app, fieldValues, errs, userId))
+        }
     }
   }
 

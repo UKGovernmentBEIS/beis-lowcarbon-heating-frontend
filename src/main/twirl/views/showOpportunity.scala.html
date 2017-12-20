@@ -104,25 +104,23 @@ guidanceDocURL: Option[String] = None
                         <p>
 
                             @if(!sessionUser.equals("Unauthorised User") && !app.isEmpty) {
-                            <!-- <a class="button button-start startnow-padding" href="/applicant/dashboard" role="button">-->
-                            <a class="button button-start startnow-padding" href="@controllers.routes.ApplicationController.createForForm(appForm.id)" class="button">
-
-                                Continue
-                            </a>
+                                <!-- <a class="button button-start startnow-padding" href="/applicant/dashboard" role="button">-->
+                                <a class="button button-start startnow-padding" href="@controllers.routes.ApplicationController.createForForm(appForm.id)" class="button">
+                                    Continue
+                                </a>
                             }
 
                             @if(!sessionUser.equals("Unauthorised User") && app.isEmpty) {
-                            <!-- <a class="button button-start startnow-padding" href="/applicant/dashboard" role="button">-->
-                            <a class="button button-start startnow-padding" href="@controllers.routes.ApplicationController.createForForm(appForm.id)" class="button">
-
-                                Start now
-                            </a>
+                                <!-- <a class="button button-start startnow-padding" href="/applicant/dashboard" role="button">-->
+                                <a class="button button-start startnow-padding" href="@controllers.routes.ApplicationController.createForForm(appForm.id)" class="button">
+                                    Start now
+                                </a>
                             }
 
                             @if(sessionUser.equals("Unauthorised User") && app.isEmpty) {
-                            <a class="button button-start startnow-padding" href="/register" role="button">
-                                Start now
-                            </a>
+                                <a class="button button-start startnow-padding" href="/register" role="button">
+                                    Start now
+                                </a>
                             }
                         </p>
                         <p>
