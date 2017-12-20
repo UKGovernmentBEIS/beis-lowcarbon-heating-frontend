@@ -1,18 +1,34 @@
 @(field: forms.SimpleFormField, answers: Map[String, String])
 
 @import partials._
+@import org.apache.commons.lang3.StringUtils
+@import org.joda.time.DateTime
+@import org.joda.time.format.DateTimeFormat
+
 
 @field.simpleform.map { f=>
 
 @if( f.isEnabled) {
 <div class="form-group wordwrap">
     <label for="@f.name">@f.label </label>
-    @answers.get(s"${f.name}.day") @answers.get(s"${field.name}.month") @answers.get(s"${field.name}.year")
+
+    @if(
+        !answers.get(s"${f.name}.day").isEmpty &&
+        !answers.get(s"${f.name}.month").isEmpty &&
+        !answers.get(s"${f.name}.year").isEmpty){
+
+            @DateTimeFormat.forPattern("dd - MM - yyyy").print(
+            new DateTime(
+            answers.get(s"${f.name}.year").get.toInt,
+            answers.get(s"${f.name}.month").get.toInt,
+            answers.get(s"${f.name}.day").get.toInt, 0,0)
+            )
+    }
 
     @f.fieldType match {
-        case "tableform" => {
+    case "tableform" => {
 
-        <table class="dynamictdpreview">
+    <table class="dynamictdpreview">
             @f.tableform.map { rows=>
                 @rows.map { row=>
                     <tr>
@@ -37,8 +53,17 @@
                                 @answers.get(r.name)
                                 }
 
-                                @if(answers.get(s"${r.name}.day") != null && answers.get(s"${r.name}.month") != null && answers.get(s"${r.name}.year") != null){
-                                @answers.get(s"${r.name}.day")  @answers.get(s"${r.name}.month")  @answers.get(s"${r.name}.year")
+                                @if(
+                                    !answers.get(s"${r.name}.day").isEmpty &&
+                                    !answers.get(s"${r.name}.month").isEmpty &&
+                                    !answers.get(s"${r.name}.year").isEmpty){
+
+                                        @DateTimeFormat.forPattern("dd - MM - yyyy").print(
+                                        new DateTime(
+                                        answers.get(s"${r.name}.year").get.toInt,
+                                        answers.get(s"${r.name}.month").get.toInt,
+                                        answers.get(s"${r.name}.day").get.toInt, 0,0)
+                                        )
                                 }
 
                             </td>

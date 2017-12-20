@@ -79,7 +79,6 @@ class AWSHandler @Inject()(
   }
 
   def checkFileExtensions(path: String, ext: String): List[FieldError] ={
-    println("==="+ ext)
     val allowedfileextensions = Config.config.file.allowedfileextensions
     val exts = allowedfileextensions.split(",").toList
     exts.contains(ext) match {
