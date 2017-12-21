@@ -13,9 +13,9 @@
     <label for="@f.name">@f.label </label>
 
     @if(
-        !answers.get(s"${f.name}.day").isEmpty &&
-        !answers.get(s"${f.name}.month").isEmpty &&
-        !answers.get(s"${f.name}.year").isEmpty){
+        StringUtils.isNotEmpty(answers.getOrElse(s"${f.name}.day", null)) &&
+        StringUtils.isNotEmpty(answers.getOrElse(s"${f.name}.month", null)) &&
+        StringUtils.isNotEmpty(answers.getOrElse(s"${f.name}.year", null))){
 
             @DateTimeFormat.forPattern("dd - MM - yyyy").print(
             new DateTime(
@@ -53,17 +53,18 @@
                                 @answers.get(r.name)
                                 }
 
+
                                 @if(
-                                    !answers.get(s"${r.name}.day").isEmpty &&
-                                    !answers.get(s"${r.name}.month").isEmpty &&
-                                    !answers.get(s"${r.name}.year").isEmpty){
+                                    StringUtils.isNotEmpty(answers.getOrElse(s"${r.name}.day", null)) &&
+                                    StringUtils.isNotEmpty(answers.getOrElse(s"${r.name}.month", null)) &&
+                                    StringUtils.isNotEmpty(answers.getOrElse(s"${r.name}.year", null))){
 
                                         @DateTimeFormat.forPattern("dd - MM - yyyy").print(
                                         new DateTime(
                                         answers.get(s"${r.name}.year").get.toInt,
                                         answers.get(s"${r.name}.month").get.toInt,
                                         answers.get(s"${r.name}.day").get.toInt, 0,0)
-                                        )
+                                    )
                                 }
 
                             </td>
