@@ -102,6 +102,20 @@ class ApplicationPreviewController @Inject()(
     }
   }
 
+  def applicationSimplePreview(id: ApplicationId) = Action.async { implicit request =>
+    isUnAuthorisedAccess(id, sessionUser).flatMap {
+      case false =>
+        gatherApplicationDetails(id).map {
+          case Some(app) =>
+            val title = app.sections.find(_.sectionNumber == 1).flatMap(s => (s.answers \ "title").validate[String].asOpt)
+            Ok(views.html.applicationSimplePreview(app, app.sections.sortBy(_.sectionNumber), title, getFieldMap(app.applicationForm), actionHandler.guidanceDocURL))
+
+          case _ => NotFound
+        }
+      case true => Future.successful (Ok(views.html.loginForm("Authorisation required") ).withNewSession)
+    }
+  }
+
   def isUnAuthorisedAccess(id:ApplicationId, sUser: String) = {
 
     applications.byId(id).flatMap {

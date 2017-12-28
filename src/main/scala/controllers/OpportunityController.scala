@@ -21,9 +21,11 @@ import javax.inject.Inject
 
 import eu.timepit.refined.auto._
 import actions.{OppSectionAction, OpportunityAction}
-import models.{AppSectionNumber, OppSectionNumber, OpportunityId, UserId, Application}
+import config.Config
+import models.{AppSectionNumber, Application, OppSectionNumber, OpportunityId, UserId}
+import org.joda.time.LocalDate
 import play.api.mvc.Results.NotFound
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{Action, Controller, Security}
 import services.{ApplicationFormOps, ApplicationOps, OpportunityOps}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,22 +43,39 @@ class OpportunityController @Inject()( actionHandler: ActionHandler,
   }
 
   def showOpportunity(id: OpportunityId, sectionNumber: Option[OppSectionNumber]) = OpportunityAction(id) { implicit request =>
-
     Redirect(controllers.routes.OpportunityController.showOpportunitySection(id, sectionNumber.getOrElse(OppSectionNumber(1))))
+  }
+
+  def isSessionTimedOut(sessionTime: Long):Boolean = {
+    val sessionTimeout = Config.config.login.sessionTimeout
+    val currentTime = System.currentTimeMillis
+    (currentTime - sessionTime) > sessionTimeout
   }
 
   def showOpportunitySection(id: OpportunityId, sectionNum: OppSectionNumber) = OppSectionAction(id, sectionNum).async { implicit request =>
     val userId = request.session.get("username").getOrElse("Unauthorised User")
+    val isOppClosed =
+            if(!request.opportunity.endDate.isEmpty) {
+               request.opportunity.endDate.get.toDateTimeAtStartOfDay().plusHours(17) //added to make 5pm of the same day
+                  .isBefore(LocalDate.now().toDateTimeAtCurrentTime) match {
+                 case true => "true"
+                 case false => "false"
+               }
+            }
+            else
+               "false"
+
     //TODO:- need to merge these 2 Database calls to one
     appForms.byOpportunityId(id).flatMap {
        case Some(appform) => apps.byFormId(appform.id, UserId(userId)).flatMap{
             case app: Option[Application] => Future.successful(Ok(views.html.showOpportunity(appform, app, request.opportunity, request.section,
-              userId, Option(actionHandler.guidanceDocURL))))
-            // None => Future.successful(NotFound)
+              userId, isOppClosed.toBoolean, Option(actionHandler.guidanceDocURL)))
+              .withSession(request.session + ("isOppClosed" -> isOppClosed)))
        }
        case None => Future.successful(NotFound)
     }
   }
+
 
   def showGuidancePage(id: OpportunityId) = Action { implicit request =>
     Ok(views.html.guidance(id))

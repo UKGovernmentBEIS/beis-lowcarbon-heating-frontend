@@ -45,6 +45,7 @@ class DashBoardController @Inject()(   applications: ApplicationOps,
 
   def applicantDashBoard = Action.async { implicit request =>
     val userId = request.session.get("username").getOrElse("Unauthorised User")
+    val isOppClosed = request.session.get("isOppClosed").getOrElse("false").toBoolean
 
     for(
         appsSeq <- applications.getApplicationsByUserId(UserId(userId)).map{
@@ -60,7 +61,7 @@ class DashBoardController @Inject()(   applications: ApplicationOps,
         case _ => Seq()
         }
     )yield(
-      Ok(views.html.showApplicantDashBoard(appsSeq, oppsSeq, msgSeq)))
+      Ok(views.html.showApplicantDashBoard(appsSeq, oppsSeq, isOppClosed, msgSeq)))
   }
   def staffDashBoard = Action.async { implicit request =>
     val userId = request.session.get("username").getOrElse("Unauthorised User")

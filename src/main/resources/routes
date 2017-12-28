@@ -45,6 +45,7 @@ POST        /application/:id/personal-ref                             controller
 
 GET         /application/:id/section/:num/preview                     controllers.ApplicationPreviewController.previewSection(id: ApplicationId, num:AppSectionNumber)
 GET         /application/:id/preview                                  controllers.ApplicationPreviewController.applicationPreview(id: ApplicationId)
+GET         /simplepreview/:id                                        controllers.ApplicationPreviewController.applicationSimplePreview(id: ApplicationId)
 
 GET         /application/:id/section/:num/add-item                    controllers.CostController.addItem(id:ApplicationId, num: AppSectionNumber)
 POST        /application/:id/section/:num/item                        controllers.CostController.createItem(id:ApplicationId, num: AppSectionNumber)

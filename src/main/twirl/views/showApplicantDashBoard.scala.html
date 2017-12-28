@@ -1,5 +1,6 @@
 @(apps: Seq[Application],
 os: Seq[Opportunity],
+isOppClosed: Boolean,
 ms: Seq[Message])(implicit sessionUser: String)
 
 @import org.joda.time.format.DateTimeFormat
@@ -52,9 +53,16 @@ ms: Seq[Message])(implicit sessionUser: String)
             @for((o,i) <- apps.zipWithIndex) {
             <tr>
                 <td>
-                    <a class="button button-start startnow-padding" href="/application/@o.id.id" role="button">
-                        Continue
-                    </a>
+
+                    @if(isOppClosed) {
+                        <a class="button button-start startnow-padding" href="/simplepreview/@o.id.id" class="button">
+                            Continue
+                        </a>
+                    }else{
+                        <a class="button button-start startnow-padding" href="/application/@o.id.id" role="button">
+                            Continue
+                        </a>
+                    }
                     <!--@o.personalReference.getOrElse("< No title >")</a>-->
                 </td>
                 <td>@o.appStatus.appStatus

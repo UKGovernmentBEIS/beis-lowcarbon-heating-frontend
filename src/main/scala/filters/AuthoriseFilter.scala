@@ -26,10 +26,10 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import akka.stream.Materializer
 import config.Config
+import controllers.SessionUser
 
 import util.control.Breaks._
 import scala.util.control._
-
 import play.api.Play.current
 import play.api.i18n.Messages
 import play.api.i18n.Messages.Implicits._
@@ -53,16 +53,27 @@ class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionCon
         isSessionTimedOut(rh.session.get("sessionTime").getOrElse(System.currentTimeMillis.toString).toLong) match {
           case true => Future.successful (Ok (views.html.loginForm (Messages("error.BF039")) ).withNewSession)
           case false => {
-            rh.session.get ("username").map {
-              user =>
-              nextCall (rh).flatMap {
-                a =>
-                Future (a.withSession ((Security.username -> rh.session.get ("username").get),
-                                       ("sessionTime" -> System.currentTimeMillis.toString)))
-              }
-            }.getOrElse {
-            Future.successful (Ok (views.html.loginForm (Messages("error.BF040")) ) )
-            }
+          val isOppClosed = rh.session.get("isOppClosed").getOrElse("false")
+
+            (isOppClosed.toBoolean && rh.uri.startsWith("/application/")) match{
+                    case true => Future.successful (Ok (views.html.loginForm (Messages("error.BF040")) ).withNewSession)
+                    case false =>
+                      rh.session.get ("username").map {
+                        user =>
+                          nextCall (rh).flatMap {
+                            a =>
+                              Future (a.withSession (
+                                (Security.username -> rh.session.get ("username").get),
+                                ("sessionTime" -> System.currentTimeMillis.toString),
+                                ("isOppClosed" -> isOppClosed)
+                              ))
+                          }
+                      }.getOrElse {
+                        Future.successful (Ok (views.html.loginForm (Messages("error.BF040")) ) )
+                      }
+                  }
+
+
           }
         }
     }

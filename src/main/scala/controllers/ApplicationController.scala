@@ -78,10 +78,15 @@ class ApplicationController @Inject()(
 
   def createForForm(id: ApplicationFormId) = Action.async { request =>
     val userId = request.session.get("username").getOrElse("Unauthorised User")
+    val isOppClosed = request.session.get("isOppClosed").getOrElse("false").toBoolean
     applications.createForForm(id, UserId(userId)).map {
       case Some(app) =>
-        app.personalReference.map { _ => redirectToOverview(app.id) }
-          .getOrElse(Redirect(controllers.routes.ApplicationController.editPersonalRef(app.id)))
+        if(isOppClosed){
+          Redirect(controllers.routes.ApplicationPreviewController.applicationSimplePreview(app.id))
+        }else {
+          app.personalReference.map { _ => redirectToOverview(app.id) }
+            .getOrElse(Redirect(controllers.routes.ApplicationController.editPersonalRef(app.id)))
+        }
       case None => NotFound
     }
   }

@@ -3,10 +3,12 @@ app: Option[Application],
 opportunity: Opportunity,
 section: OpportunityDescriptionSection,
 userid: String,
+isOppClosed: Boolean,
 guidanceDocURL: Option[String] = None
 )(implicit sessionUser: String)
 
 @import eu.timepit.refined.auto._
+@import org.joda.time.format.DateTimeFormat
 
 @sectionLink(title: String, sectionNum: OppSectionNumber) = {
     <span class="part-number">
@@ -80,7 +82,12 @@ guidanceDocURL: Option[String] = None
                     <div class="column-half definition-list">
                         <dl>
                             <dt class="heading-small">Deadline</dt>
-                            <dd>02 January 2018</dd>
+                            <dd>
+                                @if(!opportunity.endDate.isEmpty){
+                                    @DateTimeFormat.forPattern("dd MMMM yyyy").print(opportunity.endDate.get)}else{
+                                    N/A
+                                }
+                            </dd>
                         </dl>
                     </div>
 
@@ -94,38 +101,44 @@ guidanceDocURL: Option[String] = None
 
                     <div class="column-full definition-list">
                         @if(sessionUser.equals("Unauthorised User")) {
-                        <p>
-                            <a href="/login" role="button">
-                                <a href="/login"> Sign in</a> if you have already started an application.
-
-                            </a>
-                        </p>
+                            <p>
+                                <a href="/login" role="button">
+                                    <a href="/login"> Sign in</a> if you have already started/submitted an application.
+                                </a>
+                            </p>
                         }
                         <p>
 
                             @if(!sessionUser.equals("Unauthorised User") && !app.isEmpty) {
-                                <!-- <a class="button button-start startnow-padding" href="/applicant/dashboard" role="button">-->
                                 <a class="button button-start startnow-padding" href="@controllers.routes.ApplicationController.createForForm(appForm.id)" class="button">
                                     Continue
                                 </a>
                             }
 
-                            @if(!sessionUser.equals("Unauthorised User") && app.isEmpty) {
-                                <!-- <a class="button button-start startnow-padding" href="/applicant/dashboard" role="button">-->
+                            @if(!sessionUser.equals("Unauthorised User") && app.isEmpty && !isOppClosed) {
                                 <a class="button button-start startnow-padding" href="@controllers.routes.ApplicationController.createForForm(appForm.id)" class="button">
                                     Start now
                                 </a>
                             }
 
-                            @if(sessionUser.equals("Unauthorised User") && app.isEmpty) {
+                            @if(sessionUser.equals("Unauthorised User") && app.isEmpty && !isOppClosed) {
                                 <a class="button button-start startnow-padding" href="/register" role="button">
                                     Start now
                                 </a>
                             }
                         </p>
+
+                        @if(isOppClosed) {
+                        <h3 class="heading-large">
+                            This opportunity is now closed
+                        </h3>
+                        }else{
                         <p>
-                            You can apply for a grant to develop innovative low carbon heating solutions in exisiting UK buildings.
+                            You can apply for a grant to develop innovative low carbon heating solutions in exisiting UK
+                            buildings.
                         </p>
+                        }
+
 
                     </div>
 
