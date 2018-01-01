@@ -26,7 +26,7 @@ import eu.timepit.refined.auto._
 import forms.validation._
 import forms.{FileList, FileUploadItem, TextField}
 import models.{LongId, _}
-import org.joda.time.LocalDateTime
+import org.joda.time.{LocalDate, LocalDateTime}
 import org.joda.time.format.DateTimeFormat
 import play.api.libs.Files.TemporaryFile
 import play.api.libs.json._
@@ -61,8 +61,23 @@ class DashBoardController @Inject()(   applications: ApplicationOps,
         case _ => Seq()
         }
     )yield(
-      Ok(views.html.showApplicantDashBoard(appsSeq, oppsSeq, isOppClosed, msgSeq)))
+
+      /*TODO:- This will only work for single opportunity per user. Need to change it for Multiple Opportunities per user
+           1. Combine the Applications and Opportunites call and display Opps and related Apps in a single row
+           2. Status display and button display (eg. View or cintinue or Start now) based on Opps and Apps attributes*/
+
+      if(oppsSeq.headOption.isEmpty)
+         Ok(views.html.showApplicantDashBoard(appsSeq, oppsSeq, false, msgSeq))
+        else {
+              oppsSeq.head.endDate.get.toDateTimeAtStartOfDay().plusHours(17) //added to make 5pm of the same day
+                  .isBefore(LocalDate.now().toDateTimeAtCurrentTime) match {
+                  case true =>       Ok(views.html.showApplicantDashBoard(appsSeq, oppsSeq, true, msgSeq))
+                  case false =>       Ok(views.html.showApplicantDashBoard(appsSeq, oppsSeq, false, msgSeq))
+              }
+        }
+    )
   }
+
   def staffDashBoard = Action.async { implicit request =>
     val userId = request.session.get("username").getOrElse("Unauthorised User")
 

@@ -22,6 +22,7 @@ import java.net.URL
 import javax.inject.Inject
 
 import actions.{AppDetailAction, AppSectionAction}
+import cats.data.OptionT
 import config.Config
 import eu.timepit.refined.auto._
 import forms.validation._
@@ -29,7 +30,7 @@ import forms.{FileList, FileUploadItem, TextField}
 import models._
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang3.StringUtils
-import org.joda.time.LocalDateTime
+import org.joda.time.{LocalDate, LocalDateTime}
 import org.joda.time.format.DateTimeFormat
 import play.api.libs.Files.TemporaryFile
 import play.api.libs.json._
@@ -39,13 +40,13 @@ import play.api.mvc.{Action, Controller, MultipartFormData, Result}
 
 import scala.collection.immutable.ListMap
 import scala.concurrent.{ExecutionContext, Future}
-
 import play.api.i18n.Messages
 import play.api.mvc.Results.Ok
-
 import play.api.Play.current
 import play.api.i18n.Messages
 import play.api.i18n.Messages.Implicits._
+
+import scala.util.{Failure, Success}
 
 class ApplicationController @Inject()(
                                        actionHandler: ActionHandler,
@@ -76,20 +77,32 @@ class ApplicationController @Inject()(
     }
   }
 
-  def createForForm(id: ApplicationFormId) = Action.async { request =>
+  def createForForm(fid: ApplicationFormId, aid: Option[ApplicationId]) = Action.async { request =>
     val userId = request.session.get("username").getOrElse("Unauthorised User")
-    val isOppClosed = request.session.get("isOppClosed").getOrElse("false").toBoolean
-    applications.createForForm(id, UserId(userId)).map {
-      case Some(app) =>
-        if(isOppClosed){
-          Redirect(controllers.routes.ApplicationPreviewController.applicationSimplePreview(app.id))
-        }else {
+    if(aid.isEmpty) {
+      applications.createForForm(fid, UserId(userId)).map {
+        case Some(app) =>
           app.personalReference.map { _ => redirectToOverview(app.id) }
             .getOrElse(Redirect(controllers.routes.ApplicationController.editPersonalRef(app.id)))
-        }
-      case None => NotFound
+        case None => NotFound
+      }
+    }else{
+      applications.detail(aid.get).map {
+        case Some(app) =>
+          app.opportunity.endDate.get.toDateTimeAtStartOfDay().plusHours(17) //added to make 5pm of the same day
+            .isBefore(LocalDate.now().toDateTimeAtCurrentTime) match {
+            case true =>
+              Redirect(controllers.routes.ApplicationPreviewController.applicationSimplePreview(app.id))
+                .withSession(request.session + ("isOppClosed" -> "true"))
+            case false =>
+              app.personalReference.map { _ => redirectToOverview(app.id)}
+                .getOrElse(Redirect(controllers.routes.ApplicationController.editPersonalRef(app.id)))
+          }
+        case None => Ok(views.html.loginForm("Authorisation required")).withNewSession
+      }
     }
   }
+
 
   def show(id: ApplicationId, sectionNum:Option[Int]=None) = AppDetailAction(id).async { implicit request =>
     var mapsecs:Map[String, Seq[ApplicationFormSection]]

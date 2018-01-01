@@ -31,7 +31,8 @@ GET         /opportunity/:opportunityId                               controller
 GET         /opportunity/:id/section/:num                             controllers.OpportunityController.showOpportunitySection(id:OpportunityId, num:OppSectionNumber)
 
 #GET         /application_form/:id/apply                              controllers.ApplicationController.showOrCreateForForm(id: ApplicationFormId)
-GET         /application_form/:id/apply                               controllers.ApplicationController.createForForm(id: ApplicationFormId)
+#GET         /application_form/:id/apply                              controllers.ApplicationController.createForForm(id: ApplicationFormId)
+GET         /application_form/:fid/apply                              controllers.ApplicationController.createForForm(fid: ApplicationFormId, aid: Option[ApplicationId])
 
 GET         /application/:id                                          controllers.ApplicationController.show(id: ApplicationId, sectionNum:Option[Int])
 POST        /application/:id                                          controllers.ApplicationController.submit(id: ApplicationId)

@@ -109,14 +109,18 @@ guidanceDocURL: Option[String] = None
                         }
                         <p>
 
-                            @if(!sessionUser.equals("Unauthorised User") && !app.isEmpty) {
-                                <a class="button button-start startnow-padding" href="@controllers.routes.ApplicationController.createForForm(appForm.id)" class="button">
-                                    Continue
+                            @if(!sessionUser.equals("Unauthorised User") && !app.isEmpty && isOppClosed) {
+                                <a class="button button-start startnow-padding" href="@controllers.routes.ApplicationController.createForForm(appForm.id, Some(app.get.id))" class="button">
+                                    View
                                 </a>
                             }
-
+                            @if(!sessionUser.equals("Unauthorised User") && !app.isEmpty && !isOppClosed) {
+                            <a class="button button-start startnow-padding" href="@controllers.routes.ApplicationController.createForForm(appForm.id, Some(app.get.id))" class="button">
+                                Continue
+                            </a>
+                            }
                             @if(!sessionUser.equals("Unauthorised User") && app.isEmpty && !isOppClosed) {
-                                <a class="button button-start startnow-padding" href="@controllers.routes.ApplicationController.createForForm(appForm.id)" class="button">
+                                <a class="button button-start startnow-padding" href="@controllers.routes.ApplicationController.createForForm(appForm.id, None)" class="button">
                                     Start now
                                 </a>
                             }
@@ -157,19 +161,7 @@ guidanceDocURL: Option[String] = None
                     }
                 }
 
-                   <!-- <div class="rifs-form-buttons">
-                        <p>
-                            @app match {
-                                case Some(a) => {
-                                    @a.personalReference match {
-                                        case Some(ap) => { <a href="@controllers.routes.ApplicationController.show(a.id, None)" class="button"> View Application</a> }
-                                        case None => { <a href="@controllers.routes.ApplicationController.editPersonalRef(a.id)" class="button"> View Application</a> }
-                                    }
-                                }
-                                case None => { <a href="@controllers.routes.ApplicationController.createForForm(appForm.id)" class="button"> Apply Now</a> }
-                            }
-                        </p>
-                    </div>-->
+
 
                 </article>
 

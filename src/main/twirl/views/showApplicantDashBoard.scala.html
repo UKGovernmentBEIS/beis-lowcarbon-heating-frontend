@@ -50,23 +50,27 @@ ms: Seq[Message])(implicit sessionUser: String)
             </tr>
             }
 
-            @for((o,i) <- apps.zipWithIndex) {
+            @for((a,i) <- apps.zipWithIndex) {
             <tr>
                 <td>
 
                     @if(isOppClosed) {
-                        <a class="button button-start startnow-padding" href="/simplepreview/@o.id.id" class="button">
-                            Continue
+                        <a class="button button-start startnow-padding" href="/simplepreview/@a.id.id" class="button">
+                            View
                         </a>
                     }else{
-                        <a class="button button-start startnow-padding" href="/application/@o.id.id" role="button">
-                            Continue
-                        </a>
+                    <a class="button button-start startnow-padding" href="@controllers.routes.ApplicationController.createForForm(a.applicationFormId, Some(a.id))" class="button">
+                        Continue
+                    </a>
+
+                        <!--<a class="button button-start startnow-padding" href="/application/@a.id.id" role="button">-->
+                            <!--Continue-->
+                        <!--</a>-->
                     }
-                    <!--@o.personalReference.getOrElse("< No title >")</a>-->
+                    <!--@a.personalReference.getOrElse("< No title >")</a>-->
                 </td>
-                <td>@o.appStatus.appStatus
-                    @if(o.appStatus.appStatus == "Approved"){
+                <td>@a.appStatus.appStatus
+                    @if(a.appStatus.appStatus == "Approved"){
                     <img src="@routes.Assets.at(" images/checkmark-26x26.png")" alt="" width=26 height=26
                     class="greentick">
                     }
