@@ -45,7 +45,7 @@ class DashBoardController @Inject()(   applications: ApplicationOps,
 
   def applicantDashBoard = Action.async { implicit request =>
     val userId = request.session.get("username").getOrElse("Unauthorised User")
-    val isOppClosed = request.session.get("isOppClosed").getOrElse("false").toBoolean
+    //val isOppClosed = request.session.get("isOppClosed").getOrElse("false").toBoolean
 
     for(
         appsSeq <- applications.getApplicationsByUserId(UserId(userId)).map{
@@ -69,13 +69,59 @@ class DashBoardController @Inject()(   applications: ApplicationOps,
       if(oppsSeq.headOption.isEmpty)
          Ok(views.html.showApplicantDashBoard(appsSeq, oppsSeq, false, msgSeq))
         else {
+        println("===boo==="+ oppsSeq.head.endDate.get.toDateTimeAtStartOfDay().plusHours(17) //added to make 5pm of the same day
+          .isBefore(LocalDate.now().toDateTimeAtCurrentTime) )
               oppsSeq.head.endDate.get.toDateTimeAtStartOfDay().plusHours(17) //added to make 5pm of the same day
                   .isBefore(LocalDate.now().toDateTimeAtCurrentTime) match {
-                  case true =>       Ok(views.html.showApplicantDashBoard(appsSeq, oppsSeq, true, msgSeq))
-                  case false =>       Ok(views.html.showApplicantDashBoard(appsSeq, oppsSeq, false, msgSeq))
+                  case true =>      {
+                    println("===here===" + request.session )
+                      Ok("dsffsd").withSession(request.session + ("isOppClosed" -> "true"))
+                    println("===here===" + request.session )
+
+                    Ok(views.html.showApplicantDashBoard(appsSeq, oppsSeq, true, msgSeq))
+                      .withSession(request.session + ("isOppClosed" -> "true"))
+                  }
+                  case false =>  Ok(views.html.showApplicantDashBoard(appsSeq, oppsSeq, false, msgSeq))
               }
         }
     )
+
+//   val v =  for(
+//      appsSeq <- applications.getApplicationsByUserId(UserId(userId)).map{
+//        case apps: Seq[Application] => apps
+//        case _ => Seq()
+//      };
+//      oppsSeq <- opps.getOpenOpportunitySummaries.map {
+//        case ops: Seq[Opportunity] => ops
+//        case _ => Seq()
+//      };
+//      msgSeq <- msgs.byUserId(UserId(userId)).map {
+//        case msgs: Seq[Message] => msgs
+//        case _ => Seq()
+//      }
+//    )yield(
+//
+//      /*TODO:- This will only work for single opportunity per user. Need to change it for Multiple Opportunities per user
+//           1. Combine the Applications and Opportunites call and display Opps and related Apps in a single row
+//           2. Status display and button display (eg. View or cintinue or Start now) based on Opps and Apps attributes*/
+//     (appsSeq, oppsSeq)
+//
+//      )
+//
+//v.flatMap{ a=>
+//  val s = request.session + ("isOppClosed" -> "true")
+//  println("==Session 111====="+ request.session + ("", ""))
+//
+//  //Future(Ok("").withNewSession)
+//  println("==Session 2222====="+ request.session)
+//
+//  Future(Ok(views.html.showApplicantDashBoard(a._1, a._2, false, Seq()))
+//      .removingFromSession("isOppClosed")
+//          .withSession(request.session + ("isOppClosed" -> "true")))
+//}
+//
+  //  Future.successful(Ok(views.html.showApplicantDashBoard(Seq(), Seq(), false, Seq())))
+
   }
 
   def staffDashBoard = Action.async { implicit request =>

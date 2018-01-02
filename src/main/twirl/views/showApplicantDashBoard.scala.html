@@ -24,7 +24,7 @@ ms: Seq[Message])(implicit sessionUser: String)
             </tr>
             @for((o,i) <- os.zipWithIndex) {
             <tr>
-                <td>@{i+1}. <a href="/opportunity/@o.id.id">@if(o.title.length > 15) {@o.title.substring(0,14)..} else{@o.title}
+                <td>@{i+1}. <a href="/opportunity/@o.id.id">@if(o.title.length > 15) {@o.title.substring(0,14)..} else{o.title}
                 </a></td>
                 <td>
                 @if(!o.endDate.isEmpty && !isOppClosed){

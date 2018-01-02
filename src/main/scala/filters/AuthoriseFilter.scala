@@ -53,12 +53,15 @@ class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionCon
         isSessionTimedOut(rh.session.get("sessionTime").getOrElse(System.currentTimeMillis.toString).toLong) match {
           case true => Future.successful (Ok (views.html.loginForm (Messages("error.BF039")) ).withNewSession)
           case false => {
-          val isOppClosed = rh.session.get("isOppClosed").getOrElse("false")
-
+          //val isOppClosed = rh.session.get("isOppClosed").getOrElse("false")
+          val isOppClosed = "true"
+            println("===fiter ===" + isOppClosed  )
+            println("===fiter ===" + rh.session  )
             (isOppClosed.toBoolean && rh.uri.startsWith("/application/")) match{
                     case true => Future.successful (Ok (views.html.loginForm (Messages("error.BF040")) ).withNewSession)
                     case false =>
-                      rh.session.get ("username").map {
+
+                        rh.session.get ("username").map {
                         user =>
                           nextCall (rh).flatMap {
                             a =>
