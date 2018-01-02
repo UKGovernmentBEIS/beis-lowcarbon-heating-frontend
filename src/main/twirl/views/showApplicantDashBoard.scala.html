@@ -4,7 +4,7 @@ isOppClosed: Boolean,
 ms: Seq[Message])(implicit sessionUser: String)
 
 @import org.joda.time.format.DateTimeFormat
-
+@import org.joda.time.LocalDate
 @main("Opportunity list - BEIS", displayUserName=Some(sessionUser)) {
 
 <div>
@@ -19,11 +19,21 @@ ms: Seq[Message])(implicit sessionUser: String)
 
         <table class="spacious">
             <tr>
-                <th role="presentation">Opportunity </th> <th role="presentation">Value</th>
+                <th role="presentation">Opportunity </th> <th role="presentation">End date</th>
+                <th role="presentation">Value</th>
             </tr>
             @for((o,i) <- os.zipWithIndex) {
             <tr>
-                <td>@{i+1}. <a href="/opportunity/@o.id.id">@o.title</a></td>
+                <td>@{i+1}. <a href="/opportunity/@o.id.id">@if(o.title.length > 15) {@o.title.substring(0,14)..} else{o.title}
+                </a></td>
+                <td>
+                @if(!o.endDate.isEmpty && !isOppClosed){
+                    @DateTimeFormat.forPattern("dd-MM-yyyy").print(o.endDate.get)
+                }
+                @if(!o.endDate.isEmpty && isOppClosed){
+                    Closed
+                }
+                </td>
                 <td>&pound;@("%,.0f".format(o.value.amount)) @o.value.unit</td>
             </tr>
             }
@@ -50,7 +60,7 @@ ms: Seq[Message])(implicit sessionUser: String)
             </tr>
             }
 
-            @for((a,i) <- apps.zipWithIndex) {
+          @for((a,i) <- apps.zipWithIndex) {
             <tr>
                 <td>
 
@@ -84,33 +94,34 @@ ms: Seq[Message])(implicit sessionUser: String)
 
 </div>
 
+
+<!--
 <div class="grid-row">
-    <div class="column-half">
-        <h1> Notifications</h1>
+   <div class="column-half">
+       <h1> Notifications</h1>
 
-        <p class="lede">Links to all BEIS notifications</p>
+       <p class="lede">Links to all BEIS notifications</p>
 
-        <table class="spacious">
-            <tr>
-                <th role="presentation">Message</th><th role="presentation">Sent by</th><th role="presentation">Sent at</th>
-                <th role="presentation"></th>
-            </tr>
-            @for((o,i) <- ms.zipWithIndex) {
-            <tr>
-                <td>@{i+1}. <a href="/message/@o.id.id/messageboard">@o.message</a></td>
-                <td>@o.sentBy.userId</td>
-                <td>@DateTimeFormat.forPattern("dd-MMMM-yyyy").print(o.sentAt)</td>
-                <td><a href="/message/@o.id.id/delete">
-                    <img src="@routes.Assets.at("images/delete.png")" width="18" height="20" alt="" style="visibility: visible">
-                </a></td>
-            </tr>
-            }
-        </table>
-    </div>
-
+       <table class="spacious">
+           <tr>
+               <th role="presentation">Message</th><th role="presentation">Sent by</th><th role="presentation">Sent at</th>
+               <th role="presentation"></th>
+           </tr>
+           @for((o,i) <- ms.zipWithIndex) {
+           <tr>
+               <td>@{i+1}. <a href="/message/@o.id.id/messageboard">@o.message</a></td>
+               <td>@o.sentBy.userId</td>
+               <td>@DateTimeFormat.forPattern("dd-MMMM-yyyy").print(o.sentAt)</td>
+               <td><a href="/message/@o.id.id/delete">
+                   <img src="@routes.Assets.at("images/delete.png")" width="18" height="20" alt="" style="visibility: visible">
+               </a></td>
+           </tr>
+           }
+       </table>
+   </div>
 
 </div>
-
+-->
 
 }
 
