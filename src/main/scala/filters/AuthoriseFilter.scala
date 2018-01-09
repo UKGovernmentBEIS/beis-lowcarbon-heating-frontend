@@ -27,6 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import akka.stream.Materializer
 import config.Config
 import controllers.SessionUser
+import org.apache.commons.lang3.StringUtils
 
 import util.control.Breaks._
 import scala.util.control._
@@ -52,8 +53,7 @@ class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionCon
 
         isSessionTimedOut(rh.session.get("sessionTime").getOrElse(System.currentTimeMillis.toString).toLong) match {
           case true =>
-            println("==hereeee====")
-
+            println("==== In Auth Filter - Session Timed out ====" )
             Future.successful (Ok (views.html.loginForm (Messages("error.BF039")) ).withNewSession)
           case false => {
           val isOppClosed = rh.session.get("isOppClosed").getOrElse("false")
@@ -62,7 +62,6 @@ class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionCon
             (isOppClosed.toBoolean && rh.uri.startsWith("/application/")) match{
                     case true => Future.successful (Ok (views.html.loginForm (Messages("error.BF040")) ).withNewSession)
                     case false =>
-
                         rh.session.get ("username").map {
                         user =>
                           nextCall (rh).flatMap {
@@ -74,8 +73,10 @@ class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionCon
                               ))
                           }
                       }.getOrElse {
-                          println("==111 hereeee====")
-
+                          if(StringUtils.isNotEmpty(rh.getQueryString("token").getOrElse(""))) {
+                            println("== In Auth Filter - No Session ====" + rh.getQueryString("token").getOrElse(""))
+                            nextCall (rh)
+                          }else
                           Future.successful (Ok (views.html.loginForm (Messages("error.BF040")) ) )
                       }
                   }

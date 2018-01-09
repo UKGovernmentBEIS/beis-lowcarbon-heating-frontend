@@ -106,12 +106,9 @@ class ApplicationPreviewController @Inject()(
   }
 
   def applicationSimplePreview(id: ApplicationId) = Action.async { implicit request =>
-    println("id======="+ id )
     val mp = request.queryString
     val token =  getValueFromRequest("token", mp )
 
-    println("token======="+ token )
-    println("token======="+ token )
     isUnAuthorisedAccess(id, sessionUser).flatMap {
         case false =>
           gatherApplicationDetails(id).map {
@@ -142,8 +139,6 @@ class ApplicationPreviewController @Inject()(
   def isAuthTokenValid(token: String, id: ApplicationId) = {
 
     val appAccessRole = Config.config.jwt.appAccessRole
-
-    println("jwtisValidToken(token======="+ jwt.isValidToken(token ))
 
     if(token != null && jwt.isValidToken(token)){
       import org.apache.commons.lang3.StringUtils
