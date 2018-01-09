@@ -20,13 +20,14 @@ package controllers
 import javax.inject.Inject
 
 import eu.timepit.refined.auto._
-import actions.AppSectionAction
+import actions.{AccessResourceAction, AppSectionAction}
+import config.Config
 import forms.{Field, FileUploadItem}
 import forms.validation.CostItem
 import models._
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.{Action, Controller}
-import services.{ApplicationFormOps, ApplicationOps, OpportunityOps}
+import services.{ApplicationFormOps, ApplicationOps, JWTOps, OpportunityOps}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,7 +36,9 @@ class ApplicationPreviewController @Inject()(
                                               applications: ApplicationOps,
                                               appForms: ApplicationFormOps,
                                               opps: OpportunityOps,
-                                              AppSectionAction: AppSectionAction
+                                              AppSectionAction: AppSectionAction,
+                                              AccessResourceAction: AccessResourceAction,
+                                              jwt: JWTOps
                                             )(implicit ec: ExecutionContext)
   extends Controller with SessionUser{
 
@@ -103,17 +106,55 @@ class ApplicationPreviewController @Inject()(
   }
 
   def applicationSimplePreview(id: ApplicationId) = Action.async { implicit request =>
-    isUnAuthorisedAccess(id, sessionUser).flatMap {
-      case false =>
-        gatherApplicationDetails(id).map {
-          case Some(app) =>
-            val title = app.sections.find(_.sectionNumber == 1).flatMap(s => (s.answers \ "title").validate[String].asOpt)
-            Ok(views.html.applicationSimplePreview(app, app.sections.sortBy(_.sectionNumber), title, getFieldMap(app.applicationForm), actionHandler.guidanceDocURL))
+    val mp = request.queryString
+    val token =  getValueFromRequest("token", mp )
 
-          case _ => NotFound
-        }
-      case true => Future.successful (Ok(views.html.loginForm("Authorisation required") ).withNewSession)
+    isUnAuthorisedAccess(id, sessionUser).flatMap {
+        case false =>
+          gatherApplicationDetails(id).map {
+              case Some(app) =>
+                  val title = app.sections.find(_.sectionNumber == 1).flatMap(s => (s.answers \ "title").validate[String].asOpt)
+                  Ok(views.html.applicationSimplePreview(app, app.sections.sortBy(_.sectionNumber), title, getFieldMap(app.applicationForm),
+                    actionHandler.guidanceDocURL))
+
+              case _ => NotFound
+          }
+        case true =>
+          isAuthTokenValid(token, id) match {
+              case true =>
+                  gatherApplicationDetails(id).map {
+                      case Some(app) =>
+                        val title = app.sections.find(_.sectionNumber == 1).flatMap(s => (s.answers \ "title").validate[String].asOpt)
+                        Ok(views.html.applicationSimplePreview(app, app.sections.sortBy(_.sectionNumber), title,
+                          getFieldMap(app.applicationForm), actionHandler.guidanceDocURL))
+
+                      case None =>
+                        Ok(views.html.loginForm("Authorisation required") ).withNewSession
+                  }
+              case false => Future.successful (Ok(views.html.loginForm("Authorisation required") ).withNewSession)
+          }
     }
+  }
+
+  def isAuthTokenValid(token: String, id: ApplicationId) = {
+
+    val appAccessRole = Config.config.jwt.appAccessRole
+
+    if(token != null && jwt.isValidToken(token)){
+      import org.apache.commons.lang3.StringUtils
+      val authAttribs = if(StringUtils.isNotEmpty(token) && jwt.isValidToken(token)){
+        val payload = jwt.decodePayload(token)
+        ((Json.parse(payload.getOrElse("")) \ "role").validate[String].getOrElse(""),
+          (Json.parse(payload.getOrElse("")) \ "appid").validate[String].getOrElse(""))
+      } else (("",""))
+
+      val jwtRole = authAttribs._1
+      val jwtAppId = authAttribs._2
+
+      (jwtRole.equals(appAccessRole) && id.id.toString().equals(jwtAppId))
+    }
+    else
+      false
   }
 
   def isUnAuthorisedAccess(id:ApplicationId, sUser: String) = {
@@ -131,7 +172,9 @@ class ApplicationPreviewController @Inject()(
 
   def gatherApplicationDetails(id: ApplicationId): Future[Option[ApplicationDetail]] = applications.detail(id)
 
+  def getValueFromRequest(key: String, keyValueMap: Map[String, Seq[String]]): String =
 
+    keyValueMap.get(key).headOption.map(_.head).getOrElse("").toString
 }
 
 

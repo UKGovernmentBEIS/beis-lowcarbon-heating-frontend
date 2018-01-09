@@ -69,14 +69,10 @@ class DashBoardController @Inject()(   applications: ApplicationOps,
       if(oppsSeq.headOption.isEmpty)
          Ok(views.html.showApplicantDashBoard(appsSeq, oppsSeq, false, msgSeq))
         else {
-        println("===boo==="+ oppsSeq.head.endDate.get.toDateTimeAtStartOfDay().plusHours(17) //added to make 5pm of the same day
-          .isBefore(LocalDate.now().toDateTimeAtCurrentTime) )
               oppsSeq.head.endDate.get.toDateTimeAtStartOfDay().plusHours(17) //added to make 5pm of the same day
                   .isBefore(LocalDate.now().toDateTimeAtCurrentTime) match {
                   case true =>      {
-                    println("===here===" + request.session )
                       Ok("dsffsd").withSession(request.session + ("isOppClosed" -> "true"))
-                    println("===here===" + request.session )
 
                     Ok(views.html.showApplicantDashBoard(appsSeq, oppsSeq, true, msgSeq))
                       .withSession(request.session + ("isOppClosed" -> "true"))

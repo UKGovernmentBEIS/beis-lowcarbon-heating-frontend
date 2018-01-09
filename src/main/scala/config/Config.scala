@@ -24,9 +24,10 @@ case class AWSConfig(accesskey: String, secretkey: String, region: String, bucke
 case class BPMConfig(bpmreqd: String, procuser: String, procpwd: String, procdefId: String)
 case class FieldValidation(telephone: Int, email: Int, companyname: Int)
 case class LoginConfig(sessionTimeout: Int, excludeSession: String)
+case class JWTConfig(jwtSecretKey: String, jwtSecretAlgo: String, appAccessRole: String)
 
 case class Config(logAssets: Option[Boolean], logRequests: Boolean, prod: Boolean, business: BusinessConfig,
-                  file: FileConfig, aws: AWSConfig, bpm: BPMConfig, fieldvalidation: FieldValidation, login: LoginConfig)
+                  file: FileConfig, aws: AWSConfig, bpm: BPMConfig, fieldvalidation: FieldValidation, login: LoginConfig, jwt: JWTConfig)
 
 object Config {
 
