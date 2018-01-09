@@ -106,16 +106,19 @@ class ApplicationPreviewController @Inject()(
   }
 
   def applicationSimplePreview(id: ApplicationId) = Action.async { implicit request =>
+    println("id======="+ id )
     val mp = request.queryString
     val token =  getValueFromRequest("token", mp )
 
+    println("token======="+ token )
+    println("token======="+ token )
     isUnAuthorisedAccess(id, sessionUser).flatMap {
         case false =>
           gatherApplicationDetails(id).map {
               case Some(app) =>
                   val title = app.sections.find(_.sectionNumber == 1).flatMap(s => (s.answers \ "title").validate[String].asOpt)
                   Ok(views.html.applicationSimplePreview(app, app.sections.sortBy(_.sectionNumber), title, getFieldMap(app.applicationForm),
-                    actionHandler.guidanceDocURL))
+                    actionHandler.guidanceDocURL, Option(sessionUser)))
 
               case _ => NotFound
           }
@@ -126,7 +129,7 @@ class ApplicationPreviewController @Inject()(
                       case Some(app) =>
                         val title = app.sections.find(_.sectionNumber == 1).flatMap(s => (s.answers \ "title").validate[String].asOpt)
                         Ok(views.html.applicationSimplePreview(app, app.sections.sortBy(_.sectionNumber), title,
-                          getFieldMap(app.applicationForm), actionHandler.guidanceDocURL))
+                          getFieldMap(app.applicationForm), actionHandler.guidanceDocURL, None))
 
                       case None =>
                         Ok(views.html.loginForm("Authorisation required") ).withNewSession
@@ -140,6 +143,8 @@ class ApplicationPreviewController @Inject()(
 
     val appAccessRole = Config.config.jwt.appAccessRole
 
+    println("jwtisValidToken(token======="+ jwt.isValidToken(token ))
+
     if(token != null && jwt.isValidToken(token)){
       import org.apache.commons.lang3.StringUtils
       val authAttribs = if(StringUtils.isNotEmpty(token) && jwt.isValidToken(token)){
@@ -150,8 +155,8 @@ class ApplicationPreviewController @Inject()(
 
       val jwtRole = authAttribs._1
       val jwtAppId = authAttribs._2
-
-      (jwtRole.equals(appAccessRole) && id.id.toString().equals(jwtAppId))
+      /* No Role base access at the moment */
+      (/*jwtRole.equals(appAccessRole) && */ id.id.toString().equals(jwtAppId))
     }
     else
       false

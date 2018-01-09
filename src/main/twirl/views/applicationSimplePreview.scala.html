@@ -3,8 +3,10 @@
         sections: Seq[ApplicationSection],
         title: Option[String],
         answers: Map[AppSectionNumber, Seq[forms.Field]],
-        guidanceDocURL: String
-)(implicit sessionUser: String)
+        guidanceDocURL: String,
+        userid: Option[String] = None
+
+)
 
 @import models._
 @import partials._
@@ -32,7 +34,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <script type="text/javascript" src="http://arrow.scrolltotop.com/arrow78.js"></script>
 
-@main(s"Opportunity ${app.opportunity.title} - BEIS", None, displayUserName=Some(sessionUser)) {
+@main(s"Opportunity ${app.opportunity.title} - BEIS", None, displayUserName=userid) {
     <div class="grid-row">
         <div class="column-full">
 
@@ -72,9 +74,15 @@
 
                     <div class="rifs-form-buttons">
                         <p>
+                            @if(!userid.isEmpty){
                             <a href="/opportunity/@app.opportunity.id.id" class="button">
                                 Close
                             </a>
+                            }else{
+                            <a href="" class="button" onclick="javascript:window.close()">
+                                Close
+                            </a>
+                            }
                         </p>
                     </div>
 
