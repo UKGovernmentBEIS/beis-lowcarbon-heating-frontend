@@ -60,6 +60,7 @@ GET         /application/:id/section/:num/item/:itemNum/delete-td     controller
 #POST        /application/:id/section/:num/file-item                  controllers.ApplicationController.createFileItem(id:ApplicationId, num: AppSectionNumber)
 GET         /application/:id/section/:num/item/:item/ext/:ext/filedelete   controllers.ApplicationController.deleteFileItem(id:ApplicationId, num: AppSectionNumber, item: Int, ext: String)
 GET         /application/:id/section/:num/downloadfile/:key           controllers.ApplicationController.downloadFileDirect(id:ApplicationId, num: AppSectionNumber, key: ResourceKey)
+GET         /downloadfile/:key                                        controllers.ApplicationController.downloadFileDirectForPreview(key: ResourceKey)
 
 GET         /applicant/dashboard                                      controllers.DashBoardController.applicantDashBoard
 GET         /staff/dashboard                                          controllers.DashBoardController.staffDashBoard

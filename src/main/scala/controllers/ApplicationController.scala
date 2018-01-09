@@ -246,6 +246,22 @@ class ApplicationController @Inject()(
     }
   }
 
+  /** This method
+    * 1. Checks the user authorisation for ASW S3 access
+    * 2. Create a preSigned URL to be accessed by thers (for public consumption)
+    * 3. Out put to User Browser to download
+    **/
+
+  def downloadFileDirectForPreview(key: ResourceKey) = Action.async { request =>
+    val preSignedURL = awsS3.downloadDirect(key)
+    preSignedURL.flatMap {
+      case url: URL => Future.successful(Redirect(url.toString))
+      //TODO:- This is error case:- need to update method to add error message 'Error in downloading document.... Please try again'
+      case _ =>  Future.successful(Redirect(routes.DashBoardController.applicantDashBoard()))
+
+    }
+  }
+
   def showSectionForm(id: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(id, sectionNumber).async {implicit request =>
 
     val userId = request.session.get("username").getOrElse("Unauthorised User")

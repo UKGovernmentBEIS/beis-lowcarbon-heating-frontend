@@ -1,10 +1,46 @@
-@(files: Seq[forms.FileUploadItem])
+@(
+files: Seq[forms.FileUploadItem]
+)
+
+@filetype(f: String) = @{
+if(f.endsWith(".pdf")) "pdf"
+else if(f.endsWith(".doc")) "doc"
+else if(f.endsWith(".docx")) "docx"
+else if(f.endsWith(".xls")) "xls"
+else if(f.endsWith(".xlsx")) "xlsx"
+else if(f.endsWith(".txt")) "txt"
+else if(f.endsWith(".jpg") || f.endsWith(".jpeg") || f.endsWith(".bmp") || f.endsWith(".gif") || f.endsWith(".png")) "image"
+else "any"
+}
+
+@filename(f: Int) = @{
+routes.Assets.at("images/files/" + f)
+}
+
+@fileicon(f: Int) = @{
+routes.Assets.at("images/files/" + f)
+}
+
+@fileextension(f: String) = @{
+f.substring(f.lastIndexOf("."), f.length)
+}
 
 <div>
 
-    @files.map{ file=>
-    <p>@file.supportingDocuments</p>
-    }
+    <table class="spacious" border="0">
 
+    @files.map { fileUploadItem =>
+
+    <tr border="0">
+        <td width="10%" >
+            <a href="@controllers.routes.ApplicationController.downloadFileDirectForPreview(ResourceKey(fileUploadItem.itemNumber.get.toString() + fileextension(fileUploadItem.supportingDocuments)) )">
+                <img src="@routes.Assets.at("images/" +  filetype(fileUploadItem.supportingDocuments) + "_icon.png")" width="36" height="32" alt="" style="visibility: visible">
+            </a>
+
+        </td>
+        <td>@fileUploadItem.supportingDocuments</td>
+    </tr>
+    }
+    </table>
 
 </div>
