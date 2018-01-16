@@ -39,6 +39,15 @@ import play.api.mvc._
 import services.JWTOps
 import models.User
 
+/*** TODO:- This file is WIP.
+            It is important in controlling Authorising resources using JWT or other means
+            UnAuhorised access checks:-
+            1. AUTHORISED :-    Requesting user belong to a Authorised Process management group (eg. Policyadmin)
+            2. UN-AUTHORISED :- Requested resource is not available when end_date of Opportunity is expired
+            3. UN-AUTHORISED :- Requesting user is not the user of the Application
+            - this is to restrict hackers try to access others Applications
+***/
+
 case class AccessResourceRequest[A](isAllowedByRole: Boolean, isAllowedByUser: Boolean, isOpportunityClosed: Boolean,
                                     request: Request[A]) extends WrappedRequest[A](request)
 
@@ -115,7 +124,6 @@ class AccessResourceAction @Inject()(applications: ApplicationOps, jwt: JWTOps)(
 //
         applications.byId(id).flatMap {
           case Some(app) =>
-            println("==999====="+app.userId.userId.equals(userId) )
             if(app.userId.userId.equals(userId))
               next(AccessResourceRequest(true, true, true, request))
             else

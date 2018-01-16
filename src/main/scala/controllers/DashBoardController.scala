@@ -106,10 +106,8 @@ class DashBoardController @Inject()(   applications: ApplicationOps,
 //
 //v.flatMap{ a=>
 //  val s = request.session + ("isOppClosed" -> "true")
-//  println("==Session 111====="+ request.session + ("", ""))
 //
 //  //Future(Ok("").withNewSession)
-//  println("==Session 2222====="+ request.session)
 //
 //  Future(Ok(views.html.showApplicantDashBoard(a._1, a._2, false, Seq()))
 //      .removingFromSession("isOppClosed")
