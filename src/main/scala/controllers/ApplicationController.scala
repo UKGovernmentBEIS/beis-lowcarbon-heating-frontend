@@ -253,14 +253,26 @@ class ApplicationController @Inject()(
     **/
 
   def downloadFileDirectForPreview(key: ResourceKey) = Action.async { request =>
-    val preSignedURL = awsS3.downloadDirect(key)
-    preSignedURL.flatMap {
-      case url: URL => Future.successful(Redirect(url.toString))
-      //TODO:- This is error case:- need to update method to add error message 'Error in downloading document.... Please try again'
-      case _ =>  Future.successful(Redirect(routes.DashBoardController.applicantDashBoard()))
 
+    val mp = request.queryString
+    val token =  getValueFromRequest("token", mp )
+
+    actionHandler.isAuthTokenValid(token) match {
+      case true =>
+
+        val preSignedURL = awsS3.downloadDirect(key)
+            preSignedURL.flatMap {
+              case url: URL => Future.successful(Redirect(url.toString))
+              //TODO:- This is error case:- need to update method to add error message 'Error in downloading document.... Please try again'
+              case _ =>  Future.successful(Redirect(routes.DashBoardController.applicantDashBoard()))
+            }
+      case false => Future.successful (Ok(views.html.loginForm("Authorisation required") ).withNewSession)
     }
   }
+
+  def getValueFromRequest(key: String, keyValueMap: Map[String, Seq[String]]): String =
+
+    keyValueMap.get(key).headOption.map(_.head).getOrElse("").toString
 
   def showSectionForm(id: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(id, sectionNumber).async {implicit request =>
 

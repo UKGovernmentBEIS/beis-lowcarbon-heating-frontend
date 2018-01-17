@@ -26,12 +26,12 @@ import models._
 import play.api.libs.json.{JsObject, _}
 import play.api.mvc.Result
 import play.api.mvc.Results._
-import services.{ApplicationFormOps, ApplicationOps, BusinessProcessOps, OpportunityOps}
+import services.{ApplicationFormOps, ApplicationOps, BusinessProcessOps, JWTOps, OpportunityOps}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: ApplicationFormOps, opportunities: OpportunityOps,
-                              processes: BusinessProcessOps)(implicit ec: ExecutionContext)
+                              processes: BusinessProcessOps, jwt: JWTOps)(implicit ec: ExecutionContext)
   extends ApplicationResults with SessionUser {
 
   import ApplicationData._
@@ -410,4 +410,34 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
     //TODO:- may need to implement seperate checks for Previews
     //formSection.fields.map(f => f.name -> f.previewCheck).toMap
     formSection.fields.map(f => f.name -> f.check).toMap  //may need to implement seperate checks for Previews
+
+
+  def isAuthTokenValid(token: String, id:Option[ApplicationId] = None) = {
+
+    val appAccessRole = Config.config.jwt.appAccessRole
+
+    if(token != null && jwt.isValidToken(token)){
+
+      /* If the token is without AppID, the call might have come from Downloadlink, Approve it if it has valid token */
+      if(!id.isEmpty) {
+
+        import org.apache.commons.lang3.StringUtils
+        val payload = jwt.decodePayload(token)
+
+        val authAttribs =
+            ((Json.parse(payload.getOrElse("")) \ "role").validate[String].getOrElse(""),
+              (Json.parse(payload.getOrElse("")) \ "appid").validate[String].getOrElse(""))
+
+          val jwtRole = authAttribs._1
+          val jwtAppId = authAttribs._2
+          /* No Role base access at the moment */
+          (/*jwtRole.equals(appAccessRole) && */ id.get.id.toString().equals(jwtAppId))
+      }
+      else
+        true
+    }
+    else
+      false
+  }
+
 }

@@ -1,6 +1,7 @@
 @(
-files: Seq[forms.FileUploadItem]
-)
+files: Seq[forms.FileUploadItem])
+
+@import helpers._
 
 @filetype(f: String) = @{
 if(f.endsWith(".pdf")) "pdf"
@@ -33,7 +34,7 @@ f.substring(f.lastIndexOf("."), f.length)
 
     <tr border="0">
         <td width="10%" >
-            <a href="@controllers.routes.ApplicationController.downloadFileDirectForPreview(ResourceKey(fileUploadItem.itemNumber.get.toString() + fileextension(fileUploadItem.supportingDocuments)) )">
+            <a href="@controllers.routes.ApplicationController.downloadFileDirectForPreview(ResourceKey(fileUploadItem.itemNumber.get.toString() + fileextension(fileUploadItem.supportingDocuments)) )?token=@JWTToken("","","")">
                 <img src="@routes.Assets.at("images/" +  filetype(fileUploadItem.supportingDocuments) + "_icon.png")" width="36" height="32" alt="" style="visibility: visible">
             </a>
 

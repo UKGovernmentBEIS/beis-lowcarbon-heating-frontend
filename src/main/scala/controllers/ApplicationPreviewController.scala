@@ -27,7 +27,7 @@ import forms.validation.CostItem
 import models._
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.{Action, Controller}
-import services.{ApplicationFormOps, ApplicationOps, JWTOps, OpportunityOps}
+import services.{ApplicationFormOps, ApplicationOps, OpportunityOps}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,8 +37,7 @@ class ApplicationPreviewController @Inject()(
                                               appForms: ApplicationFormOps,
                                               opps: OpportunityOps,
                                               AppSectionAction: AppSectionAction,
-                                              AccessResourceAction: AccessResourceAction,
-                                              jwt: JWTOps
+                                              AccessResourceAction: AccessResourceAction
                                             )(implicit ec: ExecutionContext)
   extends Controller with SessionUser{
 
@@ -120,7 +119,7 @@ class ApplicationPreviewController @Inject()(
               case _ => NotFound
           }
         case true =>
-          isAuthTokenValid(token, id) match {
+          actionHandler.isAuthTokenValid(token, Some(id)) match {
               case true =>
                   gatherApplicationDetails(id).map {
                       case Some(app) =>
@@ -136,26 +135,6 @@ class ApplicationPreviewController @Inject()(
     }
   }
 
-  def isAuthTokenValid(token: String, id: ApplicationId) = {
-
-    val appAccessRole = Config.config.jwt.appAccessRole
-
-    if(token != null && jwt.isValidToken(token)){
-      import org.apache.commons.lang3.StringUtils
-      val authAttribs = if(StringUtils.isNotEmpty(token) && jwt.isValidToken(token)){
-        val payload = jwt.decodePayload(token)
-        ((Json.parse(payload.getOrElse("")) \ "role").validate[String].getOrElse(""),
-          (Json.parse(payload.getOrElse("")) \ "appid").validate[String].getOrElse(""))
-      } else (("",""))
-
-      val jwtRole = authAttribs._1
-      val jwtAppId = authAttribs._2
-      /* No Role base access at the moment */
-      (/*jwtRole.equals(appAccessRole) && */ id.id.toString().equals(jwtAppId))
-    }
-    else
-      false
-  }
 
   def isUnAuthorisedAccess(id:ApplicationId, sUser: String) = {
 

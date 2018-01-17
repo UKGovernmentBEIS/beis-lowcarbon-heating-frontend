@@ -17,12 +17,18 @@
 
 package views.html
 
+import javax.inject.Inject
+
+import config.Config
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.auto._
 import eu.timepit.refined.numeric.Positive
 import forms.{AddressField, TextAreaField, TextField}
-import models.{ApplicationForm, NonEmptyString}
+import models.{AppAuthPayload, ApplicationForm, NonEmptyString}
+import play.api.Play
+import play.api.libs.json.Json
 import play.twirl.api.Html
+import services.JWTOps
 
 package object helpers {
   def textForQuestions(appForm: ApplicationForm): Html = {
@@ -55,4 +61,28 @@ package object helpers {
 
   def splitLineswithR(s: String): List[String] = s.split("""\\r\\n""").toList.map(_.replaceAll("""\\""", "")).toList
 
+  private def instance = Play.current.injector.instanceOf[JWT]
+
+  implicit val appAuthPayloadWrites = Json.writes[AppAuthPayload]
+
+  def JWTToken(grpId: String, userId: String, appId: String) = {
+    instance.getJWTToken(grpId, userId, appId)
+  }
+}
+
+/**  ::: JWT:::
+  * This is other way of creating JWT Token
+  * if JWT token is required directly in HTML page.
+  * eg.. fileUpload.html (to download a AWS file)
+**/
+
+case class JWT  @Inject()(jwt: JWTOps ) {
+  implicit val appAuthPayloadWrites = Json.writes[AppAuthPayload]
+
+  def getJWTToken(grpId: String, userId: String, appId: String) = {
+    val appAuthpayload =  Json.toJson(AppAuthPayload(grpId, userId, appId.toString)).toString()
+    val appAuthToken = jwt.createToken(appAuthpayload)
+    val appFrontEndUrlWithJWTToken = s"$appAuthToken"
+    appFrontEndUrlWithJWTToken
+  }
 }
