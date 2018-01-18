@@ -442,7 +442,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
         *    Exp (Expiration time) only sent in the token and is validated on exp value only.
       **/
 
-      jwtRole.equals(appAccessRole) && aid.equals(jwtAppId) && !isTokenExpired(exp)
+      /*jwtRole.equals(appAccessRole) &&*/ aid.equals(jwtAppId) && !isTokenExpired(exp)
     }
     else
       false
