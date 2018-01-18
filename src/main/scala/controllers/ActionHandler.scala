@@ -23,6 +23,7 @@ import config.Config
 import forms.{DynamicTableItem, FileUploadItem, TableItem}
 import forms.validation.CostItem
 import models._
+import org.joda.time.DateTime
 import play.api.libs.json.{JsObject, _}
 import play.api.mvc.Result
 import play.api.mvc.Results._
@@ -368,7 +369,6 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
     }
   }
 
-
   def guidanceDocURL = {
     val guidancedoc = Config.config.file.guidancedoc
     s"$publicDownloadURL/$guidancedoc"
@@ -416,28 +416,39 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
 
     val appAccessRole = Config.config.jwt.appAccessRole
 
-    if(token != null && jwt.isValidToken(token)){
+    //This isValidToken method just validates the token with SecretKey.
+    // Dont validate payload (Exp time, Appid, orRole)
+    if(token != null && jwt.isValidToken(token) ){
 
-      /* If the token is without AppID, the call might have come from Downloadlink, Approve it if it has valid token */
-      if(!id.isEmpty) {
+      val payload = jwt.decodePayload(token)
 
-        import org.apache.commons.lang3.StringUtils
-        val payload = jwt.decodePayload(token)
+      val authAttribs =
+        ((Json.parse(payload.getOrElse("")) \ "role").validate[String].getOrElse(""),
+          (Json.parse(payload.getOrElse("")) \ "appid").validate[String].getOrElse(""),
+          (Json.parse(payload.getOrElse("")) \ "exp").validate[Long].getOrElse(0L))
 
-        val authAttribs =
-            ((Json.parse(payload.getOrElse("")) \ "role").validate[String].getOrElse(""),
-              (Json.parse(payload.getOrElse("")) \ "appid").validate[String].getOrElse(""))
+      val jwtRole  = authAttribs._1
+      val jwtAppId = authAttribs._2
+      val exp      = authAttribs._3
 
-          val jwtRole = authAttribs._1
-          val jwtAppId = authAttribs._2
-          /* No Role base access at the moment */
-          (/*jwtRole.equals(appAccessRole) && */ id.get.id.toString().equals(jwtAppId))
+      val aid = id.isEmpty match {
+        case false => id.get.id.toString()
+        case true => ""
       }
-      else
-        true
+
+      /** 1. The JWT token created by Process management server to access Front-end resource, it will have
+        *    role, Appid, and Exp attributes in payload
+        * 2. The JWT token created by Front-end server to access its own resource (eg. download link etc),
+        *    Exp (Expiration time) only sent in the token and is validated on exp value only.
+      **/
+
+      jwtRole.equals(appAccessRole) && aid.equals(jwtAppId) && !isTokenExpired(exp)
     }
     else
       false
   }
+
+  def isTokenExpired(datetime : Long) =
+    new DateTime(datetime).isBeforeNow
 
 }

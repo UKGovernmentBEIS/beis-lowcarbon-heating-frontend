@@ -34,7 +34,7 @@ f.substring(f.lastIndexOf("."), f.length)
 
     <tr border="0">
         <td width="10%" >
-            <a href="@controllers.routes.ApplicationController.downloadFileDirectForPreview(ResourceKey(fileUploadItem.itemNumber.get.toString() + fileextension(fileUploadItem.supportingDocuments)) )?token=@JWTToken("","","")">
+            <a href="@controllers.routes.ApplicationController.downloadFileDirectForPreview(ResourceKey(fileUploadItem.itemNumber.get.toString() + fileextension(fileUploadItem.supportingDocuments)) )?token=@JWTToken("policyadmin","","")">
                 <img src="@routes.Assets.at("images/" +  filetype(fileUploadItem.supportingDocuments) + "_icon.png")" width="36" height="32" alt="" style="visibility: visible">
             </a>
 

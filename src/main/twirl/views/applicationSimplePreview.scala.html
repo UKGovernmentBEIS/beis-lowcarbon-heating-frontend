@@ -91,10 +91,16 @@
 
             @appPreview(app, answers)
 
-            <p class="rifs-form-buttons">
+            <p>
+                @if(!userid.isEmpty){
                 <a href="/opportunity/@app.opportunity.id.id" class="button">
                     Close
                 </a>
+                }else{
+                <a href="" class="button" onclick="javascript:window.close()">
+                    Close
+                </a>
+                }
             </p>
 
         </div>

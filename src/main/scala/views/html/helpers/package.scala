@@ -25,6 +25,8 @@ import eu.timepit.refined.auto._
 import eu.timepit.refined.numeric.Positive
 import forms.{AddressField, TextAreaField, TextField}
 import models.{AppAuthPayload, ApplicationForm, NonEmptyString}
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.{DateTime, LocalDate}
 import play.api.Play
 import play.api.libs.json.Json
 import play.twirl.api.Html
@@ -66,21 +68,24 @@ package object helpers {
   implicit val appAuthPayloadWrites = Json.writes[AppAuthPayload]
 
   def JWTToken(grpId: String, userId: String, appId: String) = {
-    instance.getJWTToken(grpId, userId, appId)
+
+    val exp = Config.config.jwt.exp
+    val dateTime = new DateTime()
+    val expiry = new DateTime((dateTime.getMillis + exp.toLong)).getMillis
+    instance.getJWTToken(grpId, userId, appId, expiry)
   }
 }
 
 /**  ::: JWT:::
-  * This is other way of creating JWT Token
-  * if JWT token is required directly in HTML page.
-  * eg.. fileUpload.html (to download a AWS file)
+  * The JWT Token created here in Package in an object, can be used directly in any HTML page or controller.
+  * eg: fileUpload.html (to download a AWS file) etc
 **/
 
 case class JWT  @Inject()(jwt: JWTOps ) {
   implicit val appAuthPayloadWrites = Json.writes[AppAuthPayload]
 
-  def getJWTToken(grpId: String, userId: String, appId: String) = {
-    val appAuthpayload =  Json.toJson(AppAuthPayload(grpId, userId, appId.toString)).toString()
+  def getJWTToken(grpId: String, userId: String, appId: String, exp: Long) = {
+    val appAuthpayload =  Json.toJson(AppAuthPayload(grpId, userId, appId.toString, exp)).toString()
     val appAuthToken = jwt.createToken(appAuthpayload)
     val appFrontEndUrlWithJWTToken = s"$appAuthToken"
     appFrontEndUrlWithJWTToken
