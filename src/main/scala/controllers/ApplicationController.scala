@@ -25,6 +25,7 @@ import actions.{AppDetailAction, AppSectionAction}
 import cats.data.OptionT
 import config.Config
 import eu.timepit.refined.auto._
+import eu.timepit.refined.boolean.False
 import forms.validation._
 import forms.{FileList, FileUploadItem, TextField}
 import models._
@@ -107,7 +108,7 @@ class ApplicationController @Inject()(
   def show(id: ApplicationId, sectionNum:Option[Int]=None) = AppDetailAction(id).async { implicit request =>
     var mapsecs:Map[String, Seq[ApplicationFormSection]]
         = makeGroupSections(request.appDetail.applicationForm.sections)
-
+   
     isUnAuthorisedAccess(id, sessionUser).flatMap {
       case false =>
         sectionNum match {
@@ -407,6 +408,33 @@ class ApplicationController @Inject()(
   }
 
   def isUnAuthorisedAccess(id:ApplicationId, sUser: String) = {
+
+    /**
+      * 1.Check Application user trying to access is his Application (check by associate user)
+      * 2.Check Opportunity for the Application User is trying to access is not CLOSED
+    **/
+
+    applications.byId(id).flatMap {
+      case Some(app) =>
+        if(!app.userId.userId.equals(sUser))
+          Future(true)
+        else {
+            applications.detail(id).flatMap {
+                case Some(ad) =>
+                  if(ad.opportunity.endDate.get.toDateTimeAtStartOfDay().plusHours(17)
+                  .isBefore(LocalDate.now().toDateTimeAtCurrentTime))
+                  Future(true)
+                  else
+                  Future(false)
+                case None => Future(true)
+            }
+        }
+
+      case None => Future(true)
+    }
+  }
+
+  def isUnAuthorisedAccess_(id:ApplicationId, sUser: String) = {
 
     applications.byId(id).flatMap {
       case Some(app) =>
