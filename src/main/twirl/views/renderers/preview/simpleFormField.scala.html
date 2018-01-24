@@ -21,7 +21,7 @@ checkBoxMap : Map[String,String] = Map("Pre" -> "Pre-Startup","Startup" -> "Star
 @field.simpleform.map { f=>
 
 @if( f.isEnabled) {
-<div class="wordwrap">
+<div class="form-group-preview wordwrap">
     <label for="@f.name">@f.label </label>
 
     @if(
