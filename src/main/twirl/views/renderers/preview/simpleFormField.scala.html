@@ -21,7 +21,7 @@ checkBoxMap : Map[String,String] = Map("Pre" -> "Pre-Startup","Startup" -> "Star
 @field.simpleform.map { f=>
 
 @if( f.isEnabled) {
-<div class="form-group-preview wordwrap">
+<div class="wordwrap">
     <label for="@f.name">@f.label </label>
 
     @if(
@@ -93,10 +93,9 @@ checkBoxMap : Map[String,String] = Map("Pre" -> "Pre-Startup","Startup" -> "Star
 
         }
         case _ => {
-            @if(f.isNumeric.getOrElse(false) == true &&
-                    StringUtils.isNotEmpty(answers.getOrElse(f.name,""))){
+            @if(f.isNumeric.getOrElse(false) && StringUtils.isNotEmpty(answers.getOrElse(f.name,""))){
 
-                @java.text.NumberFormat.getInstance.format(answers.getOrElse(f.name,"").toDouble)
+                @java.text.NumberFormat.getInstance.format(answers.getOrElse(f.name,"").replace(",","").toDouble)
 
             }else{
                 @answers.get(f.name)
