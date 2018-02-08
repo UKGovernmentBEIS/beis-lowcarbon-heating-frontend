@@ -21,7 +21,7 @@ checkBoxMap : Map[String,String] = Map("Pre" -> "Pre-Startup","Startup" -> "Star
 @field.simpleform.map { f=>
 
 @if( f.isEnabled) {
-<div class="wordwrap">
+<div class="form-group-preview wordwrap">
     <label for="@f.name">@f.label </label>
 
     @if(
@@ -50,13 +50,17 @@ checkBoxMap : Map[String,String] = Map("Pre" -> "Pre-Startup","Startup" -> "Star
 
                                    @if(answers.get(r.name).getOrElse("off") == "on"){
                                         <div class="multiple-choice">
-                                        <input id="@r.name" name="@r.name" type="checkbox" title="@r.name" checked>
-                                        <label for="@r.name">@r.label</label>
+                                            <img src="@routes.Assets.at("images/checkbox_ticked.png")" width="46" height="42" alt="" style="visibility: visible">
+                                            @r.label
+                                            <!--<input id="@r.name" name="@r.name" type="checkbox" title="@r.name" checked>-->
+                                            <!--<label for="@r.name">@r.label</label>-->
                                         </div>
                                     }else{
                                         <div class="multiple-choice">
-                                        <input id="@r.name" name="@r.name" type="checkbox" title="@r.name">
-                                        <label for="@r.name">@r.label</label>
+                                            <img src="@routes.Assets.at("images/checkbox_unticked.png")" width="46" height="42" alt="" style="visibility: visible">
+                                            @r.label
+                                            <!--<input id="@r.name" name="@r.name" type="checkbox" title="@r.name">-->
+                                             <!--<label for="@r.name">@r.label</label>-->
                                         </div>
 
                                     }

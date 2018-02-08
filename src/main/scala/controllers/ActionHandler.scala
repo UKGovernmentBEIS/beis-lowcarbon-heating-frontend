@@ -448,7 +448,9 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
       false
   }
 
-  def isTokenExpired(datetime : Long) =
+  def isTokenExpired(datetime : Long) = {
     new DateTime(datetime).isBeforeNow
+
+  }
 
 }

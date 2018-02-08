@@ -46,7 +46,8 @@ class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionCon
 
   override def apply(nextCall: (RequestHeader) => Future[Result])( rh: RequestHeader): Future[Result] = {
 
-    if (rh.uri.startsWith("/assets") || rh.uri.startsWith("/resetpassword")|| rh.uri.startsWith("/opportunity") || isSessionExcluded(rh)) {
+    if (rh.uri.startsWith("/assets") || rh.uri.startsWith("/resetpassword")|| rh.uri.startsWith("/opportunity")
+      || isSessionExcluded(rh) /* || rh.uri.startsWith("/pdf")*/) {
       nextCall(rh)
     }
     else {

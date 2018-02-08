@@ -5,7 +5,7 @@
 @sectionDetail.section.map { section =>
     <div>
         <h2 class="heading-medium" id="@sectionDetail.formSection.sectionNumber.num">@sectionDetail.formSection.sectionNumber.num. @sectionDetail.formSection.title </h2>
-        @sectionDetail.formSection.fields.map(_.renderPreview(sectionDetail.formSection.questionMap, section.answers))
+        <p class="pdf-font">  @sectionDetail.formSection.fields.map(_.renderPreview(sectionDetail.formSection.questionMap, section.answers))</p>
     </div>
 }.getOrElse {
     <div>

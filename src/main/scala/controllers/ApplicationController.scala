@@ -93,7 +93,7 @@ class ApplicationController @Inject()(
           app.opportunity.endDate.get.toDateTimeAtStartOfDay().plusHours(17) //added to make 5pm of the same day
             .isBefore(LocalDate.now().toDateTimeAtCurrentTime) match {
             case true =>
-              Redirect(controllers.routes.ApplicationPreviewController.applicationSimplePreview(app.id))
+              Redirect(controllers.routes.ApplicationPreviewController.applicationSimplePreview(app.id, "html"))
                 .withSession(request.session + ("isOppClosed" -> "true"))
             case false =>
               app.personalReference.map { _ => redirectToOverview(app.id)}

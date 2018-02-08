@@ -46,7 +46,8 @@ POST        /application/:id/personal-ref                             controller
 
 GET         /application/:id/section/:num/preview                     controllers.ApplicationPreviewController.previewSection(id: ApplicationId, num:AppSectionNumber)
 GET         /application/:id/preview                                  controllers.ApplicationPreviewController.applicationPreview(id: ApplicationId)
-GET         /simplepreview/:id                                        controllers.ApplicationPreviewController.applicationSimplePreview(id: ApplicationId)
+GET         /simplepreview/application/:id/content/:contentType       controllers.ApplicationPreviewController.applicationSimplePreview(id: ApplicationId, contentType: String)
+GET         /pdf/application/:id                                      controllers.PDFController.applicationPreviewPDF(id: ApplicationId)
 
 GET         /application/:id/section/:num/add-item                    controllers.CostController.addItem(id:ApplicationId, num: AppSectionNumber)
 POST        /application/:id/section/:num/item                        controllers.CostController.createItem(id:ApplicationId, num: AppSectionNumber)
@@ -66,6 +67,7 @@ GET         /applicant/dashboard                                      controller
 GET         /staff/dashboard                                          controllers.DashBoardController.staffDashBoard
 GET         /message/:id/messageboard                                 controllers.MessageBoardController.byId(id:MessageId)
 GET         /message/:id/delete                                       controllers.MessageBoardController.delete(id:MessageId)
+#GET         /pdf                                                      controllers.PDFController.pdfGenerator
 
 GET         /reset                                                    controllers.ApplicationController.reset
 GET         /wip                                                      controllers.OpportunityController.wip(backUrl: String)

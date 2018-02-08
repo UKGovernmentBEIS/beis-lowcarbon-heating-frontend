@@ -4,6 +4,7 @@
         title: Option[String],
         answers: Map[AppSectionNumber, Seq[forms.Field]],
         guidanceDocURL: String,
+        contentType: String,
         userid: Option[String] = None
 
 )
@@ -47,20 +48,21 @@
                 <nav role="navigation" class="contain-floats page-navigation" aria-label="Navigation">
                     <ol>
                         @titleCols.map { case (col1, col2) =>
-                            <li>
-                                @sectionLink(col1._1, col1._2)
-                            </li>
+                        <li>
+                            @sectionLink(col1._1, col1._2)
+                        </li>
                         }
                     </ol>
                     <ol>
                         @titleCols.map { case (col1, col2) =>
-                            <li>
-                                @col2.map { t => @sectionLink(t._1, t._2) }.getOrElse("")
-                            </li>
+                        <li>
+                            @col2.map { t => @sectionLink(t._1, t._2) }.getOrElse("")
+                        </li>
                         }
                     </ol>
                 </nav>
             </aside>
+
 
             <div class="rifs-summary-panel">
                 <aside role="complementary" class="notice">
@@ -70,11 +72,13 @@
                                 document.write('<button class="as-link" id="print" onclick="window.print();">Print Preview</button>');
                             </script>
                         </p>
+
                     </div>
 
                     <div class="rifs-form-buttons">
                         <p>
-                            @if(!userid.isEmpty){
+
+                            @if(!userid.isEmpty && !userid.get.equals("Unauthorised User")){
                             <a href="/opportunity/@app.opportunity.id.id" class="button">
                                 Close
                             </a>
@@ -83,6 +87,10 @@
                                 Close
                             </a>
                             }
+
+                            <a href="/pdf/application/@app.id.id?token=@JWTToken("policyadmin","","")" class="button">
+                            Download
+                            </a>
                         </p>
                     </div>
 
@@ -92,7 +100,7 @@
             @appPreview(app, answers)
 
             <p>
-                @if(!userid.isEmpty){
+                @if(!userid.isEmpty && !userid.get.equals("Unauthorised User")){
                 <a href="/opportunity/@app.opportunity.id.id" class="button">
                     Close
                 </a>
@@ -101,6 +109,9 @@
                     Close
                 </a>
                 }
+                <a href="/pdf/application/@app.id.id?token=@JWTToken("policyadmin","","")" class="button">
+                Download
+                </a>
             </p>
 
         </div>

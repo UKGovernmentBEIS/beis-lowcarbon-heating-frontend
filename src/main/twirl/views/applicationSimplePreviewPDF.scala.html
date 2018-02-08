@@ -1,0 +1,86 @@
+@(
+        app: ApplicationDetail,
+        sections: Seq[ApplicationSection],
+        title: Option[String],
+        answers: Map[AppSectionNumber, Seq[forms.Field]],
+        guidanceDocURL: String,
+        contentType: String,
+        appFrontEndUrl: String,
+        userid: Option[String] = None,
+
+        bodyStart:Html = Html(""),
+        bodyEnd:Html = Html(""),
+        afterHeader:Html = Html("")
+
+)
+
+@import models._
+@import partials._
+@import helpers._
+
+@sectionLink(title: String, sectionNum: AppSectionNumber) = {
+    <span class="part-number">@sectionNum.num. </span>
+    <a href="#@sectionNum.num">@title</a>
+}
+
+@titleCols() = @{
+    val titles = app.applicationForm.sections.sortBy(_.sectionNumber).map(s => (s.title, s.sectionNumber))
+    val midpoint: Int = Math.round(titles.length / 2.0).toInt
+    val (leftCols, b) = titles.splitAt(midpoint)
+    val rightCols = b.map(Some(_)) :+ None
+    leftCols.zip(rightCols)
+}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script type="text/javascript" src="http://arrow.scrolltotop.com/arrow1.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script type="text/javascript" src="http://arrow.scrolltotop.com/arrow66.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script type="text/javascript" src="http://arrow.scrolltotop.com/arrow78.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<link href="@appFrontEndUrl/assets/stylesheets/application.css" media="all" rel="stylesheet" />
+<link href="@appFrontEndUrl/assets/stylesheets/application-print.css" media="print" rel="stylesheet" />
+
+
+<div class="grid-row">
+        <div class="column-full">
+
+            <h1 class="heading-medium doc-marking">
+                OFFICIAL SENSITIVE
+            </h1>
+
+            <h1 class="heading-large pdf-font">
+                @formatId(app.opportunity.id.id): @app.opportunity.title
+            </h1>
+
+            <hr class="hr-blue">
+
+            @if(contentType.equals("html")){
+            <aside>
+                <nav role="navigation" class="contain-floats page-navigation" aria-label="Navigation">
+                    <ol>
+                        @titleCols.map { case (col1, col2) =>
+                        <li>
+                            @sectionLink(col1._1, col1._2)
+                        </li>
+                        }
+                    </ol>
+                    <ol>
+                        @titleCols.map { case (col1, col2) =>
+                        <li>
+                            @col2.map { t => @sectionLink(t._1, t._2) }.getOrElse("")
+                        </li>
+                        }
+                    </ol>
+                </nav>
+            </aside>
+            }
+
+            @appPreview(app, answers)
+
+        </div>
+
+    </div>

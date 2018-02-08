@@ -104,30 +104,47 @@ class ApplicationPreviewController @Inject()(
     }
   }
 
-  def applicationSimplePreview(id: ApplicationId) = Action.async { implicit request =>
+  def applicationSimplePreview(id: ApplicationId, contentType: String) = Action.async { implicit request =>
     val mp = request.queryString
     val token =  getValueFromRequest("token", mp )
+    val appFrontEndUrl = Config.config.business.appFrontEndUrl
 
-    isUnAuthorisedAccess(id, sessionUser).flatMap {
+      isUnAuthorisedAccess(id, sessionUser).flatMap {
         case false =>
+
           gatherApplicationDetails(id).map {
               case Some(app) =>
-                  val title = app.sections.find(_.sectionNumber == 1).flatMap(s => (s.answers \ "title").validate[String].asOpt)
-                  Ok(views.html.applicationSimplePreview(app, app.sections.sortBy(_.sectionNumber), title, getFieldMap(app.applicationForm),
-                    actionHandler.guidanceDocURL, Option(sessionUser)))
 
-              case _ => NotFound
+                val title = app.sections.find(_.sectionNumber == 1).flatMap(s => (s.answers \ "title").validate[String].asOpt)
+                contentType match {
+                  case "pdf" =>
+
+                    Ok(views.html.applicationSimplePreviewPDF(app, app.sections.sortBy(_.sectionNumber), title, getFieldMap(app.applicationForm),
+                      actionHandler.guidanceDocURL, contentType, appFrontEndUrl, Option(sessionUser)))
+                  case _ =>
+                    Ok(views.html.applicationSimplePreview(app, app.sections.sortBy(_.sectionNumber), title, getFieldMap(app.applicationForm),
+                      actionHandler.guidanceDocURL, contentType, Option(sessionUser)))
+                }
+               case _ => NotFound
           }
         case true =>
+
           actionHandler.isAuthTokenValid(token, Some(id)) match {
               case true =>
-                  gatherApplicationDetails(id).map {
+
+                gatherApplicationDetails(id).map {
                       case Some(app) =>
                         val title = app.sections.find(_.sectionNumber == 1).flatMap(s => (s.answers \ "title").validate[String].asOpt)
-                        Ok(views.html.applicationSimplePreview(app, app.sections.sortBy(_.sectionNumber), title,
-                          getFieldMap(app.applicationForm), actionHandler.guidanceDocURL, None))
+                          contentType match {
+                            case "pdf" =>
 
-                      case None =>
+                              Ok(views.html.applicationSimplePreviewPDF(app, app.sections.sortBy(_.sectionNumber), title,
+                                  getFieldMap(app.applicationForm), actionHandler.guidanceDocURL, contentType, appFrontEndUrl, None))
+                                case _ =>
+                                  Ok(views.html.applicationSimplePreview(app, app.sections.sortBy(_.sectionNumber), title, getFieldMap(app.applicationForm),
+                                    actionHandler.guidanceDocURL, contentType, Option(sessionUser)))
+                              }
+                        case None =>
                         Ok(views.html.loginForm("Authorisation required") ).withNewSession
                   }
               case false => Future.successful (Ok(views.html.loginForm("Authorisation required") ).withNewSession)
@@ -140,6 +157,7 @@ class ApplicationPreviewController @Inject()(
 
     applications.byId(id).flatMap {
       case Some(app) =>
+
         if(!app.userId.userId.equals(sUser))
           Future(true)
         else

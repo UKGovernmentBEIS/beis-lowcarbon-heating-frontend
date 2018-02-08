@@ -18,12 +18,13 @@
 package services
 
 import java.io.File
+import java.io.InputStream
 import java.net.URL
 
 import akka.stream.javadsl.StreamConverters
 import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
 import com.amazonaws.regions.Regions
-import com.amazonaws.services.s3.model.{GetObjectRequest, S3ObjectInputStream, S3ObjectSummary}
+import com.amazonaws.services.s3.model._
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.google.inject.Inject
 import config.Config
@@ -67,6 +68,38 @@ class AWSS3Service @Inject()(implicit val ec: ExecutionContext)
     }
   }
 
+
+  override def uploadStream(key: ResourceKey, input : InputStream):  Future[FieldErrors] = {
+//PutObjectRequest
+    //println("==In uploadStream length===" + IOUtils.toByteArray(input).length)
+
+
+    Try(s3Client.putObject(bucket, key.key, input, new ObjectMetadata())) match{
+      case Success(result) => Future.successful( List())
+      case Failure(e) => {
+        /*This will out put complete error stack
+        val flderrs = e.getStackTrace.toList.map( er => FieldError("item", er.toString))*/
+        val flderrs = List(FieldError("item1", "File Upload Error: "),
+          FieldError("item2", e.getMessage))
+        Future.successful(flderrs)
+      }
+    }
+  }
+
+  override def downloadObject(key: ResourceKey):  Future[Option[S3Object]] = {
+
+    Try(s3Client.getObject(bucket, key.key)) match{
+      case Success(result) => {
+        Future.successful( Some(result))
+      }
+      case Failure(e) => {
+        val flderrs = List(FieldError("item1", "File Download Error: "),
+          FieldError("item2", e.getMessage))
+        Future.successful(None)
+      }
+    }
+  }
+
   override def download(key: ResourceKey):  Future[FieldErrors] = {
 
     Try(s3Client.getObject(bucket, key.key)) match{
@@ -86,9 +119,45 @@ class AWSS3Service @Inject()(implicit val ec: ExecutionContext)
     }
   }
 
+  override def copyObject(key: ResourceKey, newKey: ResourceKey):  Future[FieldErrors] = {
+
+    Try(s3Client.copyObject(bucket, key.key, bucket, newKey.key)) match{
+      case Success(result) => {
+        Future.successful( List())
+      }
+      case Failure(e) => {
+        val flderrs = List(FieldError("item1", "Copy Download Error: "),
+          FieldError("item2", e.getMessage))
+        Future.successful(flderrs)
+      }
+    }
+  }
+
   override def downloadDirect(key: ResourceKey):  Future[URL] = {
 
     Try(s3Client.generatePresignedUrl(bucket, key.key, null)) match{
+      case Success(result) => Future.successful( result)
+      case Failure(e) => Future.successful(null)
+    }
+  }
+
+  override def downloadDirectMultiFiles(keys: Seq[ResourceKey]):  Future[Seq[URL]] = {
+    Try(
+      keys.map{key =>
+        s3Client.generatePresignedUrl(bucket, key.key, null)
+      }.toSeq
+    ) match{
+      case Success(result) => Future.successful( result)
+      case Failure(e) => Future.successful(null)
+    }
+  }
+
+  override def downloadDirectMultiFilesWithKeys(keys: Seq[ResourceKey]):  Future[Seq[(ResourceKey, URL)]] = {
+    Try(
+      keys.map{key =>
+        (key, s3Client.generatePresignedUrl(bucket, key.key, null))
+      }.toSeq
+    ) match{
       case Success(result) => Future.successful( result)
       case Failure(e) => Future.successful(null)
     }
@@ -109,7 +178,6 @@ class AWSS3Service @Inject()(implicit val ec: ExecutionContext)
   override def listBuckets():Unit= {
      val result1 = s3Client.listObjects(bucket)
      val objectSummaries:Seq[S3ObjectSummary] = result1.getObjectSummaries
-     objectSummaries.map(a=> println("File:-" + a.getKey))
      }
 
 }

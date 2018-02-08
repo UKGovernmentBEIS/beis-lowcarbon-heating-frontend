@@ -17,7 +17,7 @@
 
 package config
 
-case class BusinessConfig(baseUrl: String, bpmServerUrl: String, bpmServerContext: String,  emailto: String, addressSearch: String)
+case class BusinessConfig(baseUrl: String, bpmServerUrl: String, bpmServerContext: String, appFrontEndUrl: String, emailto: String, addressSearch: String)
 case class FileConfig(fileuploaddirectory: String, filedownloaddirectory: String, guidancedoc: String, allowedfileextensions: String,
                       allowedfilesize: Int)
 case class AWSConfig(accesskey: String, secretkey: String, region: String, bucket: String, publicbucket: String, domain:String)

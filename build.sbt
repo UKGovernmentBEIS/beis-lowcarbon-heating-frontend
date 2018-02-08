@@ -66,7 +66,11 @@ libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-java-sdk" % `aws-java-version`,
   "io.findify" %% "s3mock" % "0.2.0" % "test",
   "commons-io" % "commons-io" % "2.4",
+
+  "org.xhtmlrenderer" % "flying-saucer-core" % "9.0.7",
+  "org.xhtmlrenderer" % "flying-saucer-pdf" % "9.0.7",
+  "net.sf.jtidy" % "jtidy" % "r938",
+  "org.qirx" %% "little-spec" % "0.4" % "test",
+
   "com.typesafe.akka" %% "akka-stream" % akkaVersion
 )
-
-

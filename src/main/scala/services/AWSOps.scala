@@ -18,9 +18,11 @@
 package services
 
 import java.net.URL
-import com.google.inject.ImplementedBy
-import java.io.File
 
+import com.google.inject.ImplementedBy
+import java.io.{File, InputStream}
+
+import com.amazonaws.services.s3.model.S3Object
 import controllers.FieldCheckHelpers.FieldErrors
 import models._
 
@@ -29,9 +31,14 @@ import scala.concurrent.Future
 @ImplementedBy(classOf[AWSS3Service])
 trait AWSOps {
   def upload(key: ResourceKey, file : File):  Future[FieldErrors]
+  def uploadStream(key: ResourceKey, input : InputStream):  Future[FieldErrors]
   def download(key: ResourceKey): Future[FieldErrors]
+  def downloadObject(key: ResourceKey):  Future[Option[S3Object]]
   def downloadDirect(key: ResourceKey): Future[URL]
+  def downloadDirectMultiFiles(keys: Seq[ResourceKey]):  Future[Seq[URL]]
+  def downloadDirectMultiFilesWithKeys(keys: Seq[ResourceKey]):  Future[Seq[(ResourceKey, URL)]]
   def delete(key: ResourceKey):  Future[FieldErrors]
+  def copyObject(key: ResourceKey, newKey: ResourceKey):  Future[FieldErrors]
   def listBuckets()
 }
 
