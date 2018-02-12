@@ -105,6 +105,7 @@ class ApplicationPreviewController @Inject()(
   }
 
   def applicationSimplePreview(id: ApplicationId, contentType: String) = Action.async { implicit request =>
+
     val mp = request.queryString
     val token =  getValueFromRequest("token", mp )
     val appFrontEndUrl = Config.config.business.appFrontEndUrl
