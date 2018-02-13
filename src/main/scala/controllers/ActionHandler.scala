@@ -442,6 +442,7 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
         * 2. The JWT token created by Front-end server to access its own resource (eg. download link etc),
         *    Exp (Expiration time) only sent in the token and is validated on exp value only.
       **/
+      println("=====jwtRole-jwtAppId-exp====== "+jwtRole +"====="+ jwtAppId + "======"+ exp)
 
       println("=====aid====== "+aid +"====="+ jwtAppId)
       println("=====aisTokenExpiredid====== "+isTokenExpired(exp))
@@ -460,5 +461,9 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
     new DateTime(datetime).isBeforeNow
 
   }
+
+  def getValueFromRequest(key: String, keyValueMap: Map[String, Seq[String]]): String =
+
+    keyValueMap.get(key).headOption.map(_.head).getOrElse("").toString
 
 }

@@ -107,7 +107,7 @@ class ApplicationPreviewController @Inject()(
   def applicationSimplePreview(id: ApplicationId, contentType: String) = Action.async { implicit request =>
 
     val mp = request.queryString
-    val token =  getValueFromRequest("token", mp )
+    val token =  actionHandler.getValueFromRequest("token", mp )
     val appFrontEndUrl = Config.config.business.appFrontEndUrl
 
       isUnAuthorisedAccess(id, sessionUser).flatMap {
@@ -121,10 +121,10 @@ class ApplicationPreviewController @Inject()(
                   case "pdf" =>
 
                     Ok(views.html.applicationSimplePreviewPDF(app, app.sections.sortBy(_.sectionNumber), title, getFieldMap(app.applicationForm),
-                      actionHandler.guidanceDocURL, contentType, appFrontEndUrl, Option(sessionUser)))
+                      token, contentType, appFrontEndUrl, Option(sessionUser)))
                   case _ =>
                     Ok(views.html.applicationSimplePreview(app, app.sections.sortBy(_.sectionNumber), title, getFieldMap(app.applicationForm),
-                      actionHandler.guidanceDocURL, contentType, Option(sessionUser)))
+                      token, contentType, Option(sessionUser)))
                 }
                case _ => NotFound
           }
@@ -138,17 +138,21 @@ class ApplicationPreviewController @Inject()(
                         val title = app.sections.find(_.sectionNumber == 1).flatMap(s => (s.answers \ "title").validate[String].asOpt)
                           contentType match {
                             case "pdf" =>
+                              println("==00 isAuthTokenValid====")
 
                               Ok(views.html.applicationSimplePreviewPDF(app, app.sections.sortBy(_.sectionNumber), title,
-                                  getFieldMap(app.applicationForm), actionHandler.guidanceDocURL, contentType, appFrontEndUrl, None))
+                                  getFieldMap(app.applicationForm), token, contentType, appFrontEndUrl, None))
                                 case _ =>
                                   Ok(views.html.applicationSimplePreview(app, app.sections.sortBy(_.sectionNumber), title, getFieldMap(app.applicationForm),
-                                    actionHandler.guidanceDocURL, contentType, Option(sessionUser)))
+                                    token, contentType, Option(sessionUser)))
                               }
                         case None =>
+                          println("==11 isAuthTokenValid====")
                         Ok(views.html.loginForm("Authorisation required") ).withNewSession
                   }
-              case false => Future.successful (Ok(views.html.loginForm("Authorisation required") ).withNewSession)
+              case false =>
+                println("==22 isAuthTokenValid====")
+                Future.successful (Ok(views.html.loginForm("Authorisation required") ).withNewSession)
           }
     }
   }
@@ -170,9 +174,7 @@ class ApplicationPreviewController @Inject()(
 
   def gatherApplicationDetails(id: ApplicationId): Future[Option[ApplicationDetail]] = applications.detail(id)
 
-  def getValueFromRequest(key: String, keyValueMap: Map[String, Seq[String]]): String =
 
-    keyValueMap.get(key).headOption.map(_.head).getOrElse("").toString
 }
 
 

@@ -256,7 +256,7 @@ class ApplicationController @Inject()(
   def downloadFileDirectForPreview(key: ResourceKey) = Action.async { request =>
 
     val mp = request.queryString
-    val token =  getValueFromRequest("token", mp )
+    val token =  actionHandler.getValueFromRequest("token", mp )
 
     actionHandler.isAuthTokenValid(token) match {
       case true =>
@@ -270,10 +270,6 @@ class ApplicationController @Inject()(
       case false => Future.successful (Ok(views.html.loginForm("Authorisation required") ).withNewSession)
     }
   }
-
-  def getValueFromRequest(key: String, keyValueMap: Map[String, Seq[String]]): String =
-
-    keyValueMap.get(key).headOption.map(_.head).getOrElse("").toString
 
   def showSectionForm(id: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(id, sectionNumber).async {implicit request =>
 

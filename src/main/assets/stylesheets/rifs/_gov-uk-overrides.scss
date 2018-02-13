@@ -58,3 +58,18 @@ hr {
   color: red;
   text-transform: none;
 }
+
+.border-disable {
+      background: #f2f2f2;
+      border: 2px solid #888;
+}
+
+.textarea-pdf {
+    resize: inline;
+  height:auto;
+}
+
+
+.pdf-print {
+pointer-events: none;
+}

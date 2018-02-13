@@ -57,13 +57,14 @@ class PDFController @Inject()(actionHandler: ActionHandler,
 
   def applicationPreviewPDF(id: ApplicationId) = Action.async { implicit request =>
 
+    val mp = request.queryString
+    val token =  actionHandler.getValueFromRequest("token", mp )
 
-
-    /*** Get Application Object and Create a PDF using iText **/
+    /*** Get Application Object and Create a PDF using iText & Flying Saucer API **/
 
     val appAuthpayload =  Json.toJson(AppAuthPayload("", "", id.id.toString, expiry.toLong)).toString()
-    val appAuthToken = jwt.createToken(appAuthpayload)
-    val url = s"$appFrontEndUrl/simplepreview/application/${id.id}/content/pdf?token=$appAuthToken"
+    //val appAuthToken = jwt.createToken(appAuthpayload)
+    val url = s"$appFrontEndUrl/simplepreview/application/${id.id}/content/pdf?token=$token"
     val appURL:URL = new URL(url)
     val renderer:ITextRenderer = new ITextRenderer()
     val tidy: Tidy = new Tidy()
