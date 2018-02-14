@@ -138,8 +138,6 @@ class ApplicationPreviewController @Inject()(
                         val title = app.sections.find(_.sectionNumber == 1).flatMap(s => (s.answers \ "title").validate[String].asOpt)
                           contentType match {
                             case "pdf" =>
-                              println("==00 isAuthTokenValid====")
-
                               Ok(views.html.applicationSimplePreviewPDF(app, app.sections.sortBy(_.sectionNumber), title,
                                   getFieldMap(app.applicationForm), token, contentType, appFrontEndUrl, None))
                                 case _ =>
@@ -147,11 +145,9 @@ class ApplicationPreviewController @Inject()(
                                     token, contentType, Option(sessionUser)))
                               }
                         case None =>
-                          println("==11 isAuthTokenValid====")
                         Ok(views.html.loginForm("Authorisation required") ).withNewSession
                   }
               case false =>
-                println("==22 isAuthTokenValid====")
                 Future.successful (Ok(views.html.loginForm("Authorisation required") ).withNewSession)
           }
     }

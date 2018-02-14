@@ -418,7 +418,6 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
 
     //This isValidToken method just validates the token with SecretKey.
     // Dont validate payload (Exp time, Appid, orRole)
-    println("=====jwt.isValidToken(token)====== "+ jwt.isValidToken(token))
     if(token != null && jwt.isValidToken(token) ){
 
       val payload = jwt.decodePayload(token)
@@ -442,11 +441,6 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
         * 2. The JWT token created by Front-end server to access its own resource (eg. download link etc),
         *    Exp (Expiration time) only sent in the token and is validated on exp value only.
       **/
-      println("=====jwtRole-jwtAppId-exp====== "+jwtRole +"====="+ jwtAppId + "======"+ exp)
-
-      println("=====aid====== "+aid +"====="+ jwtAppId)
-      println("=====aisTokenExpiredid====== "+isTokenExpired(exp))
-
 
       /*jwtRole.equals(appAccessRole) &&*/ aid.equals(jwtAppId) && !isTokenExpired(exp)
     }
@@ -455,9 +449,6 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
   }
 
   def isTokenExpired(datetime : Long) = {
-    println("=====exp====== "+datetime)
-    println("=====new DateTime-datetime====== "+new DateTime(datetime))
-
     new DateTime(datetime).isBeforeNow
 
   }

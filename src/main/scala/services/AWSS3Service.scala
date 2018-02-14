@@ -70,9 +70,6 @@ class AWSS3Service @Inject()(implicit val ec: ExecutionContext)
 
 
   override def uploadStream(key: ResourceKey, input : InputStream):  Future[FieldErrors] = {
-//PutObjectRequest
-    //println("==In uploadStream length===" + IOUtils.toByteArray(input).length)
-
 
     Try(s3Client.putObject(bucket, key.key, input, new ObjectMetadata())) match{
       case Success(result) => Future.successful( List())

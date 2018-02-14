@@ -111,12 +111,10 @@ class PDFController @Inject()(actionHandler: ActionHandler,
         zos.close()
         baoss.close()
 
-        //Ok(baoss.toByteArray).as("application/zip")
-
         val inp: ByteArrayInputStream = new ByteArrayInputStream(baoss.toByteArray)
         Ok.chunked(StreamConverters.fromInputStream(() => inp)).withHeaders(
           CONTENT_TYPE -> "application/zip",
-          CONTENT_DISPOSITION -> s"attachment; filename = LowcarbonHeatingFiles.zip"
+          CONTENT_DISPOSITION -> s"attachment; filename = LowcarbonHeatingFiles_${1000 + id.id.toString().toLong}.zip"
         )
     }
   }
