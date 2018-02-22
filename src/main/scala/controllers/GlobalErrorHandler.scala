@@ -38,14 +38,16 @@ class GlobalErrorHandler extends HttpErrorHandler {
   implicit val messages = Messages
 
   def onClientError(request: RequestHeader, statusCode: Int, message: String) = {
-
+    println("=== In GlobalErrorHandler ERROR Request is:=== "+request.toString())
+    println("=== In GlobalErrorHandler ERROR StatusCode and message are:=== "+statusCode + "========"+ message)
     val errMsg = Messages("error.BF040")
     Future.successful(Ok(views.html.loginForm(errMsg, None)))
   }
 
   def onServerError(request: RequestHeader, exception: Throwable) = {
+    println("=== In GlobalErrorHandler ERROR Request is:=== "+request.toString())
+    println("=== In GlobalErrorHandler ERROR Exception is:=== "+exception)
     val errMsg = Messages("error.BF040")
     Future.successful(Ok(views.html.loginForm(errMsg, None)))
   }
-
 }

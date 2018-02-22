@@ -5,6 +5,9 @@ ms: Seq[Message])(implicit sessionUser: String)
 
 @import org.joda.time.format.DateTimeFormat
 @import org.joda.time.LocalDate
+@import helpers._
+
+
 @main("Opportunity list - BEIS", displayUserName=Some(sessionUser)) {
 
 <div>
@@ -65,7 +68,7 @@ ms: Seq[Message])(implicit sessionUser: String)
                 <td>
 
                     @if(isOppClosed) {
-                        <a class="button button-start startnow-padding" href="/simplepreview/application/@a.id.id/content/html" class="button">
+                        <a class="button button-start startnow-padding" href="/simplepreview/application/@a.id.id/content/html?token=@JWTToken("","",a.id.id.toString)" class="button">
                             View
                         </a>
                     }else{
