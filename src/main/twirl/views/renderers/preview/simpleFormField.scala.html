@@ -1,22 +1,9 @@
-@(field: forms.SimpleFormField, answers: Map[String, String],
-checkBoxMap : Map[String,String] = Map("Pre" -> "Pre-Startup","Startup" -> "Startup <1yr","Upto5" -> "1-5yrs","Upto10" -> "6-10yrs", "MoreThan10" -> ">10yrs", "Yes" -> "Yes", "No" -> "No",
-"Chairty" -> "Charity","Coop" -> "Co-Operative","LGT" -> "Limited by Guarantee","LTD" -> "Limited Company","LLP" -> "Limited Liability Partnership","Partnership" -> "Partnership",
-"PLC" -> "PLC","Sole" -> "Sole Trader","EDU" -> "University/Educational","UC" -> "University Company","Other" -> "Other","Technology" -> "Technology","Tool" -> "Tool","Process" -> "Process",
-"Gas" -> "Gas","Electrict" -> "Electric","Hybrid" -> "Hybrid","Solar" -> "Solar","ExpDevSingle" -> "Experimental development - single company","ExpDevCollab" -> "Experimental development - collaboration",
-"IndResSingle" -> "Industrial research - single company","IndResCollab" -> "Industrial research - collaboration"
-)
-)
-
-
-
-
+@(field: forms.SimpleFormField, answers: Map[String, String]/*, checkBoxMap : Map[String,String]*/)
 
 @import partials._
 @import org.apache.commons.lang3.StringUtils
 @import org.joda.time.DateTime
 @import org.joda.time.format.DateTimeFormat
-
-
 
 @field.simpleform.map { f=>
 
@@ -91,11 +78,7 @@ checkBoxMap : Map[String,String] = Map("Pre" -> "Pre-Startup","Startup" -> "Star
         </table>
 
         }
-        case "dropdown" => {
 
-            @checkBoxMap.getOrElse(answers.getOrElse(f.name,""), null)
-
-        }
 
         case _ => {
             @if(f.isNumeric.getOrElse(false) && StringUtils.isNotEmpty(answers.getOrElse(f.name,""))){

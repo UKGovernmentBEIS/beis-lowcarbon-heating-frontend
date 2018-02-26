@@ -23,26 +23,21 @@ import models._
 import play.api.libs.json._
 
 case class SimpleFormField(name: String, simpleform : Seq[SimpleField]) extends Field {
- // implicit val simpleFormReads = Json.reads[SimpleFormValues]
+
 
   override def check: FieldCheck = {
-    //FieldChecks.fromValidator(new SimpleFormValidator(Seq(telephoneField, emailField, webField, twitterField)))
+
     FieldChecks.fromValidator(new SimpleFormValidator(simpleform))
   }
 
   override def previewCheck: FieldCheck = FieldChecks.mandatoryCheck
 
   override def renderPreview(questions: Map[String, Question], answers: JsObject) = {
-    views.html.renderers.preview.simpleFormField(this,JsonHelpers.flatten(answers))
+
+    views.html.renderers.preview.simpleFormField(this,JsonHelpers.flatten(answers)/*, dropdownItemMap*/)
   }
 
   override def renderFormInput(questions: Map[String, Question], answers: JsObject, errs: Seq[FieldError], hints: Seq[FieldHint]) = {
-
-
-//    val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
-//    val fileUploadItems = itemValues.flatMap(_.validate[FileUploadItem].asOpt)
-//    views.html.renderers.preview.fileUpload(fileUploadItems)
-
 
     views.html.renderers.simpleFormField(this, questions, JsonHelpers.flatten(answers), errs, hints)
   }
