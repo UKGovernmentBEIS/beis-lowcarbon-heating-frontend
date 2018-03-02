@@ -143,9 +143,6 @@ class ApplicationController @Inject()(
     mapsecs
   }
 
-   def simpleAppshow(id: ApplicationId) = AppDetailAction(id) { request =>
-    Ok(views.html.showSimpleApplicationForm(request.appDetail, List.empty))
-  }
 
   def reset = Action.async {
     applications.reset().map(_ => Redirect(controllers.routes.StartPageController.startPage()))
@@ -292,24 +289,6 @@ class ApplicationController @Inject()(
     case true => Future.successful (Ok(views.html.loginForm("Authorisation required") ).withNewSession)
   }
 
-  }
-
-  def showSectionSimpleForm(id: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(id, sectionNumber) { request =>
-    request.appSection.section match {
-      case None =>
-        val hints = hinting(JsObject(List.empty), checksFor(request.appSection.formSection))
-        actionHandler.renderSectionSimpleForm(request.appSection, noErrors, hints)
-
-      case Some(s) =>
-        val hints = hinting(s.answers, checksFor(request.appSection.formSection))
-        actionHandler.renderSectionSimpleForm(request.appSection, noErrors, hints)
-
-        /*if (s.isComplete) actionHandler.redirectToPreview(id, sectionNumber)
-        else {
-          val hints = hinting(s.answers, checksFor(request.appSection.formSection))
-          actionHandler.renderSectionSimpleForm(request.appSection, noErrors, hints)
-        }*/
-    }
   }
 
   def postSection(id: ApplicationId, sectionNumber: AppSectionNumber) = AppSectionAction(id, sectionNumber).async(JsonForm.fileuploadparser) {

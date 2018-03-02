@@ -81,41 +81,6 @@ class DashBoardController @Inject()(   applications: ApplicationOps,
               }
         }
     )
-
-//   val v =  for(
-//      appsSeq <- applications.getApplicationsByUserId(UserId(userId)).map{
-//        case apps: Seq[Application] => apps
-//        case _ => Seq()
-//      };
-//      oppsSeq <- opps.getOpenOpportunitySummaries.map {
-//        case ops: Seq[Opportunity] => ops
-//        case _ => Seq()
-//      };
-//      msgSeq <- msgs.byUserId(UserId(userId)).map {
-//        case msgs: Seq[Message] => msgs
-//        case _ => Seq()
-//      }
-//    )yield(
-//
-//      /*TODO:- This will only work for single opportunity per user. Need to change it for Multiple Opportunities per user
-//           1. Combine the Applications and Opportunites call and display Opps and related Apps in a single row
-//           2. Status display and button display (eg. View or cintinue or Start now) based on Opps and Apps attributes*/
-//     (appsSeq, oppsSeq)
-//
-//      )
-//
-//v.flatMap{ a=>
-//  val s = request.session + ("isOppClosed" -> "true")
-//
-//  //Future(Ok("").withNewSession)
-//
-//  Future(Ok(views.html.showApplicantDashBoard(a._1, a._2, false, Seq()))
-//      .removingFromSession("isOppClosed")
-//          .withSession(request.session + ("isOppClosed" -> "true")))
-//}
-//
-  //  Future.successful(Ok(views.html.showApplicantDashBoard(Seq(), Seq(), false, Seq())))
-
   }
 
   def staffDashBoard = Action.async { implicit request =>
@@ -133,15 +98,6 @@ class DashBoardController @Inject()(   applications: ApplicationOps,
           ops
         }
 
-          /*oppsSeq <- opps.getOpenOpportunitySummaries.map {
-          case ops: Seq[Opportunity] => //ops
-          {
-
-            ops.filter( op =>
-              appforms.byOpportunityId(op.id).map(  s=> s.getOrElse(ApplicationForm(null,null,null)).sections.head.sectionType.name)
-                == "simpleform")
-
-          }*/
         case _ => Seq()
       }/*;
       msgSeq <- msgs.byUserId(UserId(userId)).map {

@@ -20,22 +20,18 @@ package actions
 import javax.inject.Inject
 
 import models.{AppSectionNumber, ApplicationId, ApplicationSectionDetail}
-import play.api.i18n.Messages
+import play.api.i18n.MessagesApi
 import play.api.mvc.Results._
+
 import play.api.mvc._
 import services.ApplicationOps
 
 import scala.concurrent.{ExecutionContext, Future}
 
-import play.api.Play.current
-import play.api.i18n.Messages
-import play.api.i18n.Messages.Implicits._
-
 case class AppSectionRequest[A](appSection: ApplicationSectionDetail, request: Request[A]) extends WrappedRequest[A](request)
 
-class AppSectionAction @Inject()(applications: ApplicationOps)(implicit ec: ExecutionContext) {
+class AppSectionAction @Inject()(applications: ApplicationOps, msg: MessagesApi)(implicit ec: ExecutionContext) {
 
-  implicit val messages = Messages
 
   def apply(id: ApplicationId, sectionNum: AppSectionNumber): ActionBuilder[AppSectionRequest] =
 
@@ -47,7 +43,7 @@ class AppSectionAction @Inject()(applications: ApplicationOps)(implicit ec: Exec
             next(AppSectionRequest(app, request))
 
           case None =>
-            Future.successful (Ok(views.html.loginForm(Messages("error.BF040")) ).withNewSession)
+            Future.successful (Ok(views.html.loginForm(msg("error.BF040")) ).withNewSession)
         }
       }
     }

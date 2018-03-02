@@ -31,8 +31,6 @@ trait ApplicationOps {
 
   def byId(id: ApplicationId): Future[Option[Application]]
 
- // def getOrCreateForForm(applicationFormId: ApplicationFormId, userId: UserId): Future[Option[Application]]
-
   def byFormId(applicationFormId: ApplicationFormId, userId: UserId): Future[Option[Application]]
 
   def createForForm(applicationFormId: ApplicationFormId, userId: UserId): Future[Option[Application]]
@@ -67,15 +65,9 @@ trait ApplicationOps {
 
   def submit(id: ApplicationId): Future[Option[SubmittedApplicationRef]]
 
-  def submitSimpleForm(id: ApplicationId): Future[Option[SubmittedApplicationRef]]
-
   def updatePersonalReference(id: ApplicationId, reference: String): Future[Unit]
 
-  //def uploadFile(fileName: String, fileType: String,  mf: MultipartFormData.FilePart[TemporaryFile]): Future[Unit]
-
   def getApplicationsByUserId(userId: UserId): Future[Seq[Application]]
-
-  def createForSimpleForm(applicationFormId: ApplicationFormId, userId: UserId): Future[Option[Application]]
 
 
 }

@@ -59,9 +59,6 @@ class ApplicationURLs(baseUrl: String) {
   def submit(id: ApplicationId) =
     s"$baseUrl/application/${id.id}/submit"
 
-  def submitSimpleForm(id: ApplicationId) =
-    s"$baseUrl/application/${id.id}/submitsimpleform"
-
   def submitWithProcInstanceId(id: ApplicationId, processInstanceId: ProcessInstanceId) =
     s"$baseUrl/application/${id.id}/processinstance/${processInstanceId.id}/submit"
 
@@ -185,11 +182,6 @@ class ApplicationService @Inject()(val ws: WSClient)(implicit val ec: ExecutionC
     getWithHeaderUpdate[Application, String](appFormUrls.applicationCreate(applicationFormId), userId.userId)
   }
 
-
-  override def createForSimpleForm(applicationFormId: ApplicationFormId, userId: UserId): Future[Option[Application]] = {
-    getWithHeaderUpdate[Application, String](appFormUrls.applicationCreateSimpleForms(applicationFormId), userId.userId)
-  }
-
   override def overview(id: ApplicationId): Future[Option[ApplicationOverview]] =
     getOpt[ApplicationOverview](urls.application(id))
 
@@ -210,11 +202,6 @@ class ApplicationService @Inject()(val ws: WSClient)(implicit val ec: ExecutionC
 
   override def submit(id: ApplicationId): Future[Option[SubmittedApplicationRef]] =
     postWithResult[SubmittedApplicationRef, String](urls.submit(id), "")
-
-    override def submitSimpleForm(id: ApplicationId): Future[Option[SubmittedApplicationRef]] =
-      postWithResult[SubmittedApplicationRef, String](urls.submitSimpleForm(id), "")
-
-
 
   override def updatePersonalReference(id: ApplicationId, reference: String) =
     post(urls.personalRef(id), reference)

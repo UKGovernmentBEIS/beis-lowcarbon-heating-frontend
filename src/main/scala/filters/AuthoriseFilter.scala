@@ -31,18 +31,16 @@ import org.apache.commons.lang3.StringUtils
 
 import util.control.Breaks._
 import scala.util.control._
-import play.api.Play.current
-import play.api.i18n.Messages
+import play.api.i18n.MessagesApi
 import play.api.i18n.Messages.Implicits._
 
 /**
   * Created by venkatamutyala on 18/09/2017.
   */
 
-class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionContext) extends Filter {
+class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionContext, msg: MessagesApi) extends Filter {
 
   import play.api.mvc.Results._
-  implicit val messages = Messages
 
   override def apply(nextCall: (RequestHeader) => Future[Result])( rh: RequestHeader): Future[Result] = {
 
@@ -54,13 +52,13 @@ class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionCon
 
         isSessionTimedOut(rh.session.get("sessionTime").getOrElse(System.currentTimeMillis.toString).toLong) match {
           case true =>
-            Future.successful (Ok (views.html.loginForm (Messages("error.BF039")) ).withNewSession)
+            Future.successful (Ok (views.html.loginForm (msg("error.BF039")) ).withNewSession)
           case false => {
           val isOppClosed = rh.session.get("isOppClosed").getOrElse("false")
           //val isOppClosed = "true"
 
             (isOppClosed.toBoolean && rh.uri.startsWith("/application/")) match{
-                    case true => Future.successful (Ok (views.html.loginForm (Messages("error.BF040")) ).withNewSession)
+                    case true => Future.successful (Ok (views.html.loginForm (msg("error.BF040")) ).withNewSession)
                     case false =>
                         rh.session.get ("username").map {
                         user =>
@@ -76,7 +74,7 @@ class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionCon
                           if(StringUtils.isNotEmpty(rh.getQueryString("token").getOrElse(""))) {
                             nextCall (rh)
                           }else
-                          Future.successful (Ok (views.html.loginForm (Messages("error.BF040")) ) )
+                          Future.successful (Ok (views.html.loginForm (msg("error.BF040")) ) )
                       }
                   }
 

@@ -185,98 +185,6 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
           applications.submit(id)
     }
   }
-//-------------Simple App Starts--------------------------------------------------------------
-
-  def doSaveSimple(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
-    app.formSection.sectionType match {
-      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm | DynamicTableForm => {
-        if (JsonHelpers.allFieldsEmpty(fieldValues)) applications.deleteSection(app.id, app.sectionNumber)
-        else applications.saveSection(app.id, app.sectionNumber, fieldValues)
-      }.map(_ => redirectToSimpleFormOverview(app.id))
-      case SectionTypeCostList => Future.successful(redirectToSimpleFormOverview(app.id))
-      case SectionTypeFileList => Future.successful(redirectToSimpleFormOverview(app.id))
-    }
-  }
-
-  def doCompleteSimple(app: ApplicationSectionDetail, fieldValues: JsObject, userId: String): Future[Result] = {
-    val answers = app.formSection.sectionType match {
-      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm | DynamicTableForm => fieldValues
-      // Instead of using the values that were passed in from the form we'll use the values that
-      // have already been saved against the item list, since these were created by the add-item
-      // form.
-      case SectionTypeCostList => app.section.map(_.answers).getOrElse(JsObject(Seq()))
-      case SectionTypeFileList => app.section.map(_.answers).getOrElse(JsObject(Seq()))
-    }
-
-    applications.completeSection(app.id, app.sectionNumber, answers).map {
-      case Nil => redirectToSimpleFormOverview(app.id)
-      case errs => redisplaySimpleSectionForm(app, answers, errs, userId)
-    }
-  }
-
-  def doSaveItemSimple(app: ApplicationSectionDetail, fieldValues: JsObject, userId: String): Future[Result] = {
-    JsonHelpers.allFieldsEmpty(fieldValues) match {
-      case true => applications.deleteSection(app.id, app.sectionNumber).map(_ => redirectToSimpleFormOverview(app.id))
-      case false => applications.saveItem(app.id, app.sectionNumber, fieldValues).flatMap {
-        case Nil => Future.successful(redirectToSimpleFormOverview(app.id))
-        case errs => Future.successful(redisplaySimpleSectionForm(app, fieldValues, errs, userId))
-      }
-    }
-  }
-
-  def doSaveFileItemSimple(app: ApplicationSectionDetail, fieldValues: JsObject): Future[Result] = {
-    JsonHelpers.allFieldsEmpty(fieldValues) match {
-      case true => applications.deleteSection(app.id, app.sectionNumber).map(_ => redirectToSimpleFormOverview(app.id))
-      case false => applications.saveFileItem(app.id, app.sectionNumber, fieldValues).flatMap {
-        case itemnumber => Future.successful(redirectToSimpleFormOverview(app.id))
-        //case errs => Future.successful(redisplaySectionForm(app, fieldValues, errs))
-      }
-    }
-  }
-
-  def doPreviewSimple(app: ApplicationSectionDetail, fieldValues: JsObject, userId: String): Future[Result] = {
-    app.formSection.sectionType match {
-      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm | DynamicTableForm =>
-        val errs = check(fieldValues, previewChecksFor(app.formSection))
-        if (errs.isEmpty) applications.saveSection(app.id, app.sectionNumber, fieldValues).map(_ => redirectToPreview(app.id, app.sectionNumber))
-        else Future.successful(redisplaySimpleSectionForm(app, fieldValues, errs, userId))
-
-      case SectionTypeCostList => Future.successful(redirectToPreview(app.id, app.sectionNumber))
-      case _ => Future.successful(NotFound)
-    }
-  }
-
-  def doSubmitSimple(id: ApplicationId, applicationDetail: ApplicationDetail, userId: UserId): Future[Option[SubmittedApplicationRef]] = {
-          applications.submitSimpleForm(id)
-  }
-
-  def redisplaySimpleSectionForm(app: ApplicationSectionDetail, answers: JsObject, errs: FieldErrors = noErrors, userId: String): Result = {
-    selectSimpleSectionForm(app, answers, errs, userId)
-  }
-
-  def selectSimpleSectionForm(app: ApplicationSectionDetail, answers: JsObject, errs: FieldErrors, userId: String): Result = {
-    val checks = app.formSection.fields.map(f => f.name -> f.check).toMap
-    val hints = hinting(answers, checks)
-
-    app.formSection.sectionType match {
-      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm | DynamicTableForm => Ok(views.html.sectionSimpleForm(app, answers, errs, hints))
-      /*case SectionTypeCostList =>
-        answers \ "items" match {
-          case JsDefined(JsArray(is)) if is.nonEmpty =>
-            val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
-            val costItems = itemValues.flatMap(_.validate[CostItem].asOpt)
-            Ok(views.html.sectionList(app, costItems, answers, errs, hints))
-          case _ => Redirect(controllers.routes.CostController.addItem(app.id, app.formSection.sectionNumber))
-        }*/
-      case SectionTypeFileList => {
-        val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
-        val fileUploadItems = itemValues.flatMap(_.validate[FileUploadItem].asOpt)
-        Ok(views.html.sectionSimpleFileList(app, fileUploadItems, answers, errs, hints))
-      }
-
-    }
-  }
-  //----------Simple App ends-----------------------------------------------------------------
 
   def processVariables(applicationDetail: ApplicationDetail, userId: UserId): Seq[ProcessVariable] ={
     val pvAppId       =  ProcessVariable("ApplicationId", applicationDetail.id.id.toString)
@@ -323,13 +231,6 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
 
   def redirectToSimplePreview(id: ApplicationId, sectionNumber: AppSectionNumber) =
     Redirect(routes.ApplicationPreviewController.previewSection(id, sectionNumber))
-
-  def renderSectionSimpleForm(app: ApplicationSectionDetail,
-                        errs: FieldErrors,
-                        hints: FieldHints): Result = {
-    val answers = app.section.map { s => s.answers }.getOrElse(JsObject(List.empty))
-    selectSectionSimpleForm(app, answers, errs)
-  }
 
   def redisplaySectionForm(app: ApplicationSectionDetail, answers: JsObject, errs: FieldErrors = noErrors, userId: String): Result = {
     selectSectionForm(app, answers, errs, userId)
@@ -381,29 +282,6 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
     val amazonPublicBucket = Config.config.aws.publicbucket
     val amazonPublicDownloadUrl = s"https://s3.$amazonRegion.$amazonDomain/$amazonPublicBucket"
     amazonPublicDownloadUrl
-  }
-
-  def selectSectionSimpleForm(app: ApplicationSectionDetail, answers: JsObject, errs: FieldErrors): Result = {
-    val checks = app.formSection.fields.map(f => f.name -> f.check).toMap
-    val hints = hinting(answers, checks)
-
-    app.formSection.sectionType match {
-      case SectionTypeForm | SimpleTypeForm | RowForm | TableForm => Ok(views.html.sectionSimpleForm(app, answers, errs, hints))
-      /*case SectionTypeCostList =>
-        answers \ "items" match {
-          case JsDefined(JsArray(is)) if is.nonEmpty =>
-            val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
-            val costItems = itemValues.flatMap(_.validate[CostItem].asOpt)
-            Ok(views.html.sectionList(app, costItems, answers, errs, hints))
-          case _ => Redirect(controllers.routes.CostController.addItem(app.id, app.formSection.sectionNumber))
-        }*/
-      case SectionTypeFileList => {
-        val itemValues: Seq[JsValue] = (answers \ "items").validate[JsArray].asOpt.map(_.value).getOrElse(Seq())
-        val fileUploadItems = itemValues.flatMap(_.validate[FileUploadItem].asOpt)
-        Ok(views.html.sectionSimpleFileList(app, fileUploadItems, answers, errs, hints))
-      }
-
-    }
   }
 
   def previewChecksFor(formSection: ApplicationFormSection): Map[String, FieldCheck] =

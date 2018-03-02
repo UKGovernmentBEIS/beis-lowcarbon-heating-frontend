@@ -34,7 +34,7 @@ case class SimpleFormField(name: String, simpleform : Seq[SimpleField]) extends 
 
   override def renderPreview(questions: Map[String, Question], answers: JsObject) = {
 
-    views.html.renderers.preview.simpleFormField(this,JsonHelpers.flatten(answers)/*, dropdownItemMap*/)
+    views.html.renderers.preview.simpleFormField(this,JsonHelpers.flatten(answers))
   }
 
   override def renderFormInput(questions: Map[String, Question], answers: JsObject, errs: Seq[FieldError], hints: Seq[FieldHint]) = {

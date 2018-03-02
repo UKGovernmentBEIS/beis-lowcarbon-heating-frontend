@@ -36,8 +36,7 @@ import services.{AWSOps, ApplicationFormOps, ApplicationOps, OpportunityOps}
 
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.Logger
-import play.api.i18n.Messages
-import play.api.Play.current
+import play.api.i18n.{Messages, MessagesApi}
 import play.api.i18n.Messages
 import play.api.i18n.Messages.Implicits._
 /**
@@ -50,7 +49,8 @@ class AWSHandler @Inject()(
                             opps: OpportunityOps,
                             awsS3: AWSOps,
                             AppDetailAction: AppDetailAction,
-                            AppSectionAction: AppSectionAction
+                            AppSectionAction: AppSectionAction,
+                            message: MessagesApi
                           )(implicit ec: ExecutionContext)
   extends Controller with ApplicationResults with SessionUser {
 
@@ -73,7 +73,7 @@ class AWSHandler @Inject()(
 
   def mandatoryCheck(path: String, s: String): List[FieldError] = {
     StringUtils.isEmpty(s) match {
-      case true => List(FieldError(path, Messages("error.BF036")))
+      case true => List(FieldError(path, message("error.BF036")))
       case false  => List()
     }
   }
@@ -82,7 +82,7 @@ class AWSHandler @Inject()(
     val allowedfileextensions = Config.config.file.allowedfileextensions
     val exts = allowedfileextensions.split(",").toList
     exts.contains(ext) match {
-      case false => List(FieldError(path, Messages("error.BF037", s"'$ext'")))
+      case false => List(FieldError(path, message("error.BF037", s"'$ext'")))
       case true  => List()
     }
   }
@@ -91,7 +91,7 @@ class AWSHandler @Inject()(
     val allowedfilesize = Config.config.file.allowedfilesize
 
     f.length() >  allowedfilesize*1000000 match {
-      case true => List(FieldError(path, Messages("error.BF038", s"'$filename'", allowedfilesize)))
+      case true => List(FieldError(path, message("error.BF038", s"'$filename'", allowedfilesize)))
       case false  => List()
     }
   }
@@ -130,45 +130,7 @@ class AWSHandler @Inject()(
     }
 
   }
-//---------------------
-  def uploadFileAWSS3Simple(id: ApplicationId,  sectionNumber: AppSectionNumber, appSection: ApplicationSectionDetail , fieldValues: JsObject,
-                      f: File, userId : String) :Future[Result] = {
 
-    val filename = fieldValues.fields.head._2.toString().replaceAll("^\"|\"$", "")
-    StringUtils.isEmpty(filename) match {
-      case true => Future.successful(showSimpleFileItemForm(userId, appSection, null, List(FieldError("supportingDocuments", Messages("error.BF036")))))
-      case false => {
-        val extension = FilenameUtils.getExtension(filename)
-        /* File Upload */
-        val fileUploadItem:FileUploadItem = FileUploadItem(filename)
-        /** Save file metadata in Database and Physical file in AWS S3  **/
-        applications.saveFileItem(id, sectionNumber, JsObject(Seq("item" -> Json.toJson(fileUploadItem)))).flatMap {
-          case itemnumber => {
-            /** AWS S3 call to store files on AWS S3 **/
-            awsS3.upload(ResourceKey( itemnumber + "." + extension), f).flatMap{
-              case Nil =>  Future.successful(redirectToSimpleSectionForm(id, sectionNumber))
-              case errs => Future.successful(showSimpleFileItemForm(userId, appSection, null, errs))
-            }
-          }
-        }
-      }
-    }
-
-  }
-
-
-  def showSimpleFileItemForm(userId:String, app: ApplicationSectionDetail, doc: JsObject, errs: FieldErrors, itemNumber: Option[Int] = None): Result = {
-    import ApplicationData._
-    import FieldCheckHelpers._
-
-    val fields = itemFieldsFor(app.sectionNumber).getOrElse(List.empty)
-    val checks = itemChecksFor(app.sectionNumber)
-    val hints = hinting(doc, checks)
-    val answers = app.section.map { s => s.answers }.getOrElse(JsObject(List.empty))
-    implicit def sessionUser = ""
-    Ok(views.html.fileUploadSimpleForm(app, answers, errs, hints))
-  }
-  //------------
   /** TODO:- Not Used ** To Be Deleted**/
   def uploadFileToLocalDirectory(id: ApplicationId,  sectionNumber: AppSectionNumber, appSection: ApplicationSectionDetail , fieldValues: JsObject,
                                  mf: MultipartFormData.FilePart[TemporaryFile], userId : String) :Future[Result] = {
