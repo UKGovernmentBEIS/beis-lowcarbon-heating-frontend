@@ -98,7 +98,7 @@ class AWSHandler @Inject()(
 
   def uploadFileAWSS3(id: ApplicationId,  sectionNumber: AppSectionNumber, appSection: ApplicationSectionDetail , fieldValues: JsObject,
                       f: File, userId : String) :Future[Result] = {
-
+    import scala.language.postfixOps
     val filename = fieldValues.fields.head._2.toString().replaceAll("^\"|\"$", "")
     val extensionCheck = if(filename.indexOf(".") != -1)
                             checkFileExtensions("supportingDocuments", filename.split("\\.")last)

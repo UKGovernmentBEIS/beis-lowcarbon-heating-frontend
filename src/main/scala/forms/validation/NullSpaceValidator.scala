@@ -20,14 +20,13 @@ package forms.validation
 import cats.data.ValidatedNel
 import cats.syntax.validated._
 import forms.validation.FieldValidator.Normalised
-import play.api.Play.current
-import play.api.i18n.Messages
-import play.api.i18n.Messages.Implicits._
+
+import play.api.i18n.MessagesApi
 
 
 case class NullSpaceValidator(label: Option[String] = None, displayName: Option[String] = None) extends FieldValidator[String, String] {
 
-  implicit val messages = Messages
+  val msg = controllers.GlobalContext.injector.instanceOf[MessagesApi]
 
   override def normalise(s: String): String = s.trim()
 
@@ -35,7 +34,7 @@ case class NullSpaceValidator(label: Option[String] = None, displayName: Option[
 
     denormal(so).split(" ").length > 1 match {
       case true =>
-        FieldError(path, Messages("error.BF010", s"'${label.getOrElse("Field")}'", s"'$so'")).invalidNel
+        FieldError(path, msg("error.BF010", s"'${label.getOrElse("Field")}'", s"'$so'")).invalidNel
 
       case false => "".validNel
     }

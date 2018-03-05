@@ -15,25 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package forms.validation
+package controllers
 
-import cats.data.ValidatedNel
-import cats.syntax.validated._
-import forms.validation.FieldValidator.Normalised
+import play.api.inject.Injector
+import javax.inject.Inject
+
 import play.api.i18n.MessagesApi
 
-case class RadiobuttonValidator(label: Option[String] = None) extends FieldValidator[Option[String], String] {
+/**
+  * Created by venkatamutyala on 02/03/2018.
+  */
 
-  val msg = controllers.GlobalContext.injector.instanceOf[MessagesApi]
+class GlobalContext @Inject()(playInjector: Injector) {
+  GlobalContext.injectorRef = playInjector
+}
 
-  override def normalise(os: Option[String]): Option[String] = os.map(_.trim())
-
-  override def doValidation(path: String, s: Normalised[Option[String]]): ValidatedNel[FieldError, String] = {
-    denormal(s) match {
-      case Some(fld) =>
-        "".validNel
-      case _ =>
-        FieldError(path, msg("error.BF016", s"'${label.getOrElse("Field")}'")  ).invalidNel
-    }
-  }
+object GlobalContext {
+  private var injectorRef: Injector = _
+  def injector: Injector = injectorRef
 }

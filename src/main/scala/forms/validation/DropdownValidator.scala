@@ -20,20 +20,22 @@ package forms.validation
 import cats.data.ValidatedNel
 import cats.syntax.validated._
 import forms.validation.FieldValidator.Normalised
-import play.api.i18n.Messages
+import play.api.i18n.{Messages, MessagesApi}
 import play.api.Play.current
 import play.api.i18n.Messages.Implicits._
+
 import scala.util.Try
 
 case class DropdownValidator(label: Option[String] = None) extends FieldValidator[Option[String], String] {
-  implicit val messages = Messages
+
+  val msg = controllers.GlobalContext.injector.instanceOf[MessagesApi]
 
   override def normalise(os: Option[String]): Option[String] = os.map(_.trim())
 
   override def doValidation(path: String, s: Normalised[Option[String]]): ValidatedNel[FieldError, String] = {
     denormal(s) match {
       case Some(fld) if fld.equals("Select one") =>
-        FieldError(path, Messages("error.BF011", s"'${label.getOrElse("Field")}'")  ).invalidNel
+        FieldError(path, msg("error.BF011", s"'${label.getOrElse("Field")}'")  ).invalidNel
       case _ => "".validNel
     }
   }

@@ -23,7 +23,7 @@ import cats.syntax.validated._
 import forms.DateValues
 import forms.validation.FieldValidator.Normalised
 import org.joda.time.LocalDate
-import play.api.i18n.Messages
+import play.api.i18n.{Messages, MessagesApi}
 import play.api.Play.current
 import play.api.i18n.Messages.Implicits._
 
@@ -57,8 +57,10 @@ case class DateTimeRange(startDate: LocalDate, endDate: Option[LocalDate])
 
 case class DateTimeRangeValidator(allowPast: Boolean, isEndDateMandatory: Boolean) extends FieldValidator[DateTimeRangeValues, DateTimeRange] {
 
-  implicit val messages = Messages
+  val msg = controllers.GlobalContext.injector.instanceOf[MessagesApi]
 
+  import controllers.GlobalContext.injector
+  val messages =injector.instanceOf[MessagesApi]
   val dateValidator = DateFieldValidator(None, allowPast)
 
   val mustProvideValidStartDateMessage = "You must provide a valid start date"
@@ -99,7 +101,7 @@ case class DateTimeRangeValidator(allowPast: Boolean, isEndDateMandatory: Boolea
   lazy val endDateIsPresentIfMandatory = new FieldValidator[DateTimeRange, DateTimeRange] {
     override def doValidation(path: String, vs: Normalised[DateTimeRange]): ValidatedNel[FieldError, DateTimeRange] = {
       (isEndDateMandatory, vs.endDate) match {
-        case (true, None) => FieldError(s"$path.endDate", Messages("error.BF024")).invalidNel
+        case (true, None) => FieldError(s"$path.endDate", msg("error.BF024")).invalidNel
         case _ => vs.valid
       }
     }
@@ -112,7 +114,7 @@ case class DateTimeRangeValidator(allowPast: Boolean, isEndDateMandatory: Boolea
   lazy val endDateIsPresentIfSupplied = new FieldValidator[(Option[LocalDate], Boolean), Option[LocalDate]] {
     override def doValidation(path: String, vs: Normalised[(Option[LocalDate], Boolean)]) = {
       denormal(vs) match {
-        case (None, true) => FieldError(s"$path.endDate", Messages("error.BF024")).invalidNel
+        case (None, true) => FieldError(s"$path.endDate", msg("error.BF024")).invalidNel
         case _ => vs._1.valid
       }
     }
@@ -122,7 +124,7 @@ case class DateTimeRangeValidator(allowPast: Boolean, isEndDateMandatory: Boolea
     override def doValidation(path: String, dtr: Normalised[DateTimeRange]): ValidatedNel[FieldError, DateTimeRange] = {
       dtr.endDate.map(_.isAfter(dtr.startDate)) match {
         case Some(false) =>
-          FieldError(path, Messages("error.BF025")).invalidNel
+          FieldError(path, msg("error.BF025")).invalidNel
         case _ => dtr.valid
       }
     }

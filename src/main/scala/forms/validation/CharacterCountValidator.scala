@@ -20,13 +20,11 @@ package forms.validation
 import cats.data.ValidatedNel
 import cats.syntax.validated._
 import forms.validation.FieldValidator.Normalised
-import play.api.i18n.Messages
-import play.api.Play.current
-import play.api.i18n.Messages.Implicits._
+import play.api.i18n.MessagesApi
 
 case class CharacterCountValidator(label: Option[String] = None, maxChars: Int) extends FieldValidator[String, String] {
 
-  implicit val messages = Messages
+  val msg = controllers.GlobalContext.injector.instanceOf[MessagesApi]
 
   import CharacterCountValidator._
 
@@ -37,7 +35,7 @@ case class CharacterCountValidator(label: Option[String] = None, maxChars: Int) 
     s match {
       //case n if n.length > maxChars => FieldError(path, s"'${path.substring(path.indexOf('.')+1,path.length)}' Character limit exceeded").invalidNel
       case n if n.length > maxChars =>
-        FieldError(path,  Messages("error.BF032", s"'${label.getOrElse("Field")}'")).invalidNel
+        FieldError(path,  msg("error.BF032", s"'${label.getOrElse("Field")}'")).invalidNel
       case n => {
         n.validNel
       }
@@ -57,6 +55,9 @@ case class CharacterCountValidator(label: Option[String] = None, maxChars: Int) 
 }
 
 object CharacterCountValidator {
-  def overLimit(over: Int) =  Messages("error.BF030", over)
-  def noChars(max: Int) = Messages("error.BF031", max)
+
+  val msg = controllers.GlobalContext.injector.instanceOf[MessagesApi]
+
+  def overLimit(over: Int) =  msg("error.BF030", over)
+  def noChars(max: Int) = msg("error.BF031", max)
 }

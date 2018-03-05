@@ -28,6 +28,7 @@ import models.{AppAuthPayload, ApplicationForm, NonEmptyString}
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTime, LocalDate}
 import play.api.Play
+import play.api.i18n.MessagesApi
 import play.api.libs.json.Json
 import play.twirl.api.Html
 import services.JWTOps
@@ -63,7 +64,9 @@ package object helpers {
 
   def splitLineswithR(s: String): List[String] = s.split("""\\r\\n""").toList.map(_.replaceAll("""\\""", "")).toList
 
-  private def instance = Play.current.injector.instanceOf[JWT]
+  /** Play.current is depricated
+  private def instance = Play.current.injector.instanceOf[JWT] **/
+  private def instance = controllers.GlobalContext.injector.instanceOf[JWT]
 
   implicit val appAuthPayloadWrites = Json.writes[AppAuthPayload]
 

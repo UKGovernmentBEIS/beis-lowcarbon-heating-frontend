@@ -20,20 +20,20 @@ package forms.validation
 import cats.data.ValidatedNel
 import cats.syntax.validated._
 import forms.validation.FieldValidator.Normalised
-import play.api.i18n.Messages
-import play.api.Play.current
-import play.api.i18n.Messages.Implicits._
+import play.api.i18n.MessagesApi
+
 
 object WordCountValidator {
-  implicit val messages = Messages
+
+  val msg = controllers.GlobalContext.injector.instanceOf[MessagesApi]
 
   def ws(n: Int) = if (n == 1) "word" else "words"
 
-  def wordsRemaining(wordsLeft: Int) = Messages("error.BF018", wordsLeft)
+  def wordsRemaining(wordsLeft: Int) = msg("error.BF018", wordsLeft)
 
-  def overLimit(over: Int) = Messages("error.BF019", over, ws(over))
+  def overLimit(over: Int) = msg("error.BF019", over, ws(over))
 
-  def noWords(max: Int) = Messages("error.BF020", max, ws(max))
+  def noWords(max: Int) = msg("error.BF020", max, ws(max))
 }
 case class WordCountValidator(label: Option[String] = None, maxWords: Int) extends FieldValidator[String, String] {
 
@@ -45,7 +45,7 @@ case class WordCountValidator(label: Option[String] = None, maxWords: Int) exten
     val p = path.split("\\.").last
     s match {
       //case n if n.split("\\s+").length > maxWords => FieldError(path, s"$p Word limit exceeded").invalidNel
-      case n if n.split("\\s+").length > maxWords => FieldError(path, Messages("error.BF021", s"$label")).invalidNel
+      case n if n.split("\\s+").length > maxWords => FieldError(path, msg("error.BF021", s"$label")).invalidNel
       case n => n.validNel
     }
   }

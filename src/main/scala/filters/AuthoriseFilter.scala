@@ -52,10 +52,10 @@ class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionCon
 
         isSessionTimedOut(rh.session.get("sessionTime").getOrElse(System.currentTimeMillis.toString).toLong) match {
           case true =>
+            println("Error in AuthFilter - no Session ")
             Future.successful (Ok (views.html.loginForm (msg("error.BF039")) ).withNewSession)
           case false => {
           val isOppClosed = rh.session.get("isOppClosed").getOrElse("false")
-          //val isOppClosed = "true"
 
             (isOppClosed.toBoolean && rh.uri.startsWith("/application/")) match{
                     case true => Future.successful (Ok (views.html.loginForm (msg("error.BF040")) ).withNewSession)
@@ -73,8 +73,10 @@ class AuthoriseFilter @Inject()(implicit val mat: Materializer, ec: ExecutionCon
                       }.getOrElse {
                           if(StringUtils.isNotEmpty(rh.getQueryString("token").getOrElse(""))) {
                             nextCall (rh)
-                          }else
+                          }else{
+                          println("Error in AuthFilter - no Token - no Login ")
                           Future.successful (Ok (views.html.loginForm (msg("error.BF040")) ) )
+                        }
                       }
                   }
 

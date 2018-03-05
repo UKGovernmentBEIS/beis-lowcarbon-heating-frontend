@@ -21,9 +21,9 @@ import cats.data.ValidatedNel
 import cats.syntax.validated._
 import forms.validation.FieldValidator.Normalised
 import play.api.data.validation.{Constraints, Invalid, Valid}
-import play.api.i18n.Messages
-import play.api.Play.current
-import play.api.i18n.Messages.Implicits._
+
+import play.api.i18n.MessagesApi
+
 
 case class EmailValidator(label: Option[String] = None) extends FieldValidator[String, String] {
 
@@ -32,13 +32,14 @@ case class EmailValidator(label: Option[String] = None) extends FieldValidator[S
   override def normalise(s: String): String = s.trim()
 
   override def doValidation(path: String, s: Normalised[String]): ValidatedNel[FieldError, String] = {
-    implicit val messages = Messages
+
+    val msg = controllers.GlobalContext.injector.instanceOf[MessagesApi]
 
     Constraints.emailAddress(s) match {
       case  Valid =>
         "".validNel
       case  Invalid(errs) =>
-        FieldError(path,  Messages("error.BF022")).invalidNel
+        FieldError(path,  msg("error.BF022")).invalidNel
       }
     }
 

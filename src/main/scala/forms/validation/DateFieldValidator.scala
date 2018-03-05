@@ -25,9 +25,7 @@ import forms.validation.FieldValidator.Normalised
 import org.joda.time.LocalDate
 
 import scala.util.Try
-import play.api.i18n.Messages
-import play.api.Play.current
-import play.api.i18n.Messages.Implicits._
+import play.api.i18n.MessagesApi
 
 case class DMY(day: Int, month: Int, year: Int)
 
@@ -38,7 +36,7 @@ object DateFieldValidator {
 
 case class DateFieldValidator(label: Option[String] = None, allowPast: Boolean,
                               minYearValue: Int = Int.MinValue, maxYearValue: Int = Int.MaxValue) extends FieldValidator[DateValues, LocalDate] {
-  implicit val messages = Messages
+  val msg = controllers.GlobalContext.injector.instanceOf[MessagesApi]
 
   import DateFieldValidator._
 
@@ -57,7 +55,7 @@ case class DateFieldValidator(label: Option[String] = None, allowPast: Boolean,
       mandatoryInt(s"$path.year", vs.year, "year")).tupled
       .map { case (d, m, y) =>
         DMY(d, m, normaliseYear(y))
-      }.leftMap(_ => NonEmptyList.of(FieldError(s"$path", Messages("error.BF026", s"'${label.getOrElse("Field")}'"))))
+      }.leftMap(_ => NonEmptyList.of(FieldError(s"$path", msg("error.BF026", s"'${label.getOrElse("Field")}'"))))
   }
 
   def validateDate(path: String, dmy: DMY): ValidatedNel[FieldError, LocalDate] =
@@ -67,11 +65,11 @@ case class DateFieldValidator(label: Option[String] = None, allowPast: Boolean,
         else if(dmy.year > maxYearValue)  FieldError(path, s"'${label.getOrElse("Field")}' year value should be less than $maxYearValue").invalidNel
         else ld.valid
       }
-      case None => FieldError(path, Messages("error.BF026", s"'${label.getOrElse("Field")}'")).invalidNel
+      case None => FieldError(path, msg("error.BF026", s"'${label.getOrElse("Field")}'")).invalidNel
     }
 
   def validatePastDate(path: String, ld: LocalDate): ValidatedNel[FieldError, LocalDate] =
-    if (!allowPast && ld.isBefore(LocalDate.now())) FieldError(path, Messages("error.BF027", s"'${label.getOrElse("Field")}'")).invalidNel
+    if (!allowPast && ld.isBefore(LocalDate.now())) FieldError(path, msg("error.BF027", s"'${label.getOrElse("Field")}'")).invalidNel
     else ld.valid
 
   override def doValidation(path: String, vs: Normalised[DateValues]): ValidatedNel[FieldError, LocalDate] =

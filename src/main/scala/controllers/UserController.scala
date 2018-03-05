@@ -51,11 +51,8 @@ import cats.syntax.validated._
 import forms.validation.FieldValidator.Normalised
 import scala.util.{Failure, Success, Try}
 
-import play.api.Play.current
-import play.api.i18n.Messages
 import play.api.i18n.MessagesApi
-import play.api.i18n.Messages.Implicits._
-import play.api.Configuration
+
 /********************************************************************************
   This file is for temporary Login till any Security component is deployed.
   This file also for Activity samples.
@@ -65,9 +62,11 @@ import play.api.Configuration
 
 trait SessionUser {
 
+  val msg = controllers.GlobalContext.injector.instanceOf[MessagesApi]
+
   implicit def sessionUser(implicit session: Session): String = {
     //val usr =  for (suser<- session.get("username")) yield suser
-    session.get("username").getOrElse(Messages("error.BF005"))
+    session.get("username").getOrElse(msg("error.BF005"))
   }
 }
 
@@ -244,7 +243,7 @@ class UserController @Inject()(users: UserOps, msg: MessagesApi)(implicit ec: Ex
   }
 
   def loginFormSubmit = Action.async(JsonForm.parser)  { implicit request =>
-println("=====msgsApi===="+ msg("error.BF002"))
+
     val username = (request.body.values \ "name").validate[String].getOrElse("NA")
     val passwrd = (request.body.values \ "password").validate[String].getOrElse("NA")
     users.login(Json.toJson(Login(UserId(username), passwrd)).as[JsObject]).flatMap{
@@ -276,7 +275,7 @@ println("=====msgsApi===="+ msg("error.BF002"))
         users.resetpassword(Json.toJson(ResetPassword(refno, password)).as[JsObject]).flatMap{
           case Some(1) =>
             Future.successful(Ok(views.html.loginForm("", Option(loginform))))
-          case Some(0) =>
+          case Some(0) | None | _ =>
             val errs = List(FieldError("password", msg("error.BF035")))
             Future.successful(Ok(views.html.resetPasswordForm(errs, refno, resetpasswordform)))
         }

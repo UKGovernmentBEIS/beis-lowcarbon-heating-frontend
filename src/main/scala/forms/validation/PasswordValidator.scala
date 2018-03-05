@@ -21,11 +21,11 @@ import cats.data.ValidatedNel
 import cats.syntax.validated._
 import forms.validation.FieldValidator.Normalised
 import play.api.data.validation.{Constraints, Invalid, Valid}
-import play.api.i18n.Messages
-import play.api.Play.current
-import play.api.i18n.Messages.Implicits._
+import play.api.i18n.MessagesApi
 
 case class PasswordValidator(label: Option[String] = None) extends FieldValidator[Option[String], String] {
+
+  val msg = controllers.GlobalContext.injector.instanceOf[MessagesApi]
 
   import EmailValidator._
 
@@ -35,7 +35,7 @@ case class PasswordValidator(label: Option[String] = None) extends FieldValidato
 
     s match {
       case n if n.getOrElse("").length < 8 =>
-        FieldError(path, Messages("error.BF033", s"'${label.getOrElse("Field")}'")).invalidNel
+        FieldError(path, msg("error.BF033", s"'${label.getOrElse("Field")}'")).invalidNel
       case n => n.getOrElse("").validNel
     }
   }
@@ -50,7 +50,7 @@ case class PasswordValidator(label: Option[String] = None) extends FieldValidato
       case n if !s.forall(_.isLetter) && !s.forall(_.isDigit)  =>
         n.validNel
       case n =>
-        FieldError(path, Messages("error.BF034", s"'${label.getOrElse("Field")}'")).invalidNel
+        FieldError(path, msg("error.BF034", s"'${label.getOrElse("Field")}'")).invalidNel
     }
   }
 
@@ -60,13 +60,12 @@ case class PasswordValidator(label: Option[String] = None) extends FieldValidato
     val reg = "%[a-zA-Z]%"
     s match {
       case n if !s.matches(reg) =>
-        FieldError(path, Messages("error.BF034", s"'${label.getOrElse("Field")}'")).invalidNel
+        FieldError(path, msg("error.BF034", s"'${label.getOrElse("Field")}'")).invalidNel
       case n => n.validNel
     }
   }
 
   override def doValidation(path: String, s: Normalised[Option[String]]): ValidatedNel[FieldError, String] = {
-    implicit val messages = Messages
 
     validateLength(path, s).andThen(validateForLettersAndNumber(path, _))
   }
