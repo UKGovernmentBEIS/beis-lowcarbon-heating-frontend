@@ -46,7 +46,7 @@ if(isMandatory) { <span class="mandatory-field">*</span> }
     $( "#address" ).autocomplete({
       source: function( request, response ) {
         $.ajax( {
-          url: "https://api.ordnancesurvey.co.uk/places/v1/addresses/find?key=IG7rFCxTMjB5PgOoVFPCnTcSvhIfSfSc",
+          url: "https://api.ordnancesurvey.co.uk/places/v1/addresses/find?key=@play.Play.application().configuration().getString("addresssearch.key")",
           //TODO:- TAKE OUT HARDCODED VALUES (add above URL and Key in conf file and concatenate here)
           dataType: "JSON",
           data: {
