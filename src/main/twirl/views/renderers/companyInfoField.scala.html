@@ -66,7 +66,7 @@ if(isMandatory) { <span class="mandatory-field">*</span> }
           },
           beforeSend: function(xhr) {
           xhr.withCredentials = true;
-		  xhr.setRequestHeader("Authorization", "Basic djROUW5ETHhOb3d6bDBjUkhMc3I2REYyWTNSNnNjVk52cFlxOUdxcg==")
+		  xhr.setRequestHeader("Authorization", "Basic @play.Play.application().configuration().getString("companysearch.key")")
 		  //TODO:- TAKE OUT HARDCODED VALUES (add above Key in conf file and encode it later)
           },
 
