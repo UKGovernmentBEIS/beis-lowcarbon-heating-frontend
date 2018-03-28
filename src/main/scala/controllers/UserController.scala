@@ -197,10 +197,6 @@ class UserController @Inject()(users: UserOps, msg: MessagesApi)(implicit ec: Ex
         users.register(Json.toJson(regn).as[JsObject] + ("id" -> Json.toJson(0))).flatMap{
 
             case Some(errCode) => {
-                /** TODO *************
-                  * need to get the exception TYPE from backend for the exceptions and show them
-                  * or need to get the error number to select the error text from any resource bundle or properties
-                  */
                 if(errCode.indexOf("error") != -1) {
                   val username = (request.body.values \ "name").validate[String].getOrElse("NA")
                   val errorMsg = msg(errCode, s"'$username'")

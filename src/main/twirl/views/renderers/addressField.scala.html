@@ -28,51 +28,18 @@ if(isMandatory) { <span class="mandatory-field">*</span> }
 }
 
 
+
 <!--------Address Search using JQuery AutoComplete---------------------->
-<!--------TODO:- Move this JS code to common JS file---------------------->
 
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-<style>
-</style>
 
-<script>
-  $( function() {
-
-    function populateAddress( message ) {
-    message = message.replace(/, /g, "\r");
-    $("#companyAddress").val(message);
-    }
-
-    $( "#address" ).autocomplete({
-      source: function( request, response ) {
-        $.ajax( {
-          url: "https://api.ordnancesurvey.co.uk/places/v1/addresses/find?key=@play.Play.application().configuration().getString("addresssearch.key")",
-          //TODO:- TAKE OUT HARDCODED VALUES (add above URL and Key in conf file and concatenate here)
-          dataType: "JSON",
-          data: {
-            query: request.term
-          },
-          success: function( data ) {
-            var addressResults = data.results
-            var addressArr = [];
-            $.each(addressResults, function (index, address) {
-                addressArr.push(address.DPA.ADDRESS); //push values here
-            });
-
-            response( addressArr );
-          }
-        } );
-      },
-      minLength: 2,
-      select: function( event, ui ) {
-      populateAddress( ui.item.value);
-      }
-    } );
-  } );
-  </script>
+<script id="addresssearchid" src="/assets/javascripts/addresssearch.js">
+        {
+           "addresssearchkey":"@play.Play.application().configuration().getString("addresssearch.key")"
+        }
+</script>
 
 <!------------Address Search ends----------->
-
 <div class='form-group @errorClass'>
     @errors.map { e =>
     <span class="error-message" role="alert">@e.err</span>

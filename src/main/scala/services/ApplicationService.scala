@@ -121,7 +121,6 @@ class ApplicationService @Inject()(val ws: WSClient)(implicit val ec: ExecutionC
         }
 
       }
-      // TODO: Need better error handling here
       case None => Future.successful(List(FieldError("", s"tried to save a non-existent section number $sectionNumber in application ${id.id}")))
     }
   }

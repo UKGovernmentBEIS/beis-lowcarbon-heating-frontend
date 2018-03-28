@@ -285,7 +285,6 @@ class ActionHandler @Inject()(applications: ApplicationOps, applicationForms: Ap
   }
 
   def previewChecksFor(formSection: ApplicationFormSection): Map[String, FieldCheck] =
-    //TODO:- may need to implement seperate checks for Previews
     //formSection.fields.map(f => f.name -> f.previewCheck).toMap
     formSection.fields.map(f => f.name -> f.check).toMap  //may need to implement seperate checks for Previews
 

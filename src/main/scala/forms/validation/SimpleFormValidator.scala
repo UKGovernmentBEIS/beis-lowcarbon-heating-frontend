@@ -50,6 +50,7 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
   override def doValidation(path: String, fldValues: Normalised[JsObject]): ValidatedNel[FieldError, List[(SimpleField, String)]] = {
 
     def createValidator(f : String) = {
+      val textboxmax = Config.config.fieldvalidation.textboxmax
 
       val textfield = textfields.filter(t => t.name == s"$path.$f")
       val fld = textfield.head
@@ -66,7 +67,7 @@ class SimpleFormValidator(textfields : Seq[SimpleField]) extends FieldValidator[
             case "radiobutton" =>
               validatorRadiobutton(fld.label)
             case "text" =>
-              validator(fld.label, fld.name, 250) //Todo:- Remove this hardcoding when Maxwords on text field changed to MaxChar
+              validator(fld.label, fld.name, textboxmax)
             case _ =>
               validator(fld.label, fld.name, fld.maxWords)
           }

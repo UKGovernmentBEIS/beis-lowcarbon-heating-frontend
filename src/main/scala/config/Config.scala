@@ -22,7 +22,7 @@ case class FileConfig(fileuploaddirectory: String, filedownloaddirectory: String
                       allowedfilesize: Int)
 case class AWSConfig(accesskey: String, secretkey: String, region: String, bucket: String, publicbucket: String, domain:String)
 case class BPMConfig(bpmreqd: String, procuser: String, procpwd: String, procdefId: String)
-case class FieldValidation(telephone: Int, email: Int, companyname: Int)
+case class FieldValidation(telephone: Int, email: Int, companyname: Int, textboxmax: Int)
 case class LoginConfig(sessionTimeout: Int, excludeSession: String)
 case class JWTConfig(jwtSecretKey: String, jwtSecretAlgo: String, appAccessRole: String, exp: String)
 
